@@ -115,7 +115,7 @@ There are two common scenarios when revenue flow would be initiated:
 
 | Payment Type            | When It Happens                                                                                                         | Potential Functions Called                |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Minting a License       | When someone mints a license to use your IP, or registers a derivative of an IP Asset (which requires having a license) | `mintLicenseTokens`, `registerDerviative` |
+| Minting a License       | When someone mints a license to use your IP, or registers a derivative of an IP Asset (which requires having a license) | `mintLicenseTokens`, `registerDerivative` |
 | Paying Revenue Directly | When someone directly sends revenue to an IP Asset either as a tip or to forward due revenue to the chain.              | `payRoyaltyOnBehalf`                      |
 
 Let's see what happens when IP Asset 3 earns money using the [payRoyaltyOnBehalf](/sdk-reference/royalty#payroyaltyonbehalf) function.
