@@ -523,9 +523,11 @@
                       "POST /assets",
                       "POST /assets/edges",
                       "POST /collections",
+                      "POST /disputes",
+                      "GET /disputes/{disputeId}",
+                      "POST /licenses/tokens",
                       "api-reference/protocol/search",
-                      "api-reference/protocol/transactions",
-                      "POST /disputes"
+                      "api-reference/protocol/transactions"
                     ]
                   }
                 ]
