@@ -9,24 +9,22 @@ The `story` and `geth` binaries, which make up the clients required for running 
 
 | Network | story-geth      | story             |
 | ------- | --------------- | ----------------- |
-| Mainnet | v1.1.1 (Cosmas) | v1.3.3 (Polybius) |
-| Aeneid  | v1.1.1 (Cosmas) | v1.3.3 (Polybius) |
+| Mainnet | v1.1.2 (Cosmas) | v1.4.2 (Terence) |
+| Aeneid  | v1.1.2 (Cosmas) | v1.4.2 (Terence) |
 
 - **`story-geth`execution client:**
   - Release Link: [**Click here**](https://github.com/piplabs/story-geth/releases)
-  - Latest Stable Binary (v1.1.1): [**Click here**](https://github.com/piplabs/story-geth/releases/tag/v1.1.1)
+  - Latest Stable Binary (v1.1.2): [**Click here**](https://github.com/piplabs/story-geth/releases/tag/v1.1.2)
 - **`story-geth`execution client:** (For Aeneid testnet)
   - Release Link: [**Click here**](https://github.com/piplabs/story-geth/releases)
-  - Latest Stable Binary (v1.1.1): [**Click here**](https://github.com/piplabs/story-geth/releases/tag/v1.1.1)
+  - Latest Stable Binary (v1.1.2): [**Click here**](https://github.com/piplabs/story-geth/releases/tag/v1.1.2)
 - **`story`consensus client:**
   - Releases link: [**Click here**](https://github.com/piplabs/story/releases)
-  - Latest Stable Binary (v1.3.3): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.3.3)
+  - Latest Stable Binary (v1.4.2): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.4.2)
 - **`story`consensus client:** (For Aeneid testnet)
   - Releases link: [**Click here**](https://github.com/piplabs/story/releases)
-  - Latest Stable Binary (v1.3.3): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.3.3)
+  - Latest Stable Binary (v1.4.2): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.4.2)
 
-> Note if you are syncing from Genesis you need to use Story v1.3.1.
-> https://github.com/piplabs/story/releases/tag/v1.3.1
 
 # Story Node Installation Guide
 
@@ -140,7 +138,7 @@ go version
 
 ```bash
 cd $HOME
-wget https://github.com/piplabs/story-geth/releases/download/v1.1.1/geth-linux-amd64
+wget https://github.com/piplabs/story-geth/releases/download/v1.1.2/geth-linux-amd64
 sudo mv ./geth-linux-amd64 story-geth
 sudo chmod +x story-geth
 sudo mv ./story-geth $HOME/go/bin/
@@ -154,7 +152,7 @@ You will see the version of the geth binary.
 
 ```
 Geth
-version: 1.1.1-stable
+version: 1.1.2-stable
 ```
 
 (Mac OS X only) The OS X binaries have yet to be signed by our build process, so you may need to unquarantine them manually:
@@ -263,7 +261,7 @@ echo "export DAEMON_ALLOW_DOWNLOAD_BINARIES=false" >> $HOME/.bash_profile
 
 ```bash
 cd $HOME
-wget https://github.com/piplabs/story/releases/download/v1.3.3/story-linux-amd64
+wget https://github.com/piplabs/story/releases/download/v1.4.2/story-linux-amd64
 sudo mv story-linux-amd64 story
 sudo chmod +x story
 sudo mv ./story $HOME/go/bin/
@@ -271,7 +269,7 @@ source $HOME/.bashrc
 story version
 ```
 
-> You should expect to see version 1.3.2-stable
+> You should expect to see version 1.4.2-stable
 
 (Mac OS X Only) The OS X binaries have yet to be signed by our build process, so you may need to unquarantine them manually:
 
