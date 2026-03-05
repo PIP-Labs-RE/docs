@@ -32,11 +32,6 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Learn",
-          "icon": "book-open-cover",
-          "href": "https://learn.story.foundation"
-        },
-        {
           "anchor": "Help & Support",
           "icon": "discord",
           "href": "https://discord.gg/storybuilders"
