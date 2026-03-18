@@ -1,0 +1,62 @@
+---
+title: Global Wallet
+sidebarTitle: Overview
+description: Use Story's Global Wallet to enable Dynamic social login in your app.
+---
+
+The Story Global Wallet is a Dynamic-powered wallet experience that you can enable by adding a single import to your app.
+
+## Integrate
+
+<Steps>
+  <Step title="Install @story-protocol/global-wallet">
+
+Install the package in your app (see the [npm page](https://www.npmjs.com/package/@story-protocol/global-wallet)):
+
+```bash npm
+npm install @story-protocol/global-wallet
+```
+
+  </Step>
+
+  <Step title="Add the Global Wallet import">
+
+Add this import at the top of your root client component:
+
+<CodeGroup>
+
+```tsx
+import "@story-protocol/global-wallet/story";
+```
+
+</CodeGroup>
+
+  </Step>
+</Steps>
+
+## What users get
+
+After the import is in place, “Story Global Wallet” is automatically added to the wallet connection UI wallet list. Users can then log in via socials using Dynamic.
+
+<Frame>
+  <img
+    src="/images/developers/global-wallet/story-global-wallet-connecting.png"
+    alt="Story Global Wallet connecting screen"
+    width={560}
+  />
+</Frame>
+
+<Frame>
+  <img
+    src="/images/developers/global-wallet/story-global-wallet-login.png"
+    alt="Story Global Wallet login screen"
+    width={560}
+  />
+</Frame>
+
+## Examples
+
+See the reference implementations below. Make sure to read the [README](https://github.com/piplabs/story-global-wallet/blob/main/README.md) to get them up and running.
+
+- [Dynamic wallet + Next.js](https://github.com/piplabs/story-global-wallet/tree/main/examples/dynamic-nextjs)
+- [RainbowKit + Vite](https://github.com/piplabs/story-global-wallet/tree/main/examples/rainbowkit-vite)

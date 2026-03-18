@@ -276,7 +276,7 @@
                     ]
                   },
                   {
-                    "group": "React SDK",
+                    "group": "React / Next.js",
                     "icon": "atom",
                     "pages": [
                       "developers/react-guide/overview",
@@ -314,6 +314,10 @@
                     ]
                   }
                 ]
+              },
+              {
+                "group": "Global Wallet",
+                "pages": ["developers/global-wallet/overview"]
               },
               {
                 "group": "Tutorials",
