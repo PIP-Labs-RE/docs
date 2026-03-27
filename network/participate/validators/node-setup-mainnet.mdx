@@ -309,6 +309,8 @@ To override your own node settings, you can do the following:
 
 Below we list a sample `Systemd` configuration you may use on Linux
 
+<Note>The Story API endpoint (`--api-address`) can be modified as needed depending on your environment or use case.</Note>
+
 ```bash
 # story
 sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
@@ -322,7 +324,7 @@ User=$USER
 Group=$GROUP
 ExecStart=/usr/local/bin/cosmovisor run run \
 --api-enable \
---api-address=0.0.0.0:1317
+--api-address=127.0.0.1:1317
 Restart=on-failure
 RestartSec=5s
 LimitNOFILE=65535
@@ -354,7 +356,7 @@ EOF
     Group=${GROUP}
     ExecStart=${path_to_story_binary} run run \
     --api-enable \
-    --api-address=0.0.0.0:1317
+    --api-address=127.0.0.1:1317
     Restart=on-failure
     RestartSec=5s
     LimitNOFILE=65535
