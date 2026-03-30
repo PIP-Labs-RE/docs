@@ -27,9 +27,7 @@ yarn add @piplabs/cdr-sdk viem
 
 </CodeGroup>
 
-<Note>
-  `viem` (v2.21+) is a required peer dependency.
-</Note>
+<Note>`viem` (v2.21+) is a required peer dependency.</Note>
 
 ## Initialize WASM
 
@@ -43,7 +41,8 @@ await initWasm();
 ```
 
 <Note>
-  In a React application, initialize WASM in a provider component or top-level effect so it's ready before any CDR operations are attempted.
+  In a React application, initialize WASM in a provider component or top-level
+  effect so it's ready before any CDR operations are attempted.
 </Note>
 
 ## Create the CDR Client
@@ -73,7 +72,8 @@ export function useCDRClient() {
 
   // Read-only client — always available
   const publicClient = useMemo(
-    () => createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
+    () =>
+      createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
     [],
   );
 
@@ -157,17 +157,18 @@ const allocateFee = await client.observer.getAllocateFee();
 ```
 
 <Warning>
-  Attempting to use `client.uploader` or `client.consumer` without a `walletClient` will throw a `WalletClientRequiredError`.
+  Attempting to use `client.uploader` or `client.consumer` without a
+  `walletClient` will throw a `WalletClientRequiredError`.
 </Warning>
 
 ## Network Configuration
 
 ### Supported Networks
 
-| Network | `network` param | Default RPC URL | Description |
-| ------- | --------------- | --------------- | ----------- |
-| Testnet | `"testnet"` | `https://aeneid.storyrpc.io` | Public testnet for development |
-| Mainnet | `"mainnet"` | `https://mainnet.storyrpc.io` | Production network |
+| Network | `network` param | Default RPC URL               | Description                    |
+| ------- | --------------- | ----------------------------- | ------------------------------ |
+| Testnet | `"testnet"`     | `https://aeneid.storyrpc.io`  | Public testnet for development |
+| Mainnet | `"mainnet"`     | `https://mainnet.storyrpc.io` | Production network             |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
@@ -197,11 +198,18 @@ const walletClient = createWalletClient({
 });
 
 // Use "testnet" or "mainnet" depending on which contract addresses your devnet uses
-const client = new CDRClient({ network: "testnet", publicClient, walletClient });
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+});
 ```
 
 <Note>
-  The `network` parameter determines which contract addresses the SDK uses. When pointing to a custom RPC, choose the `network` value that matches the contract deployment on that chain. Both `"testnet"` and `"mainnet"` currently use the same contract addresses, but this may change in the future.
+  The `network` parameter determines which contract addresses the SDK uses. When
+  pointing to a custom RPC, choose the `network` value that matches the contract
+  deployment on that chain. Both `"testnet"` and `"mainnet"` currently use the
+  same contract addresses, but this may change in the future.
 </Note>
 
 ### Using Environment Variables
@@ -234,10 +242,10 @@ NETWORK=testnet
 
 Both networks use the same pre-deployed system contract addresses:
 
-| Contract | Address |
-| -------- | ------- |
-| DKG | `0xcccccc0000000000000000000000000000000004` |
-| CDR | `0xcccccc0000000000000000000000000000000005` |
+| Contract | Address                                      |
+| -------- | -------------------------------------------- |
+| DKG      | `0xcccccc0000000000000000000000000000000004` |
+| CDR      | `0xcccccc0000000000000000000000000000000005` |
 
 These are pre-configured in the SDK -- you do not need to specify them manually.
 
@@ -245,11 +253,11 @@ These are pre-configured in the SDK -- you do not need to specify them manually.
 
 The SDK throws typed errors you can catch and handle:
 
-| Error Class | Code | When |
-| ----------- | ---- | ---- |
-| `WalletClientRequiredError` | `WALLET_CLIENT_REQUIRED` | Accessing `uploader` or `consumer` without a `walletClient` |
+| Error Class                     | Code                         | When                                                                       |
+| ------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `WalletClientRequiredError`     | `WALLET_CLIENT_REQUIRED`     | Accessing `uploader` or `consumer` without a `walletClient`                |
 | `PartialCollectionTimeoutError` | `PARTIAL_COLLECTION_TIMEOUT` | `collectPartials` or `accessCDR` times out waiting for validator responses |
-| `ContractRevertError` | `CONTRACT_REVERT` | On-chain transaction reverted |
+| `ContractRevertError`           | `CONTRACT_REVERT`            | On-chain transaction reverted                                              |
 
 All errors extend `CDRError`, which has a `code` property for programmatic handling:
 
@@ -265,58 +273,4 @@ try {
     console.error(`CDR error [${err.code}]: ${err.message}`);
   }
 }
-```
-
-## CLI
-
-The CDR SDK ships with a CLI tool for quick interactions.
-
-### Global Options
-
-```
---network <network>      Network: mainnet or testnet (default: testnet)
---rpc-url <url>          Override RPC endpoint
---private-key <hex>      Wallet private key (or CDR_PRIVATE_KEY env var)
---json                   Output in JSON format
-```
-
-### Commands
-
-```bash
-# Query vault details
-pnpm dev -- status vault <uuid> --network testnet
-
-# Query fees
-pnpm dev -- status fees --network mainnet --rpc-url https://mainnet.storyrpc.io
-
-# Allocate a new vault
-pnpm dev -- allocate --private-key 0x...
-
-# Write encrypted data to vault
-pnpm dev -- write --private-key 0x... --uuid 1
-
-# Request vault read
-pnpm dev -- read --private-key 0x... --uuid 1
-
-# Encrypt a data key
-pnpm dev -- encrypt
-
-# Decrypt partial decryptions
-pnpm dev -- decrypt
-```
-
-### Running Examples
-
-```bash
-# Query DKG state (no wallet needed)
-pnpm --filter @piplabs/cdr-examples query
-
-# Upload encrypted data
-CDR_PRIVATE_KEY=0x... WRITE_CONDITION=0x... READ_CONDITION=0x... pnpm --filter @piplabs/cdr-examples upload
-
-# Access and decrypt vault data
-CDR_PRIVATE_KEY=0x... VAULT_UUID=1 pnpm --filter @piplabs/cdr-examples access
-
-# Full end-to-end demo
-CDR_PRIVATE_KEY=0x... WRITE_CONDITION=0x... READ_CONDITION=0x... pnpm --filter @piplabs/cdr-examples e2e
 ```
