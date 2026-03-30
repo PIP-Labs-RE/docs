@@ -294,6 +294,16 @@
                     ]
                   },
                   {
+                    "group": "CDR SDK",
+                    "icon": "lock",
+                    "pages": [
+                      "developers/cdr-sdk/overview",
+                      "developers/cdr-sdk/setup",
+                      "developers/cdr-sdk/encrypt-and-decrypt",
+                      "developers/cdr-sdk/ip-asset-vaults"
+                    ]
+                  },
+                  {
                     "group": "Python",
                     "icon": "snake",
                     "pages": []
@@ -400,7 +410,7 @@
                     "pages": ["sdk-reference/overview"]
                   },
                   {
-                    "group": "SDK Reference",
+                    "group": "Protocol SDK",
                     "pages": [
                       "sdk-reference/ipasset",
                       "sdk-reference/ipaccount",
@@ -411,6 +421,16 @@
                       "sdk-reference/permissions",
                       "sdk-reference/nftclient",
                       "sdk-reference/wipclient"
+                    ]
+                  },
+                  {
+                    "group": "CDR SDK",
+                    "pages": [
+                      "sdk-reference/cdr/overview",
+                      "sdk-reference/cdr/observer",
+                      "sdk-reference/cdr/uploader",
+                      "sdk-reference/cdr/consumer",
+                      "sdk-reference/cdr/crypto"
                     ]
                   }
                 ]

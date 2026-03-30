@@ -1,0 +1,94 @@
+---
+title: CDR SDK Overview
+description: Learn how to integrate Confidential Data Recovery (CDR) into your application using the CDR SDK.
+---
+
+## What is CDR?
+
+**Confidential Data Recovery (CDR)** is a threshold encryption system built on Story L1 that allows you to encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts.
+
+CDR enables powerful use cases like:
+
+- **Secret sharing** - encrypt and share secrets that only specific wallets can decrypt
+- **Data marketplaces** - sell access to encrypted data with on-chain payment enforcement
+- **IP-gated content** - tie encrypted data to IP Assets and require license tokens to decrypt
+
+## How It Works
+
+CDR revolves around **vaults**. Each vault stores encrypted data and has two configurable access control conditions:
+
+- **Write Condition** - determines who can store encrypted data in the vault
+- **Read Condition** - determines who can request decryption of the vault's data
+
+<Note>
+  When a condition address matches the caller's address (e.g., your wallet is set as the read condition), CDR skips the condition check entirely. This is the simplest access control pattern.
+</Note>
+
+### Encryption Flow
+
+1. **Allocate** a vault on-chain with your desired read/write conditions
+2. **Fetch** the DKG global public key from the validator network
+3. **Encrypt** your data locally using TDH2 threshold encryption
+4. **Write** the encrypted ciphertext to the vault on-chain
+
+### Decryption Flow
+
+1. **Generate** an ephemeral keypair (used only for this decryption session)
+2. **Submit** a read request on-chain (validated against the read condition)
+3. **Collect** partial decryptions from validators (need a threshold number)
+4. **Combine** the partials client-side to recover the original data
+
+All encryption and decryption happens **client-side**. The CDR contract and validators never see your plaintext data.
+
+## Access Control Patterns
+
+### Wallet Address (Simple)
+
+Set your wallet address as the read/write condition. Only you can encrypt/decrypt.
+
+```typescript
+await uploader.allocate({
+  updatable: false,
+  writeConditionAddr: userAddress, // only you can write
+  readConditionAddr: userAddress, // only you can read
+  writeConditionData: "0x",
+  readConditionData: "0x",
+});
+```
+
+### License Token (IP-Gated)
+
+Register the vault as an IP Asset and require a license token to decrypt. The creator writes data, and anyone holding a license token can read it.
+
+```typescript
+// Create vault with IP Asset registration
+const { tokenId, uuid, ipId } = await cdrVaultNFT.createVault(licenseTermsId);
+
+// Mint license tokens to grant read access
+await cdrVaultNFT.mintLicenseTokens(tokenId, amount, receiverAddress);
+```
+
+### Custom Condition Contracts
+
+Deploy your own condition contract implementing `checkReadCondition` and `checkWriteCondition` for advanced access control like:
+
+- **Fixed fee** - pay a one-time fee to unlock read access
+- **Time-based** - access only during a specific time window
+- **Marketplace** - listing owner controls writes, purchasers can read
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup" icon="gear" href="/developers/cdr-sdk/setup">
+    Install dependencies and initialize the CDR client.
+  </Card>
+  <Card title="Encrypt & Decrypt" icon="lock" href="/developers/cdr-sdk/encrypt-and-decrypt">
+    Encrypt a secret and decrypt it with threshold decryption.
+  </Card>
+  <Card title="IP Asset Vaults" icon="certificate" href="/developers/cdr-sdk/ip-asset-vaults">
+    Create IP-gated vaults that require license tokens to decrypt.
+  </Card>
+  <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
+    Full API reference for every CDR SDK method.
+  </Card>
+</CardGroup>

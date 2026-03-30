@@ -1,0 +1,192 @@
+---
+title: Consumer
+description: Methods for requesting and performing CDR decryption.
+---
+
+## Consumer
+
+The `Consumer` sub-client handles read requests, partial decryption collection from validators, and final decryption. Requires a `walletClient`.
+
+```typescript
+const consumer = client.consumer;
+```
+
+### Methods
+
+- accessCDR
+- read
+- collectPartials
+- decryptDataKey
+
+---
+
+### accessCDR
+
+High-level method that submits a read request, collects partial decryptions from validators, and combines them to recover the original data.
+
+| Method | Type |
+| ------ | ---- |
+| `accessCDR` | `(params: AccessCDRParams) => Promise<AccessCDRResponse>` |
+
+Parameters:
+
+- `params.uuid`: `number` - The vault UUID
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
+- `params.requesterPubKey`: `` `0x${string}` `` - Uncompressed secp256k1 public key (65 bytes, `0x04` prefix)
+- `params.recipientPrivKey`: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials)
+- `params.globalPubKey`: `Uint8Array` - DKG global public key (from `observer.getGlobalPubKey()`)
+- `params.threshold`: `number` - Minimum partials needed (from `observer.getThreshold()`)
+- `params.timeoutMs` *(optional)*: `number` - Timeout for collecting partials (default: `60000`)
+- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+
+```typescript Example
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { toHex } from "viem";
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const threshold = await client.observer.getThreshold();
+
+// Generate ephemeral keypair
+const recipientPrivKey = secp256k1.utils.randomPrivateKey();
+const requesterPubKey = toHex(secp256k1.getPublicKey(recipientPrivKey, false));
+
+const { dataKey, txHash } = await client.consumer.accessCDR({
+  uuid: 42,
+  accessAuxData: "0x",
+  requesterPubKey,
+  recipientPrivKey,
+  globalPubKey,
+  threshold,
+  timeoutMs: 120_000,
+});
+
+const secret = new TextDecoder().decode(dataKey);
+console.log(`Decrypted: ${secret}`);
+```
+
+```typescript AccessCDRResponse
+interface AccessCDRResponse {
+  dataKey: Uint8Array; // the recovered plaintext
+  txHash: `0x${string}`; // read request transaction hash
+}
+```
+
+---
+
+### read
+
+Submits a read request on-chain. The caller must satisfy the vault's read condition. Emits an event that validators listen for to begin generating partial decryptions.
+
+| Method | Type |
+| ------ | ---- |
+| `read` | `(params: ReadParams) => Promise<ReadResponse>` |
+
+Parameters:
+
+- `params.uuid`: `number` - The vault UUID
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
+- `params.requesterPubKey`: `` `0x${string}` `` - Your ephemeral uncompressed secp256k1 public key
+- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+
+```typescript Example
+const { txHash } = await client.consumer.read({
+  uuid: 42,
+  accessAuxData: "0x",
+  requesterPubKey,
+});
+```
+
+```typescript ReadResponse
+interface ReadResponse {
+  txHash: `0x${string}`;
+}
+```
+
+---
+
+### collectPartials
+
+Polls the blockchain for `EncryptedPartialDecryptionSubmitted` events until enough partial decryptions have been collected.
+
+| Method | Type |
+| ------ | ---- |
+| `collectPartials` | `(params: CollectPartialsParams) => Promise<PartialDecryptionEvent[]>` |
+
+Parameters:
+
+- `params.uuid`: `number` - The vault UUID
+- `params.minPartials`: `number` - Number of partials needed (= threshold)
+- `params.fromBlock`: `bigint` - Block number where the read request was submitted
+- `params.timeoutMs` *(optional)*: `number` - Timeout in milliseconds (default: `60000`)
+- `params.pollIntervalMs` *(optional)*: `number` - Polling interval (default: `3000`)
+
+<Warning>
+  Throws `PartialCollectionTimeoutError` if the timeout is reached before enough partials are collected.
+</Warning>
+
+```typescript Example
+const receipt = await publicClient.getTransactionReceipt({ hash: readTxHash });
+
+const partials = await client.consumer.collectPartials({
+  uuid: 42,
+  minPartials: threshold,
+  fromBlock: receipt.blockNumber,
+  timeoutMs: 120_000,
+});
+
+console.log(`Collected ${partials.length} partials`);
+```
+
+```typescript PartialDecryptionEvent
+interface PartialDecryptionEvent {
+  validator: `0x${string}`;
+  round: number;
+  pid: number;                      // 1-based participant index
+  encryptedPartial: `0x${string}`;  // AES-GCM encrypted
+  ephemeralPubKey: `0x${string}`;   // 65 bytes, uncompressed secp256k1
+  pubShare: `0x${string}`;          // 34 bytes, Ed25519 with prefix
+  requesterPubKey: `0x${string}`;
+  uuid: number;
+  signature: `0x${string}`;
+}
+```
+
+---
+
+### decryptDataKey
+
+Decrypts the collected partial decryptions using ECIES, then combines them via TDH2 to recover the original plaintext.
+
+| Method | Type |
+| ------ | ---- |
+| `decryptDataKey` | `(params: DecryptParams) => Promise<Uint8Array>` |
+
+Parameters:
+
+- `params.ciphertext`: `TDH2Ciphertext` - The encrypted data (`{ raw, label }`)
+- `params.partials`: `PartialDecryptionEvent[]` - Collected partial decryptions
+- `params.recipientPrivKey`: `Uint8Array` - Your ephemeral secp256k1 private key (32 bytes)
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.label`: `Uint8Array` - 32-byte label (from `uuidToLabel(uuid)`)
+- `params.threshold`: `number` - Minimum partials needed
+
+<Warning>
+  Throws `InsufficientPartialsError` if `partials.length < threshold`.
+  Throws `InvalidCiphertextError` if the ciphertext is empty or malformed.
+</Warning>
+
+```typescript Example
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+const label = uuidToLabel(uuid);
+const dataKey = await client.consumer.decryptDataKey({
+  ciphertext: { raw: ciphertextBytes, label },
+  partials,
+  recipientPrivKey,
+  globalPubKey,
+  label,
+  threshold,
+});
+
+const secret = new TextDecoder().decode(dataKey);
+```

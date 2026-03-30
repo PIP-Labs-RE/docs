@@ -1,0 +1,56 @@
+---
+title: "CDR SDK Reference Overview"
+description: "A detailed description of every function in the CDR SDK"
+---
+
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for interacting with Story's Confidential Data Recovery system. It handles threshold encryption, vault management, and on-chain access control.
+
+| Package | Compatibility | Package |
+| ------- | ------------- | ------- |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="check" iconType="solid" /> Full | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) |
+
+---
+
+<Card title="Step-by-Step Guide" icon="house" href="/developers/cdr-sdk">
+  Learn CDR through a series of tutorials with the CDR SDK Integration Guide.
+</Card>
+
+## CDRClient
+
+The main entry point. Provides access to three sub-clients:
+
+```typescript
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+const client = new CDRClient({
+  network: "testnet", // or "mainnet"
+  publicClient,       // viem PublicClient
+  walletClient,       // optional viem WalletClient
+});
+
+client.observer;  // read-only queries
+client.uploader;  // encryption & vault allocation
+client.consumer;  // decryption & read requests
+```
+
+## Sub-Clients
+
+<CardGroup cols={3}>
+  <Card title="Observer" icon="eye" href="/sdk-reference/cdr/observer">
+    Read-only queries for vault data, fees, and DKG state.
+  </Card>
+  <Card title="Uploader" icon="lock" href="/sdk-reference/cdr/uploader">
+    Encrypt data and write it to CDR vaults.
+  </Card>
+  <Card title="Consumer" icon="lock-open" href="/sdk-reference/cdr/consumer">
+    Request decryption and recover encrypted data.
+  </Card>
+</CardGroup>
+
+## Crypto Utilities
+
+<CardGroup cols={2}>
+  <Card title="Crypto" icon="key" href="/sdk-reference/cdr/crypto">
+    Low-level TDH2 and ECIES cryptographic primitives.
+  </Card>
+</CardGroup>

@@ -1,0 +1,248 @@
+---
+title: IP Asset Vaults
+description: Learn how to create CDR vaults backed by IP Assets that require license tokens to decrypt.
+---
+
+CDR vaults can be gated behind Story Protocol license tokens, so that only license holders can decrypt the vault's contents. This is not a built-in CDR SDK feature — it's an on-chain access control pattern built on top of CDR's condition system.
+
+### Prerequisites
+
+- [CDR SDK setup](/developers/cdr-sdk/setup) complete
+- Familiarity with [IP Assets](/concepts/ip-asset) and [License Tokens](/concepts/licensing-module/license-token)
+
+## How Access Control Works in CDR
+
+Every CDR vault has a `readConditionAddr` and `readConditionData` set at allocation time. When someone calls `read()` on a vault, the CDR contract calls the condition contract to check if the caller is allowed.
+
+For a **simple wallet-gated vault**, your wallet address is the condition — CDR sees the caller matches and skips any check:
+
+```typescript
+await client.uploader.allocate({
+  readConditionAddr: myWalletAddress, // only this wallet can read
+  readConditionData: "0x",
+  // ...
+});
+```
+
+For a **license-gated vault**, you point the condition at a contract that checks license token ownership. The CDR SDK doesn't know or care about licenses — it just passes through whatever condition address and data you provide.
+
+## The License Read Condition
+
+Story Protocol provides a system contract (`LICENSE_READ_CONDITION`) that implements the CDR condition interface. When called, it checks whether the caller holds any license token NFTs for a given IP Asset.
+
+The condition is configured with `readConditionData` encoding two values:
+
+- The `LICENSE_TOKEN` contract address (Story Protocol's license token ERC721)
+- The `ipId` of the IP Asset the vault is tied to
+
+```solidity
+// What the condition receives and checks:
+bytes memory readCondData = abi.encode(LICENSE_TOKEN, ipId);
+// → Does the caller own a license token from LICENSE_TOKEN for this ipId?
+```
+
+| Contract | Address |
+| -------- | ------- |
+| LICENSE_READ_CONDITION | `0xD42912755319665397FF090fBB63B1a31aE87Cee` |
+| LICENSE_TOKEN | `0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC` |
+
+## CDRVaultNFT Contract
+
+Because setting up a license-gated vault requires multiple steps, the demo uses a `CDRVaultNFT` helper contract that does it all atomically in a single transaction.
+
+`createVault(licenseTermsId)` performs these steps:
+
+1. **Mints an ERC721 token to the contract itself** — the contract is the NFT owner, which makes it the IP owner. This is intentional: it allows the contract to call `LicensingModule.mintLicenseTokens()` on behalf of creators without complex permission setup.
+2. **Registers the NFT as an IP Asset** via `IPAssetRegistry` — returns an `ipId`.
+3. **Allocates a CDR vault** with:
+   - Write condition: `VaultWriteCondition` (only the creator can write)
+   - Read condition: `LICENSE_READ_CONDITION` with `abi.encode(LICENSE_TOKEN, ipId)`
+4. **Registers the caller as the vault creator** in the write condition contract.
+5. **Attaches PIL license terms** to the IP Asset. Pass `0` to use the default terms (non-commercial, transferable). Pass a specific terms ID to use custom terms.
+
+```solidity
+// Inside CDRVaultNFT.createVault():
+bytes memory readCondData = abi.encode(LICENSE_TOKEN, ipId);
+uuid = CDR_CONTRACT.allocate{value: msg.value}(
+    false,                    // not updatable
+    address(WRITE_CONDITION), // creator-gated writes
+    LICENSE_READ_CONDITION,   // license-gated reads
+    bytes(""),                // no extra write condition data
+    readCondData              // LICENSE_TOKEN + ipId
+);
+```
+
+<Warning>
+  `createVault` does **not** mint any license tokens. After creating the vault, the creator must call `mintLicenseTokens()` separately to grant read access. Until license tokens are minted and distributed, **nobody can decrypt the vault** — not even the creator — because the read condition checks for license token ownership, and none exist yet.
+</Warning>
+
+### Who is the IP owner?
+
+The **contract** owns the NFT and is therefore the IP owner — not the caller. The caller is tracked as the "creator" in a separate mapping (`tokenCreator`), which gates who can write to the vault and who can mint license tokens. This design lets the contract call Story Protocol's licensing functions on the creator's behalf.
+
+### What license terms are attached?
+
+- **Default (pass `0`)**: Non-commercial, transferable. All other PIL fields are zeroed out (no royalty policy, no minting fee, no commercial use, no derivatives).
+- **Custom**: Pass a `licenseTermsId` that was previously registered with the `PILicenseTemplate` contract.
+
+## Create an IP-Gated Vault
+
+```typescript
+import { getContract } from "viem";
+import { cdrVaultNFTAbi } from "./abis";
+
+const cdrVaultNFT = getContract({
+  address: CDR_VAULT_NFT_ADDRESS,
+  abi: cdrVaultNFTAbi,
+  client: { public: publicClient, wallet: walletClient },
+});
+
+// Get the required allocation fee
+const allocateFee = await client.observer.getAllocateFee();
+
+// Create the vault (mints NFT + registers IP + allocates CDR vault + attaches license)
+const tx = await cdrVaultNFT.write.createVault(
+  [0], // licenseTermsId (0 = default non-commercial terms)
+  { value: allocateFee }
+);
+
+const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+// Parse events to get tokenId, uuid, and ipId
+```
+
+The `createVault` function returns:
+
+| Value | Type | Description |
+| ----- | ---- | ----------- |
+| `tokenId` | `uint256` | The minted NFT token ID |
+| `uuid` | `uint32` | The CDR vault UUID |
+| `ipId` | `address` | The registered IP Asset address |
+
+## Write Encrypted Data
+
+After creating the vault, the creator encrypts and writes data to it. The write condition is creator-gated via `VaultWriteCondition`, so only the original creator can store data.
+
+```typescript
+const globalPubKey = await client.observer.getGlobalPubKey();
+const label = uuidToLabel(uuid);
+
+// Encrypt the data
+const dataKey = new TextEncoder().encode("confidential IP content");
+const ciphertext = await client.uploader.encryptDataKey({
+  dataKey,
+  globalPubKey,
+  label,
+});
+
+// Write to the vault
+await client.uploader.write({
+  uuid,
+  accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
+});
+```
+
+## Mint License Tokens
+
+The vault creator mints license tokens to grant read access to others:
+
+```typescript
+const tx = await cdrVaultNFT.write.mintLicenseTokens([
+  tokenId, // the NFT token ID from createVault
+  10, // number of license tokens to mint
+  receiverAddress, // who receives the license tokens
+]);
+```
+
+Each recipient holding a license token can now decrypt the vault's contents. The `LICENSE_READ_CONDITION` contract will check their balance when they submit a `read()` request.
+
+## Decrypt with a License Token
+
+A user who holds a license token for the vault's IP Asset can decrypt. The decryption flow is identical to any other vault — the license check happens on-chain when `read()` is called, before validators begin generating partials.
+
+```typescript
+import { secp256k1 } from "@noble/curves/secp256k1";
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const threshold = await client.observer.getThreshold();
+
+// Generate ephemeral keypair for this decryption session
+const privKey = secp256k1.utils.randomPrivateKey();
+const pubKey = secp256k1.getPublicKey(privKey, false);
+
+// Fetch vault data
+const vault = await client.observer.getVault(uuid);
+const encryptedData = toBytes(vault.encryptedData);
+const label = uuidToLabel(uuid);
+
+// Submit read request — reverts if caller doesn't hold a license token
+const fromBlock = await publicClient.getBlockNumber();
+await client.consumer.read({
+  uuid,
+  accessAuxData: "0x",
+  requesterPubKey: toHex(pubKey),
+});
+
+// Collect partial decryptions from validators
+const partials = await client.consumer.collectPartials({
+  uuid,
+  minPartials: threshold,
+  fromBlock,
+  timeoutMs: 120_000,
+});
+
+// Decrypt each partial and combine
+const decryptedPartials = await Promise.all(
+  partials.map(async (p) => {
+    const decrypted = await eciesDecrypt({
+      encryptedPartial: toBytes(p.encryptedPartial),
+      ephemeralPubKey: toBytes(p.ephemeralPubKey),
+      recipientPrivKey: privKey,
+    });
+    return {
+      pid: p.pid,
+      pubShare: toBytes(p.pubShare),
+      partial: decrypted,
+    };
+  })
+);
+
+const dataKey = await tdh2Combine({
+  ciphertext: { raw: encryptedData, label },
+  partials: decryptedPartials,
+  globalPubKey,
+  label,
+  threshold,
+});
+
+const content = new TextDecoder().decode(dataKey);
+console.log(`Decrypted IP content: ${content}`);
+```
+
+<Warning>
+  If the caller does not hold a valid license token for the vault's IP Asset, the `read()` transaction will revert on-chain. Validators will never generate partials for an unauthorized read request.
+</Warning>
+
+## Custom Condition Contracts
+
+License gating is just one pattern. You can deploy your own condition contract for any access control logic by implementing this interface:
+
+```solidity
+interface ICDRCondition {
+    function checkWriteCondition(
+        uint32 uuid,
+        bytes calldata accessAuxData,
+        bytes calldata conditionData,
+        address caller
+    ) external view returns (bool);
+
+    function checkReadCondition(
+        uint32 uuid,
+        bytes calldata accessAuxData,
+        bytes calldata conditionData,
+        address caller
+    ) external view returns (bool);
+}
+```
+
+The CDR contract calls these functions before allowing a `write()` or `read()` operation. Return `true` to allow, `false` to deny. Then pass your contract's address as `readConditionAddr` or `writeConditionAddr` when allocating a vault.

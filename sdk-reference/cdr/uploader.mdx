@@ -1,0 +1,181 @@
+---
+title: Uploader
+description: Methods for encrypting data and writing it to CDR vaults.
+---
+
+## Uploader
+
+The `Uploader` sub-client handles vault allocation, TDH2 encryption, and writing encrypted data on-chain. Requires a `walletClient`.
+
+```typescript
+const uploader = client.uploader;
+```
+
+### Methods
+
+- uploadCDR
+- allocate
+- write
+- encryptDataKey
+
+---
+
+### uploadCDR
+
+High-level method that allocates a vault, encrypts your data, and writes the ciphertext in a single call.
+
+| Method | Type |
+| ------ | ---- |
+| `uploadCDR` | `(params: UploadCDRParams) => Promise<UploadCDRResponse>` |
+
+Parameters:
+
+- `params.dataKey`: `Uint8Array` - The secret data to encrypt (arbitrary bytes, up to 32 bytes for a key)
+- `params.globalPubKey`: `Uint8Array` - The DKG global public key (from `observer.getGlobalPubKey()`)
+- `params.updatable`: `boolean` - Whether the vault can be rewritten after initial write
+- `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract (or wallet address for simple access)
+- `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract (or wallet address for simple access)
+- `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded data passed to the write condition
+- `params.readConditionData`: `` `0x${string}` `` - ABI-encoded data passed to the read condition
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to conditions during write
+- `params.allocateFeeOverride` *(optional)*: `bigint` - Skip fee query and use this value
+- `params.writeFeeOverride` *(optional)*: `bigint` - Skip fee query and use this value
+
+```typescript Example
+const globalPubKey = await client.observer.getGlobalPubKey();
+const dataKey = new TextEncoder().encode("my secret");
+
+const { uuid, ciphertext, txHashes } = await client.uploader.uploadCDR({
+  dataKey,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  accessAuxData: "0x",
+});
+
+console.log(`Vault UUID: ${uuid}`);
+console.log(`Allocate tx: ${txHashes.allocate}`);
+console.log(`Write tx: ${txHashes.write}`);
+```
+
+```typescript UploadCDRResponse
+interface UploadCDRResponse {
+  uuid: number;
+  ciphertext: TDH2Ciphertext;
+  txHashes: {
+    allocate: `0x${string}`;
+    write: `0x${string}`;
+  };
+}
+```
+
+---
+
+### allocate
+
+Creates a new CDR vault on-chain with the specified access control conditions.
+
+| Method | Type |
+| ------ | ---- |
+| `allocate` | `(params: AllocateParams) => Promise<AllocateResponse>` |
+
+Parameters:
+
+- `params.updatable`: `boolean` - Whether the vault can be rewritten
+- `params.writeConditionAddr`: `` `0x${string}` `` - Write condition contract address
+- `params.readConditionAddr`: `` `0x${string}` `` - Read condition contract address
+- `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded write condition data
+- `params.readConditionData`: `` `0x${string}` `` - ABI-encoded read condition data
+- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+
+```typescript Example
+const { txHash, uuid } = await client.uploader.allocate({
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+});
+
+console.log(`Vault ${uuid} allocated at tx: ${txHash}`);
+```
+
+```typescript AllocateResponse
+interface AllocateResponse {
+  txHash: `0x${string}`;
+  uuid: number; // parsed from VaultAllocated event
+}
+```
+
+---
+
+### write
+
+Writes encrypted data to an existing vault. The caller must satisfy the vault's write condition.
+
+| Method | Type |
+| ------ | ---- |
+| `write` | `(params: WriteParams) => Promise<WriteResponse>` |
+
+Parameters:
+
+- `params.uuid`: `number` - The vault UUID
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the write condition
+- `params.encryptedData`: `` `0x${string}` `` - Hex-encoded TDH2 ciphertext
+- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+
+```typescript Example
+import { toHex } from "viem";
+
+const { txHash } = await client.uploader.write({
+  uuid: 42,
+  accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
+});
+```
+
+```typescript WriteResponse
+interface WriteResponse {
+  txHash: `0x${string}`;
+}
+```
+
+---
+
+### encryptDataKey
+
+Locally encrypts data using TDH2 threshold encryption. No blockchain interaction.
+
+| Method | Type |
+| ------ | ---- |
+| `encryptDataKey` | `(params: EncryptParams) => Promise<TDH2Ciphertext>` |
+
+Parameters:
+
+- `params.dataKey`: `Uint8Array` - The plaintext data to encrypt
+- `params.globalPubKey`: `Uint8Array` - DKG global public key (34 bytes)
+- `params.label`: `Uint8Array` - 32-byte label binding ciphertext to a vault (use `uuidToLabel(uuid)`)
+
+```typescript Example
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+const label = uuidToLabel(uuid);
+const ciphertext = await client.uploader.encryptDataKey({
+  dataKey: new TextEncoder().encode("secret"),
+  globalPubKey,
+  label,
+});
+
+console.log(ciphertext.raw); // Uint8Array - serialized TDH2 ciphertext
+console.log(ciphertext.label); // Uint8Array - the label used
+```
+
+```typescript TDH2Ciphertext
+interface TDH2Ciphertext {
+  raw: Uint8Array;   // serialized ciphertext (cb-mpc format)
+  label: Uint8Array; // 32-byte context binding
+}
+```
