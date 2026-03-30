@@ -166,7 +166,7 @@ You can query DKG state and fees without a wallet or WASM initialization:
 import { createPublicClient, http } from "viem";
 import { CDRClient } from "@piplabs/cdr-sdk";
 
-const publicClient = createPublicClient({ transport: http("https://odyssey.storyrpc.io") });
+const publicClient = createPublicClient({ transport: http("https://aeneid.storyrpc.io") });
 const client = new CDRClient({ network: "testnet", publicClient });
 
 const threshold = await client.observer.getOperationalThreshold();

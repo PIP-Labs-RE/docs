@@ -54,7 +54,69 @@ The `CDRClient` provides three sub-clients:
 - **`uploader`** - Encryption and vault allocation. Requires a `walletClient`.
 - **`consumer`** - Decryption and read requests. Requires a `walletClient`.
 
-### With Private Key
+### In React (Wallet Connector)
+
+In a React app, you typically get the wallet from a connector like Privy, RainbowKit, or wagmi. Create a read-only `CDRClient` up front, and build a write-capable client on demand from the wallet's provider.
+
+```typescript hooks/use-cdr-client.ts
+import { useMemo } from "react";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+// Example using Privy — adapt for your wallet connector
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+
+export function useCDRClient() {
+  const { authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const wallet = wallets[0];
+
+  // Read-only client — always available
+  const publicClient = useMemo(
+    () => createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
+    [],
+  );
+
+  const client = useMemo(
+    () => new CDRClient({ network: "testnet", publicClient }),
+    [publicClient],
+  );
+
+  // Write client — created on demand from the wallet's provider
+  const getWriteClient = async () => {
+    if (!wallet) throw new Error("No wallet connected");
+    const provider = await wallet.getEthereumProvider();
+    const walletClient = createWalletClient({
+      transport: custom(provider),
+      account: wallet.address as `0x${string}`,
+    });
+    return new CDRClient({
+      network: "testnet",
+      publicClient,
+      walletClient,
+    });
+  };
+
+  return { client, publicClient, getWriteClient, address: wallet?.address };
+}
+```
+
+Then in your components:
+
+```typescript
+const { client, getWriteClient } = useCDRClient();
+
+// Read-only operations work immediately
+const vault = await client.observer.getVault(42);
+
+// Write operations — get a write client first
+const writeClient = await getWriteClient();
+await writeClient.uploader.write({ uuid, accessAuxData: "0x", encryptedData });
+```
+
+### With Private Key (Backend / Scripts)
+
+For server-side code, scripts, or CLI tools, you can use a private key directly:
 
 ```typescript
 import { createPublicClient, createWalletClient, http } from "viem";
@@ -104,19 +166,19 @@ const allocateFee = await client.observer.getAllocateFee();
 
 | Network | `network` param | Default RPC URL | Description |
 | ------- | --------------- | --------------- | ----------- |
-| Testnet | `"testnet"` | `https://odyssey.storyrpc.io` | Public testnet for development |
-| Mainnet | `"mainnet"` | `https://rpc.story.foundation` | Production network |
+| Testnet | `"testnet"` | `https://aeneid.storyrpc.io` | Public testnet for development |
+| Mainnet | `"mainnet"` | `https://mainnet.storyrpc.io` | Production network |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
-  transport: http("https://odyssey.storyrpc.io"),
+  transport: http("https://aeneid.storyrpc.io"),
 });
 const client = new CDRClient({ network: "testnet", publicClient });
 ```
 
 ```typescript Mainnet
 const publicClient = createPublicClient({
-  transport: http("https://rpc.story.foundation"),
+  transport: http("https://mainnet.storyrpc.io"),
 });
 const client = new CDRClient({ network: "mainnet", publicClient });
 ```
@@ -147,7 +209,7 @@ const client = new CDRClient({ network: "testnet", publicClient, walletClient })
 A common pattern is to configure the network via environment variables:
 
 ```typescript config.ts
-const RPC_URL = process.env.RPC_URL ?? "https://odyssey.storyrpc.io";
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
 const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet" | "mainnet";
 
 const publicClient = createPublicClient({ transport: http(RPC_URL) });
@@ -156,11 +218,11 @@ const client = new CDRClient({ network: NETWORK, publicClient });
 
 ```bash .env
 # Testnet (default)
-RPC_URL=https://odyssey.storyrpc.io
+RPC_URL=https://aeneid.storyrpc.io
 NETWORK=testnet
 
 # Mainnet
-RPC_URL=https://rpc.story.foundation
+RPC_URL=https://mainnet.storyrpc.io
 NETWORK=mainnet
 
 # Custom devnet
@@ -225,7 +287,7 @@ The CDR SDK ships with a CLI tool for quick interactions.
 pnpm dev -- status vault <uuid> --network testnet
 
 # Query fees
-pnpm dev -- status fees --network mainnet --rpc-url https://rpc.story.foundation
+pnpm dev -- status fees --network mainnet --rpc-url https://mainnet.storyrpc.io
 
 # Allocate a new vault
 pnpm dev -- allocate --private-key 0x...
