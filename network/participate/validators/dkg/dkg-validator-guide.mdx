@@ -1,0 +1,364 @@
+---
+title: DKG Validator Guide
+description: Guide to setting up and running story-kernel for DKG committee participation
+---
+
+<Warning>
+DKG is currently only available on the **Aeneid testnet**. Mainnet support will follow in a future release.
+</Warning>
+
+## Overview
+
+Starting from the v1.6.0 upgrade, validators can participate in the DKG (Distributed Key Generation) committee. Participation requires running [**story-kernel**](https://github.com/piplabs/story-kernel) — a TEE client that executes inside an Intel SGX enclave alongside your validator node.
+
+DKG participation is **optional**. You can continue running a validator without joining the DKG committee by keeping `dkg.enable = false` in your `story.toml`.
+
+**What to know before joining:**
+- **SGX hardware required** — your machine must have Intel SGX support
+- **Self-undelegation is blocked** while you are an active DKG committee member. You cannot unstake your own delegation until the current DKG round ends (~7 days with production parameters). Other delegators are not affected.
+- If your kernel goes down, you miss the current round but **automatically rejoin** on the next one. Your validator continues producing blocks normally.
+
+## Hardware Requirements
+
+story-kernel runs inside an SGX enclave that requires dedicated Enclave Page Cache (EPC) memory. The Gramine manifest configures a **4 GB enclave** for the Go runtime and DKG cryptographic operations.
+
+| Resource | Minimum | Recommended | Notes |
+| --- | --- | --- | --- |
+| CPU | 2 cores, Intel SGX | 4+ cores | Xeon Platinum 8370C (Ice Lake-SP) or newer |
+| RAM | 8 GB | 16 GB | Enclave uses 4 GB EPC; host needs the rest for story + geth |
+| EPC Memory | 4 GB | 8 GB | Must be ≥ enclave_size (4 GB) |
+| Disk | 50 GB | 128 GB+ | Kernel data is small (~100 MB) |
+
+**Supported cloud instances (Azure):**
+
+| Instance Type | vCPUs | RAM | EPC | Notes |
+| --- | --- | --- | --- | --- |
+| Standard_DC1s_v3 | 1 | 8 GB | 4 GB | Meets minimum EPC but tight on RAM |
+| Standard_DC2s_v3 | 2 | 16 GB | 8 GB | Minimum recommended |
+| Standard_DC4s_v3 | 4 | 32 GB | 16 GB | Recommended |
+| Standard_DC8s_v3 | 8 | 64 GB | 32 GB | High-load validators |
+| Standard_DC16s_v3+ | 16+ | 128+ GB | 64+ GB | Up to DC48s_v3 (48 vCPUs, 384 GB, 256 GB EPC) |
+
+**Bare metal** is also supported — any Intel server with SGX enabled in BIOS. Check EPC size with `dmesg | grep "sgx: EPC section"`.
+AMD SEV-SNP instances (e.g., Azure DCasv5) and ARM instances are **not supported** at the moment.
+
+## Software Requirements
+
+All validators **must** use the exact same versions below to produce identical MRENCLAVE (code commitment) values.
+
+| Component | Required Version | Why |
+| --- | --- | --- |
+| Ubuntu | 24.04 LTS | Library paths are measured into MRENCLAVE |
+| Go | 1.24.0 | Different versions produce different binaries |
+| Gramine | 1.9 | Must be installed via apt, not built from source |
+
+---
+
+## Setup Guide
+
+### Step 1: Verify SGX Support
+
+```bash
+ls /dev/sgx_enclave && echo "SGX available" || echo "SGX NOT available"
+```
+
+If `/dev/sgx_enclave` does not exist, SGX is not supported or not enabled in BIOS/cloud settings.
+
+### Step 2: Install Dependencies
+
+#### Intel SGX SDK and DCAP
+
+```bash
+sudo mkdir -p /etc/apt/keyrings
+wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key \
+  | sudo tee /etc/apt/keyrings/intel-sgx-keyring.asc > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/intel-sgx-keyring.asc arch=amd64]\
+  https://download.01.org/intel-sgx/sgx_repo/ubuntu noble main" \
+  | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+
+sudo apt update
+sudo apt install -y build-essential cmake libssl-dev \
+  libsgx-dcap-default-qpl libsgx-enclave-common libsgx-quote-ex
+```
+
+#### Configure PCCS
+
+Edit `/etc/sgx_default_qcnl.conf`:
+
+```json
+{
+  "pccs_url": "https://global.acccache.azure.net/sgx/certification/v4/",
+  "collateral_service": "https://global.acccache.azure.net/sgx/certification/v4/"
+}
+```
+
+#### Install Gramine 1.9
+
+```bash
+sudo curl -fsSLo /usr/share/keyrings/gramine-keyring.gpg \
+  https://packages.gramineproject.io/gramine-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/gramine-keyring.gpg]\
+  https://packages.gramineproject.io/ noble main" \
+  | sudo tee /etc/apt/sources.list.d/gramine.list
+
+sudo apt update
+sudo apt install -y gramine=1.9
+```
+
+### Step 3: Build story-kernel
+
+```bash
+git clone https://github.com/piplabs/story-kernel.git
+cd story-kernel
+git checkout <release-tag>    # use the tag from the upgrade announcement
+
+make setup-cbmpc              # first time only
+make build-with-cpp
+make all-gramine
+```
+
+Note the **MRENCLAVE** value from the output:
+
+```
+Code Commitment:     mr_enclave: <64-char hex>
+```
+
+All validators must produce the **same MRENCLAVE**. If yours differs, verify you are on the exact same commit, OS version, Go version, and Gramine version.
+
+### Step 4: Set Up Data Directory
+
+```bash
+sudo mkdir -p /opt/story-kernel
+sudo chown $USER:$USER /opt/story-kernel
+```
+
+### Step 5: Initialize and Configure
+
+#### Initialize
+
+```bash
+gramine-sgx story-kernel init --home /opt/story-kernel
+```
+
+#### Configure
+
+Edit `/opt/story-kernel/config.toml`:
+
+```toml
+log-level = "info"
+
+[grpc]
+listen_addr = ":50051"
+
+[light_client]
+chain_id = "devnet-1"
+rpc_addr = "http://localhost:26657"
+primary_addr = "http://localhost:26657"
+witness_addrs = ["http://<other_validator_1>:26657", "http://<other_validator_2>:26657"]
+trusted_height = <recent_block_height>
+trusted_hash = "<recent_block_hash>"
+```
+
+The **trusted block must be within the last 2 weeks**. The light client uses a trust period — if the trusted block is older, header verification will fail.
+
+Get a recent trusted block:
+
+```bash
+curl -s 'http://localhost:26657/block' | python3 -c "
+import json, sys
+r = json.load(sys.stdin)['result']
+print(f'trusted_height = {r[\"block\"][\"header\"][\"height\"]}')
+print(f'trusted_hash =\"{r[\"block_id\"][\"hash\"]}\"')
+"
+```
+
+| Field | Description |
+| --- | --- |
+| `chain_id` | CL chain ID: `devnet-1` for Aeneid |
+| `witness_addrs` | At least 2 CometBFT RPC endpoints for light client cross-validation. The same address can be repeated (e.g., `["http://x:26657", "http://x:26657"]`), but using 2 different validators is recommended for better security. Use internal/private IPs if on the same network. |
+
+### Step 6: Configure Story Client
+
+Apply the following changes to `~/.story/story/config/story.toml`:
+
+#### Add `engine-chain-id` (if not present)
+
+```toml
+engine-chain-id = 1315 # for Aeneid
+```
+
+#### Add DKG Options section
+
+```toml
+#######################################################################
+###                         DKG Options                             ###
+#######################################################################
+
+[dkg]
+# Enable defines if the DKG client is enabled or not.
+enable = true
+
+# Comma-separated list of story-kernel (TEE) endpoints.
+kernel-endpoints = ["127.0.0.1:50051"]
+
+# The RPC endpoint of execution layer.
+engine-rpc-endpoint = "http://127.0.0.1:8545"
+
+# TEE enclave type identifier (1 for SGX).
+enc-type = 1
+
+# TLS configuration for kernel gRPC connections (optional).
+#kernel-tls-ca-file = "/path/to/ca.crt"
+#kernel-tls-cert-file = "/path/to/client.crt"
+#kernel-tls-key-file = "/path/to/client.key"
+```
+
+### Step 7: Start Services
+
+**Start order matters.** Start story-kernel AFTER the chain is running — the kernel needs CometBFT RPC (port 26657) for light client initialization.
+
+#### Start story-kernel
+
+```bash
+sudo tee /etc/systemd/system/story-kernel.service > /dev/null <<EOF
+[Unit]
+Description=Story DKG TEE Service
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=$HOME/story-kernel
+ExecStart=/usr/bin/gramine-sgx story-kernel
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable story-kernel
+sudo systemctl start story-kernel
+```
+
+SGX enclave loading takes **1-3 minutes**. The process may appear stuck at "Parsing TOML manifest file" — this is normal.
+
+#### Restart Story
+
+```bash
+sudo systemctl restart story
+```
+
+### Step 8: Verify
+
+#### Kernel running
+
+```bash
+sudo lsof -i :50051 | grep LISTEN
+journalctl -u story-kernel --no-pager -n 20
+# Look for: "gRPC server is started: :50051"
+```
+
+#### Story connected to kernel
+
+```bash
+journalctl -u story --no-pager -n 100 | grep "Connected to kernel"
+# Expected: Connected to kernel endpoint  endpoint=127.0.0.1:50051 code_commitment=<mrenclave>
+```
+
+#### DKG registration
+
+```bash
+journalctl -u story --no-pager | grep "DKG_REG_STATUS_VERIFIED"
+```
+
+---
+
+## Troubleshooting
+
+### Kernel won't start
+
+| Error | Fix |
+| --- | --- |
+| `/dev/sgx_enclave: No such file` | Enable SGX in BIOS or use an SGX-capable VM |
+| Stuck at "Parsing TOML manifest file" | Normal — wait 1-3 minutes |
+| `config not found` | Ensure config exists at `/opt/story-kernel/config.toml` |
+| `height requested is too high` | Delete `/opt/story-kernel/light_client/` and restart with a fresh trusted block |
+| `at least 2 witness addresses required` | Add at least 2 entries to `witness_addrs` in config |
+
+### DKG registration fails
+
+| Error | Fix |
+| --- | --- |
+| `no kernel client for code commitment` | Check story logs for `Connected to kernel`; verify MRENCLAVE matches on-chain whitelist |
+| `execution reverted` | DCAP attestation failed — check SGX setup and PCCS config |
+| `Failed to generate the sealed key` | Check kernel logs for details |
+
+### Light client issues
+
+```bash
+sudo systemctl stop story-kernel
+rm -rf /opt/story-kernel/light_client/
+# Update trusted_height and trusted_hash in config.toml
+sudo systemctl start story-kernel
+```
+
+---
+
+## Important Notes
+
+### Self-undelegation restriction
+
+While your validator is a **finalized member of the active DKG round**, self-undelegation is blocked. This prevents committee members from leaving mid-round, which could compromise threshold cryptography.
+
+- Only **self-undelegation** is blocked — other delegators can unstake normally
+- The restriction lifts when the current round ends
+- A full DKG round with production parameters takes approximately **7 days**
+
+### Running kernel on a separate machine
+
+story-kernel can run on a dedicated SGX machine. Update `kernel-endpoints` in `story.toml`:
+
+```toml
+kernel-endpoints = ["<sgx-machine-ip>:50051"]
+```
+
+The SGX machine needs network access to your CometBFT RPC (port 26657).
+
+---
+
+## Additional Information
+
+### Build Environment
+
+| Component | Version |
+| --- | --- |
+| Ubuntu | 24.04.4 LTS |
+| Go | 1.24.0 |
+| Gramine | 1.9 (apt) |
+| gramine-ratls-dcap | 1.9 |
+| story-kernel | 0.1.0 (tag) |
+| cb-mpc | v0.0.1-alpha |
+
+### Enclave Measurement
+
+```
+MRENCLAVE:   6b2fb25e0084ad6ecbf6cfcefe09e2fa0fca2b84092f72c01f8fe98e9d7db5cd
+Binary hash: 320a744e87426e36de63ebc8c7ff3af23e00ac7b29ad6093acdafd0bb029ca36
+```
+
+---
+
+## FAQ
+
+**Do I need SGX to run a validator?**
+No. SGX is only needed for DKG committee participation. Set `dkg.enable = false` to run without it.
+
+**What happens if my kernel goes down?**
+Your validator continues producing blocks. You miss the current DKG round but automatically rejoin on the next one.
+
+**What is MRENCLAVE?**
+A cryptographic hash of the SGX enclave contents. All validators must produce the same value to participate in the same DKG committee.
+
+**Can I opt out after joining?**
+Yes. Set `dkg.enable = false` and restart story. You stop participating after the current round ends.

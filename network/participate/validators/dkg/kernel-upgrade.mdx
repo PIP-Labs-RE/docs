@@ -1,0 +1,160 @@
+---
+title: Kernel Upgrade
+description: Guide to upgrading the story-kernel binary on DKG committee validators
+---
+
+## Kernel Upgrade Workflow (Aeneid)
+
+Upgrade the story-kernel binary on Aeneid testnet DKG committee validators.
+This uses the DKG on-chain upgrade mechanism: whitelist new MRENCLAVE, schedule upgrade, dual-kernel resharing, then cutover.
+
+---
+
+## Prerequisites
+
+- It is recommended to start the upgrade when current DKG round is in **Active** stage
+- New story-kernel binary built on all validator machines (must produce identical MRENCLAVE)
+- Timelock/owner access to DKG contract for `whitelistEnclaveType` and `scheduleUpgrade`
+- SGXValidationHook proxy address known for the new kernel client
+
+## Phase 1: Build New Kernel
+
+Build the new story-kernel binary **on each validator machine** (never SCP binaries — MRENCLAVE must match).
+
+```bash
+cd ~/story-kernel
+git pull origin release/0.1
+make clean && make build-with-cpp && make all-gramine
+NEW_MRENCLAVE=$(cat story-kernel.manifest.sgx.d/mrenclave.txt)
+echo "New MRENCLAVE: $NEW_MRENCLAVE"
+```
+
+Verify all validators produce the **same** `NEW_MRENCLAVE` value before proceeding.
+
+## Phase 2: Start Dual Kernels
+
+The new kernel runs alongside the old kernel on a separate port. Story CL identifies each kernel by its `code_commitment` (MRENCLAVE).
+
+```bash
+# Old kernel: already running on :50051
+# New kernel: start on :50052 with separate home dir
+
+# Verify both are listening
+sudo lsof -i :50051 | grep LISTEN  # old
+sudo lsof -i :50052 | grep LISTEN  # new
+```
+
+<Warning>
+The new kernel needs its own:
+- Home directory (separate light client state)
+- Gramine manifest with different `listen_addr` (`:50052`)
+</Warning>
+
+## Phase 3: Update Story Config + Restart
+
+Add the new kernel endpoint to `story.toml`:
+
+```toml
+kernel-endpoints = ["127.0.0.1:50051", "127.0.0.1:50052"]
+```
+
+Restart story:
+
+```bash
+sudo systemctl restart story
+```
+
+Verify **both** kernels connected:
+
+```bash
+journalctl -u story --since '1 minute ago' | grep "Connected to kernel"
+# Must see TWO entries with different code_commitment values
+# Verify: connected_clients=2
+```
+
+## Phase 4: Whitelist + Schedule Upgrade On-Chain
+
+Wait for the current DKG round to be in **Active** stage, then:
+
+```bash
+DKG="0xCcCcCC0000000000000000000000000000000004"
+ENCLAVE_TYPE="0x0000000000000000000000000000000000000000000000000000000000000001"
+SGX_HOOK="<sgx_hook_proxy_addr>"
+
+# 1. Whitelist new MRENCLAVE
+cast send $DKG 'whitelistEnclaveType(bytes32,(bytes32,address),bool)' \
+    $ENCLAVE_TYPE "(0x$NEW_MRENCLAVE,$SGX_HOOK)" true \
+    --rpc-url $RPC --private-key $KEY --legacy --gas-price 30000000000
+
+# 2. Schedule upgrade (activation = current height + buffer)
+CURRENT=$(cast block-number --rpc-url $RPC)
+ACTIVATION=$((CURRENT + 50))
+cast send $DKG 'scheduleUpgrade(uint256,string)' $ACTIVATION "v<version>" \
+    --rpc-url $RPC --private-key $KEY --legacy --gas-price 30000000000
+```
+
+<Note>
+On Aeneid, DKG contract ops go through Timelock (minDelay=600s).
+Schedule the Timelock tx, wait 10 min, then execute.
+</Note>
+
+## Phase 5: Wait for Upgrade Resharing
+
+```bash
+# Monitor activation
+while true; do
+  HEIGHT=$(curl -s localhost:26657/status | python3 -c "import sys,json; print(json.load(sys.stdin)['result']['sync_info']['latest_block_height'])")
+  echo "Height: $HEIGHT / $ACTIVATION"
+  if [ "$HEIGHT" -ge "$ACTIVATION" ]; then break; fi
+  sleep 5
+done
+
+# Verify upgrade resharing round started
+journalctl -u story --since '5 minutes ago' | grep 'is_upgrade.*true'
+
+# Wait for completion
+timeout 3600 bash -c "while ! journalctl -u story --since '1 hour ago' | grep -q 'DKG finalization phase complete'; do sleep 15; done"
+```
+
+## Phase 6: Cutover to New Kernel
+
+After upgrade resharing completes successfully:
+
+```bash
+# 1. Stop old kernel
+sudo systemctl stop story-kernel  # old on :50051
+
+# 2. Update story.toml to only new kernel
+sed -i 's|kernel-endpoints = \["127.0.0.1:50051", "127.0.0.1:50052"\]|kernel-endpoints = ["127.0.0.1:50052"]|' \
+    ~/.story/story/config/story.toml
+
+# 3. Restart story
+sudo systemctl restart story
+
+# 4. Verify
+journalctl -u story --since '1 minute ago' | grep "Connected to kernel"
+# Should see 1 entry with the NEW code_commitment
+```
+
+---
+
+## Verification Checklist
+
+- [ ] All validators built identical `NEW_MRENCLAVE`
+- [ ] Both kernels connected on all validators (`connected_clients=2`)
+- [ ] `whitelistEnclaveType` tx confirmed (new MRENCLAVE on enclave type 1)
+- [ ] `scheduleUpgrade` tx confirmed with target activation height
+- [ ] Upgrade resharing round initiated with `is_upgrade=true`
+- [ ] Old kernel generates deals, new kernel processes responses
+- [ ] `DKG finalization phase complete` on all committee members
+- [ ] Old kernel stopped, config updated to new kernel only
+- [ ] New DKG round proceeds normally on new kernel
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `connected_clients=1` after restart | New kernel not running or port mismatch | Verify `lsof -i :50052`, check Gramine manifest |
+| "no new kernel client found for upgrade" | Story not connected to new kernel | Ensure `kernel-endpoints` has both ports, restart story |
+| Upgrade round doesn't start at activation height | Not in Active stage when scheduled | Reschedule during next Active stage |
+| Finalization fails | Insufficient committee members upgraded | Ensure all validators have dual kernels running |

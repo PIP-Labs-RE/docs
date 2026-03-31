@@ -131,6 +131,13 @@
                           "network/participate/validators/node-setup-mainnet",
                           "network/participate/validators/operate-your-node",
                           "network/participate/validators/node-upgrade",
+                          {
+                            "group": "DKG",
+                            "pages": [
+                              "network/participate/validators/dkg/dkg-validator-guide",
+                              "network/participate/validators/dkg/kernel-upgrade"
+                            ]
+                          },
                           "network/participate/validators/release-notes",
                           "network/participate/validators/troubleshooting"
                         ]
