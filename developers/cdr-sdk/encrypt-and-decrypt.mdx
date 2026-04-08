@@ -46,8 +46,11 @@ console.log(`Write tx: ${txHashes.write}`);
 ```
 
 <Note>
-  `uploadCDR` automatically queries the allocate and write fees. You can skip those queries by passing `allocateFeeOverride` and `writeFeeOverride`.
+  `uploadCDR` automatically queries the allocate and write fees. You can skip
+  those queries by passing `allocateFeeOverride` and `writeFeeOverride`.
 </Note>
+
+<Note>The value of the transaction must be exactly the same as the fee.</Note>
 
 ## Decrypt a Secret
 
@@ -66,7 +69,7 @@ const threshold = await observer.getThreshold();
 // 2. Generate an ephemeral keypair for this decryption session
 const recipientPrivKey = secp256k1.utils.randomPrivateKey();
 const requesterPubKey = toHex(
-  secp256k1.getPublicKey(recipientPrivKey, false) // uncompressed, 65 bytes
+  secp256k1.getPublicKey(recipientPrivKey, false), // uncompressed, 65 bytes
 );
 
 // 3. Decrypt: read request + collect partials + combine (single call)
@@ -84,6 +87,12 @@ const { dataKey, txHash } = await consumer.accessCDR({
 const secret = new TextDecoder().decode(dataKey);
 console.log(`Decrypted secret: ${secret}`);
 ```
+
+<Note>
+  The timeout of the request on the server side is 200 blocks, which is
+  approximately 7 minutes. If you're not able to collect enough partials within
+  this timeout, try another read request.
+</Note>
 
 ## Step-by-Step (Low-Level)
 
@@ -166,7 +175,9 @@ You can query DKG state and fees without a wallet or WASM initialization:
 import { createPublicClient, http } from "viem";
 import { CDRClient } from "@piplabs/cdr-sdk";
 
-const publicClient = createPublicClient({ transport: http("https://aeneid.storyrpc.io") });
+const publicClient = createPublicClient({
+  transport: http("https://aeneid.storyrpc.io"),
+});
 const client = new CDRClient({ network: "testnet", publicClient });
 
 const threshold = await client.observer.getOperationalThreshold();
@@ -177,7 +188,9 @@ const [allocateFee, writeFee, readFee] = await Promise.all([
   client.observer.getWriteFee(),
   client.observer.getReadFee(),
 ]);
-console.log(`Fees — allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`);
+console.log(
+  `Fees — allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
+);
 
 // Query a specific vault
 const vault = await client.observer.getVault(1);
@@ -188,10 +201,10 @@ console.log("Vault:", vault);
 
 Each CDR operation has an on-chain fee:
 
-| Operation | Fee Query | Description |
-| --------- | --------- | ----------- |
-| Allocate | `observer.getAllocateFee()` | One-time cost to create a vault |
-| Write | `observer.getWriteFee()` | Cost per write to a vault |
-| Read | `observer.getReadFee()` | Cost per read/decryption request |
+| Operation | Fee Query                   | Description                      |
+| --------- | --------------------------- | -------------------------------- |
+| Allocate  | `observer.getAllocateFee()` | One-time cost to create a vault  |
+| Write     | `observer.getWriteFee()`    | Cost per write to a vault        |
+| Read      | `observer.getReadFee()`     | Cost per read/decryption request |
 
 Fees are paid in native tokens (wei) and are sent as `msg.value` with each transaction.

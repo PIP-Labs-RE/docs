@@ -5,15 +5,15 @@ description: "Overview of all available Story TypeScript SDKs"
 
 Story provides two TypeScript SDKs for building on the protocol:
 
-| Package | Description | npm | GitHub |
-| ------- | ----------- | --- | ------ |
-| <Icon icon="screwdriver-wrench" iconType="solid" /> **Protocol SDK** | Register IP Assets, manage licensing, royalties, disputes, and more | [npm](https://www.npmjs.com/package/@story-protocol/core-sdk) | [Code](https://github.com/storyprotocol/sdk/tree/main) |
-| <Icon icon="lock" iconType="solid" /> **CDR SDK** | Threshold encryption, confidential data vaults, and on-chain access control | [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) | [Code](https://github.com/piplabs/cdr-sdk) |
+| Package                                                              | Description                                                                 | npm                                                           | GitHub                                                 |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------ |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> **Protocol SDK** | Register IP Assets, manage licensing, royalties, disputes, and more         | [npm](https://www.npmjs.com/package/@story-protocol/core-sdk) | [Code](https://github.com/storyprotocol/sdk/tree/main) |
+| <Icon icon="lock" iconType="solid" /> **CDR SDK**                    | Threshold encryption, confidential data vaults, and on-chain access control | [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk)         | [Code](https://github.com/piplabs/cdr-sdk)             |
 
 A Python SDK is also available for the Protocol SDK:
 
-| Package | Description | PyPi | GitHub |
-| ------- | ----------- | ---- | ------ |
+| Package                                                           | Description                                                 | PyPi                                                       | GitHub                                              |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
 | <Icon icon="python" iconType="solid" /> **Protocol SDK (Python)** | Python client for IP Assets, licensing, royalties, and more | [PyPi](https://pypi.org/project/story-protocol-python-sdk) | [Code](https://github.com/storyprotocol/python-sdk) |
 
 ---
@@ -23,7 +23,11 @@ A Python SDK is also available for the Protocol SDK:
 The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting with Story's IP management layer. Use it to register IP Assets, attach license terms, mint license tokens, manage royalties, raise disputes, and more.
 
 <CardGroup cols={2}>
-  <Card title="Step-by-Step Guide" icon="house" href="/developers/typescript-sdk">
+  <Card
+    title="Step-by-Step Guide"
+    icon="house"
+    href="/developers/typescript-sdk"
+  >
     Learn the Protocol SDK through a series of tutorials.
   </Card>
   <Card title="Python SDK" icon="python" href="/sdk-reference/python">
@@ -37,7 +41,11 @@ The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting
   <Card title="Register an IP Asset" icon="house" href="/sdk-reference/ipasset">
     Learn how to register an IP asset using the SDK.
   </Card>
-  <Card title="Mint & Attach License Terms" icon="house" href="/sdk-reference/license">
+  <Card
+    title="Mint & Attach License Terms"
+    icon="house"
+    href="/sdk-reference/license"
+  >
     Learn how to mint and attach license terms using the SDK.
   </Card>
 </CardGroup>
@@ -84,13 +92,17 @@ The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting
 
 ## CDR SDK
 
-The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's Confidential Data Recovery system. Use it to encrypt secrets using threshold cryptography, store them in on-chain vaults with configurable access control, and decrypt them by collecting partial decryptions from validators.
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's Confidential Data Rails system. Use it to encrypt secrets using threshold cryptography, store them in on-chain vaults with configurable access control, and decrypt them by collecting partial decryptions from validators.
 
 <CardGroup cols={2}>
   <Card title="Step-by-Step Guide" icon="house" href="/developers/cdr-sdk">
     Learn CDR through a series of integration tutorials.
   </Card>
-  <Card title="CDR SDK Reference" icon="lock" href="/sdk-reference/cdr/overview">
+  <Card
+    title="CDR SDK Reference"
+    icon="lock"
+    href="/sdk-reference/cdr/overview"
+  >
     Jump to the full CDR API reference.
   </Card>
 </CardGroup>

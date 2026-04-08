@@ -3,10 +3,10 @@ title: "CDR SDK Reference Overview"
 description: "A detailed description of every function in the CDR SDK"
 ---
 
-The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for interacting with Story's Confidential Data Recovery system. It handles threshold encryption, vault management, and on-chain access control.
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for interacting with Story's Confidential Data Rails system. It handles threshold encryption, vault management, and on-chain access control.
 
-| Language | Package | GitHub |
-| -------- | ------- | ------ |
+| Language                                                       | Package                                                                                         | GitHub                                                                                                 |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
 
 ---
@@ -24,13 +24,13 @@ import { CDRClient } from "@piplabs/cdr-sdk";
 
 const client = new CDRClient({
   network: "testnet", // or "mainnet"
-  publicClient,       // viem PublicClient
-  walletClient,       // optional viem WalletClient
+  publicClient, // viem PublicClient
+  walletClient, // optional viem WalletClient
 });
 
-client.observer;  // read-only queries
-client.uploader;  // encryption & vault allocation
-client.consumer;  // decryption & read requests
+client.observer; // read-only queries
+client.uploader; // encryption & vault allocation
+client.consumer; // decryption & read requests
 ```
 
 ## Sub-Clients
