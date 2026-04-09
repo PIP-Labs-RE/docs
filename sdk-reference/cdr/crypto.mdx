@@ -1,0 +1,195 @@
+---
+title: Crypto Utilities
+description: Low-level TDH2 and ECIES cryptographic primitives used by the CDR SDK.
+---
+
+## Crypto Utilities
+
+These are the low-level cryptographic functions used internally by the CDR SDK. You typically won't need to call these directly unless you're building custom decryption flows.
+
+<Note>
+  All crypto functions require WASM to be initialized first via `initWasm()`.
+</Note>
+
+### Functions
+
+- initWasm
+- tdh2Encrypt
+- tdh2Verify
+- tdh2Combine
+- decryptPartial
+- uuidToLabel
+
+---
+
+### initWasm
+
+Initializes the WebAssembly module required for all TDH2 cryptographic operations. Must be called once before any other crypto function.
+
+| Function | Type |
+| -------- | ---- |
+| `initWasm` | `() => Promise<void>` |
+
+```typescript Example
+import { initWasm } from "@piplabs/cdr-sdk";
+
+await initWasm();
+// Now TDH2 functions are ready to use
+```
+
+<Warning>
+  Throws `WasmNotInitializedError` if you call any TDH2 function before `initWasm()` completes.
+</Warning>
+
+---
+
+### tdh2Encrypt
+
+Encrypts plaintext using TDH2 threshold encryption against the DKG global public key.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Encrypt` | `(params: TDH2EncryptParams) => Promise<TDH2Ciphertext>` |
+
+Parameters:
+
+- `params.plaintext`: `Uint8Array` - The data to encrypt
+- `params.globalPubKey`: `Uint8Array` - DKG global public key (34 bytes with Ed25519 prefix)
+- `params.label`: `Uint8Array` - 32-byte label binding ciphertext to a specific vault
+
+```typescript Example
+import { tdh2Encrypt, uuidToLabel } from "@piplabs/cdr-sdk";
+
+const ciphertext = await tdh2Encrypt({
+  plaintext: new TextEncoder().encode("secret"),
+  globalPubKey,
+  label: uuidToLabel(42),
+});
+```
+
+```typescript TDH2Ciphertext
+interface TDH2Ciphertext {
+  raw: Uint8Array;   // serialized ciphertext (cb-mpc format)
+  label: Uint8Array; // 32-byte context binding
+}
+```
+
+---
+
+### tdh2Verify
+
+Validates a TDH2 ciphertext without decrypting. Useful for checking integrity.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Verify` | `(params: TDH2VerifyParams) => Promise<boolean>` |
+
+Parameters:
+
+- `params.ciphertext`: `Uint8Array` - The raw ciphertext bytes
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.label`: `Uint8Array` - The 32-byte label used during encryption
+
+```typescript Example
+import { tdh2Verify } from "@piplabs/cdr-sdk";
+
+const isValid = await tdh2Verify({
+  ciphertext: ciphertext.raw,
+  globalPubKey,
+  label: uuidToLabel(42),
+});
+
+console.log(`Ciphertext valid: ${isValid}`);
+```
+
+---
+
+### tdh2Combine
+
+Combines threshold partial decryptions to recover the original plaintext.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Combine` | `(params: TDH2CombineParams) => Promise<Uint8Array>` |
+
+Parameters:
+
+- `params.ciphertext`: `TDH2Ciphertext` - The encrypted data (`{ raw, label }`)
+- `params.partials`: `DecryptedPartial[]` - Array of decrypted partials (must have `>= threshold`)
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.label`: `Uint8Array` - 32-byte label
+- `params.threshold`: `number` - Minimum number of partials required
+
+```typescript Example
+import { tdh2Combine } from "@piplabs/cdr-sdk";
+
+const plaintext = await tdh2Combine({
+  ciphertext,
+  partials: decryptedPartials,
+  globalPubKey,
+  label: uuidToLabel(42),
+  threshold: 2,
+});
+```
+
+```typescript DecryptedPartial
+interface DecryptedPartial {
+  pid: number;          // 1-based participant index
+  pubShare: Uint8Array; // 34 bytes (Ed25519 with prefix)
+  partial: Uint8Array;  // raw decrypted partial bytes
+}
+```
+
+---
+
+### decryptPartial
+
+Decrypts a single encrypted partial decryption from a validator using ECIES (ECDH + HKDF + AES-256-GCM).
+
+| Function | Type |
+| -------- | ---- |
+| `decryptPartial` | `(params: DecryptPartialParams) => Promise<Uint8Array>` |
+
+Parameters:
+
+- `params.encryptedPartial`: `Uint8Array` - The encrypted partial (nonce &#124;&#124; ciphertext &#124;&#124; tag)
+- `params.ephemeralPubKey`: `Uint8Array` - Validator's ephemeral public key (65 bytes, uncompressed secp256k1)
+- `params.recipientPrivKey`: `Uint8Array` - Your ephemeral private key (32 bytes, secp256k1)
+
+```typescript Example
+import { decryptPartial } from "@piplabs/cdr-sdk";
+
+const rawPartial = await decryptPartial({
+  encryptedPartial: partialBytes,
+  ephemeralPubKey: validatorEphemeralPubKey,
+  recipientPrivKey: myEphemeralPrivKey,
+});
+```
+
+**ECIES Protocol:**
+1. ECDH: `sharedPoint = secp256k1(recipientPrivKey, ephemeralPubKey)`
+2. HKDF-SHA256: `aesKey = hkdf(sha256, sharedSecret, info="dkg-tdh2-partial", 32)`
+3. AES-256-GCM: decrypt with 12-byte nonce from the encrypted partial
+
+---
+
+### uuidToLabel
+
+Derives a deterministic 32-byte label from a vault UUID. Used to bind ciphertext to a specific vault.
+
+| Function | Type |
+| -------- | ---- |
+| `uuidToLabel` | `(uuid: number) => Uint8Array` |
+
+Parameters:
+
+- `uuid`: `number` - The vault UUID (uint32)
+
+Returns a 32-byte `Uint8Array`: 28 zero bytes followed by the 4-byte big-endian UUID.
+
+```typescript Example
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+const label = uuidToLabel(42);
+// Uint8Array(32) [0, 0, ..., 0, 0, 0, 0, 42]
+```

@@ -1,85 +1,108 @@
 ---
 title: "SDK Reference Overview"
-description: "A detailed description of every function in our TypeScript SDK"
+description: "Overview of all available Story TypeScript SDKs"
 ---
 
-This section provides a detailed description of every function in our TypeScript SDK.
+Story provides two TypeScript SDKs for building on the protocol:
 
-| Package                                                        | Compatibility                               | Package                                                                                                 | GitHub                                                                                                             |                                 |
-| -------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
-| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="check" iconType="solid" /> Full | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@story-protocol/core-sdk) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/storyprotocol/sdk/tree/main) |
-| <Icon icon="python" iconType="solid" /> Python                 | <Icon icon="check" iconType="solid" /> Full | <Icon icon="box-open" iconType="solid" /> [PyPi](https://pypi.org/project/story-protocol-python-sdk)    | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/storyprotocol/python-sdk)    | [SWITCH](/sdk-reference/python) |
+| Package                                                              | Description                                                                 | npm                                                           | GitHub                                                 |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------ |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> **Protocol SDK** | Register IP Assets, manage licensing, royalties, disputes, and more         | [npm](https://www.npmjs.com/package/@story-protocol/core-sdk) | [Code](https://github.com/storyprotocol/sdk/tree/main) |
+| <Icon icon="lock" iconType="solid" /> **CDR SDK**                    | Threshold encryption, confidential data vaults, and on-chain access control | [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk)         | [Code](https://github.com/piplabs/cdr-sdk)             |
+
+A Python SDK is also available for the Protocol SDK:
+
+| Package                                                           | Description                                                 | PyPi                                                       | GitHub                                              |
+| ----------------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| <Icon icon="python" iconType="solid" /> **Protocol SDK (Python)** | Python client for IP Assets, licensing, royalties, and more | [PyPi](https://pypi.org/project/story-protocol-python-sdk) | [Code](https://github.com/storyprotocol/python-sdk) |
 
 ---
 
-<Card title="Step-by-Step Guide" icon="house" href="/developers/typescript-sdk">
-  Learn our SDK through a series of tutorials with the TypeScript SDK Guide.
-</Card>
+## Protocol SDK
 
-## Licensing Module
+The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting with Story's IP management layer. Use it to register IP Assets, attach license terms, mint license tokens, manage royalties, raise disputes, and more.
 
 <CardGroup cols={2}>
-
-<Card title="Register an IP Asset" icon="house" href="/sdk-reference/ipasset">
-  Learn how to register an IP asset using the SDK.
-</Card>
-
-<Card
-  title="Mint & Attach License Terms"
-  icon="house"
-  href="/sdk-reference/license"
->
-  Learn how to mint and attach license terms using the SDK.
-</Card>
-
+  <Card
+    title="Step-by-Step Guide"
+    icon="house"
+    href="/developers/typescript-sdk"
+  >
+    Learn the Protocol SDK through a series of tutorials.
+  </Card>
+  <Card title="Python SDK" icon="python" href="/sdk-reference/python">
+    Switch to the Python SDK reference.
+  </Card>
 </CardGroup>
 
-## Royalty Module
+### Licensing Module
 
 <CardGroup cols={2}>
-
-<Card title="Pay & Claim Royalty" icon="house" href="/sdk-reference/royalty">
-  Learn how to pay and claim royalty using the SDK.
-</Card>
-
+  <Card title="Register an IP Asset" icon="house" href="/sdk-reference/ipasset">
+    Learn how to register an IP asset using the SDK.
+  </Card>
+  <Card
+    title="Mint & Attach License Terms"
+    icon="house"
+    href="/sdk-reference/license"
+  >
+    Learn how to mint and attach license terms using the SDK.
+  </Card>
 </CardGroup>
 
-## Dispute Module
+### Royalty Module
 
 <CardGroup cols={2}>
-
-<Card title="Raise a Dispute" icon="house" href="/sdk-reference/dispute">
-  Learn how to raise a dispute using the SDK.
-</Card>
-
+  <Card title="Pay & Claim Royalty" icon="house" href="/sdk-reference/royalty">
+    Learn how to pay and claim royalty using the SDK.
+  </Card>
 </CardGroup>
 
-## Grouping Module
+### Dispute Module
 
 <CardGroup cols={2}>
-
-<Card title="Manage Groups" icon="house" href="/sdk-reference/group">
-  Learn how to manage groups using the SDK.
-</Card>
-
+  <Card title="Raise a Dispute" icon="house" href="/sdk-reference/dispute">
+    Learn how to raise a dispute using the SDK.
+  </Card>
 </CardGroup>
 
-## Utility Clients
-
-Additional utility and extra clients:
+### Grouping Module
 
 <CardGroup cols={2}>
+  <Card title="Manage Groups" icon="house" href="/sdk-reference/group">
+    Learn how to manage groups using the SDK.
+  </Card>
+</CardGroup>
 
-<Card title="Set Permissions" icon="house" href="/sdk-reference/permissions">
-  Learn how to set permissions using the SDK.
-</Card>
+### Utility Clients
 
-<Card title="NFT Client" icon="house" href="/sdk-reference/nftclient">
-  Interact with SPG NFTs using the SDK.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Set Permissions" icon="house" href="/sdk-reference/permissions">
+    Learn how to set permissions using the SDK.
+  </Card>
+  <Card title="NFT Client" icon="house" href="/sdk-reference/nftclient">
+    Interact with SPG NFTs using the SDK.
+  </Card>
+  <Card title="WIP Client" icon="house" href="/sdk-reference/wip-client">
+    Learn how to use the WIP client using the SDK.
+  </Card>
+</CardGroup>
 
-<Card title="WIP Client" icon="house" href="/sdk-reference/wip-client">
-  Learn how to use the WIP client using the SDK.
-</Card>
+---
 
+## CDR SDK
+
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's Confidential Data Rails system. Use it to encrypt secrets using threshold cryptography, store them in on-chain vaults with configurable access control, and decrypt them by collecting partial decryptions from validators.
+
+<CardGroup cols={2}>
+  <Card title="Step-by-Step Guide" icon="house" href="/developers/cdr-sdk">
+    Learn CDR through a series of integration tutorials.
+  </Card>
+  <Card
+    title="CDR SDK Reference"
+    icon="lock"
+    href="/sdk-reference/cdr/overview"
+  >
+    Jump to the full CDR API reference.
+  </Card>
 </CardGroup>

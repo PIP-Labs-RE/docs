@@ -1,0 +1,226 @@
+---
+title: Encrypt & Decrypt
+description: Learn how to encrypt a secret and decrypt it using CDR threshold decryption.
+---
+
+This guide walks through the simplest CDR flow: encrypting a secret that only your wallet can decrypt.
+
+### Prerequisites
+
+- [CDR SDK setup](/developers/cdr-sdk/setup) complete with WASM initialized and client created
+
+## Encrypt a Secret
+
+The diagram below shows the high-level encryption flow: allocate a vault, encrypt the data locally, and write the encrypted key material plus data URL to the vault.
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-encryption-flow.png"
+    alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
+  />
+</Frame>
+
+The high-level `uploadCDR` method handles vault allocation, encryption, and writing in a single call.
+
+```typescript
+import { initWasm, CDRClient } from "@piplabs/cdr-sdk";
+
+await initWasm();
+
+// Assumes `client` is already created (see Setup)
+const { uploader, observer } = client;
+
+// 1. Fetch the DKG global public key
+const globalPubKey = await observer.getGlobalPubKey();
+
+// 2. Encode your secret as bytes
+const secret = "my confidential data";
+const dataKey = new TextEncoder().encode(secret);
+
+// 3. Upload: allocate vault + encrypt + write (single call)
+const { uuid, ciphertext, txHashes } = await uploader.uploadCDR({
+  dataKey,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: walletAddress, // only you can write
+  readConditionAddr: walletAddress, // only you can read
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  accessAuxData: "0x",
+});
+
+console.log(`Vault created with UUID: ${uuid}`);
+console.log(`Allocate tx: ${txHashes.allocate}`);
+console.log(`Write tx: ${txHashes.write}`);
+```
+
+<Note>
+  `uploadCDR` automatically queries the allocate and write fees. You can skip
+  those queries by passing `allocateFeeOverride` and `writeFeeOverride`.
+</Note>
+
+<Note>The value of the transaction must be exactly the same as the fee.</Note>
+
+## Decrypt a Secret
+
+Decryption requires submitting a read request on-chain, collecting partial decryptions from validators, and combining them client-side.
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-decryption-flow.png"
+    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
+  />
+</Frame>
+
+```typescript
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { toHex } from "viem";
+
+const { consumer, observer } = client;
+
+// 1. Fetch DKG state
+const globalPubKey = await observer.getGlobalPubKey();
+const threshold = await observer.getThreshold();
+
+// 2. Generate an ephemeral keypair for this decryption session
+const recipientPrivKey = secp256k1.utils.randomPrivateKey();
+const requesterPubKey = toHex(
+  secp256k1.getPublicKey(recipientPrivKey, false), // uncompressed, 65 bytes
+);
+
+// 3. Decrypt: read request + collect partials + combine (single call)
+const { dataKey, txHash } = await consumer.accessCDR({
+  uuid,
+  accessAuxData: "0x",
+  requesterPubKey,
+  recipientPrivKey,
+  globalPubKey,
+  threshold,
+  timeoutMs: 120_000, // wait up to 2 minutes for validators
+});
+
+// 4. Decode the recovered secret
+const secret = new TextDecoder().decode(dataKey);
+console.log(`Decrypted secret: ${secret}`);
+```
+
+<Note>
+  The timeout of the request on the server side is 200 blocks, which is
+  approximately 7 minutes. If you're not able to collect enough partials within
+  this timeout, try another read request.
+</Note>
+
+## Step-by-Step (Low-Level)
+
+If you need more control over the process, you can call each step individually.
+
+### Encrypt (Low-Level)
+
+```typescript
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+// 1. Allocate a vault
+const { txHash: allocateTx, uuid } = await uploader.allocate({
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+});
+
+// 2. Derive the label from the UUID
+const label = uuidToLabel(uuid);
+
+// 3. Encrypt locally
+const ciphertext = await uploader.encryptDataKey({
+  dataKey,
+  globalPubKey,
+  label,
+});
+
+// 4. Write encrypted data to the vault
+const { txHash: writeTx } = await uploader.write({
+  uuid,
+  accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
+});
+```
+
+### Decrypt (Low-Level)
+
+```typescript
+// 1. Submit read request
+const { txHash: readTx } = await consumer.read({
+  uuid,
+  accessAuxData: "0x",
+  requesterPubKey,
+});
+
+// Get the block number for polling
+const receipt = await publicClient.getTransactionReceipt({ hash: readTx });
+
+// 2. Collect partial decryptions from validators
+const partials = await consumer.collectPartials({
+  uuid,
+  minPartials: threshold,
+  fromBlock: receipt.blockNumber,
+  timeoutMs: 120_000,
+});
+
+// 3. Combine partials and recover the data key
+const label = uuidToLabel(uuid);
+const vault = await observer.getVault(uuid);
+const recoveredDataKey = await consumer.decryptDataKey({
+  ciphertext: {
+    raw: Uint8Array.from(Buffer.from(vault.encryptedData.slice(2), "hex")),
+    label,
+  },
+  partials,
+  recipientPrivKey,
+  globalPubKey,
+  label,
+  threshold,
+});
+```
+
+## Query DKG State
+
+You can query DKG state and fees without a wallet or WASM initialization:
+
+```typescript
+import { createPublicClient, http } from "viem";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+const publicClient = createPublicClient({
+  transport: http("https://aeneid.storyrpc.io"),
+});
+const client = new CDRClient({ network: "testnet", publicClient });
+
+const threshold = await client.observer.getOperationalThreshold();
+console.log("Operational threshold:", threshold);
+
+const [allocateFee, writeFee, readFee] = await Promise.all([
+  client.observer.getAllocateFee(),
+  client.observer.getWriteFee(),
+  client.observer.getReadFee(),
+]);
+console.log(
+  `Fees — allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
+);
+
+// Query a specific vault
+const vault = await client.observer.getVault(1);
+console.log("Vault:", vault);
+```
+
+## Understanding Fees
+
+Each CDR operation has an on-chain fee:
+
+| Operation | Fee Query                   | Description                      |
+| --------- | --------------------------- | -------------------------------- |
+| Allocate  | `observer.getAllocateFee()` | One-time cost to create a vault  |
+| Write     | `observer.getWriteFee()`    | Cost per write to a vault        |
+| Read      | `observer.getReadFee()`     | Cost per read/decryption request |
+
+Fees are paid in native tokens (wei) and are sent as `msg.value` with each transaction.

@@ -1,0 +1,176 @@
+---
+title: Observer
+description: Read-only methods for querying CDR vault data, fees, and DKG state.
+---
+
+## Observer
+
+The `Observer` sub-client is always available, even without a `walletClient`. It provides read-only access to on-chain CDR and DKG state.
+
+```typescript
+const observer = client.observer;
+```
+
+### Methods
+
+- getVault
+- getAllocateFee
+- getWriteFee
+- getReadFee
+- getGlobalPubKey
+- getOperationalThreshold
+- getParticipantCount
+- getThreshold
+
+---
+
+### getVault
+
+Fetch a vault's on-chain data by UUID.
+
+| Method | Type |
+| ------ | ---- |
+| `getVault` | `(uuid: number) => Promise<Vault>` |
+
+Parameters:
+
+- `uuid`: The vault's unique identifier (uint32)
+
+```typescript Example
+const vault = await client.observer.getVault(42);
+
+console.log(vault.uuid); // 42
+console.log(vault.updatable); // false
+console.log(vault.writeConditionAddr); // "0x..."
+console.log(vault.readConditionAddr); // "0x..."
+console.log(vault.encryptedData); // "0x..." (hex-encoded TDH2 ciphertext)
+```
+
+```typescript Vault
+interface Vault {
+  uuid: number;
+  updatable: boolean;
+  writeConditionAddr: `0x${string}`;
+  readConditionAddr: `0x${string}`;
+  writeConditionData: `0x${string}`;
+  readConditionData: `0x${string}`;
+  encryptedData: `0x${string}`;
+}
+```
+
+---
+
+### getAllocateFee
+
+Returns the current fee (in wei) required to allocate a new vault.
+
+| Method | Type |
+| ------ | ---- |
+| `getAllocateFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getAllocateFee();
+console.log(`Allocate fee: ${fee} wei`);
+```
+
+---
+
+### getWriteFee
+
+Returns the current fee (in wei) required to write data to a vault.
+
+| Method | Type |
+| ------ | ---- |
+| `getWriteFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getWriteFee();
+console.log(`Write fee: ${fee} wei`);
+```
+
+---
+
+### getReadFee
+
+Returns the current fee (in wei) required to submit a read request.
+
+| Method | Type |
+| ------ | ---- |
+| `getReadFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getReadFee();
+console.log(`Read fee: ${fee} wei`);
+```
+
+---
+
+### getGlobalPubKey
+
+Returns the DKG global public key used for TDH2 encryption. This is an Ed25519 key (34 bytes: 2-byte curve prefix + 32-byte key).
+
+| Method | Type |
+| ------ | ---- |
+| `getGlobalPubKey` | `(fromBlock?: bigint) => Promise<Uint8Array>` |
+
+Parameters:
+
+- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events. Defaults to searching recent blocks.
+
+```typescript Example
+const globalPubKey = await client.observer.getGlobalPubKey();
+console.log(globalPubKey.length); // 34
+```
+
+---
+
+### getOperationalThreshold
+
+Returns the operational threshold as basis points (e.g., `667` = 66.7%).
+
+| Method | Type |
+| ------ | ---- |
+| `getOperationalThreshold` | `() => Promise<bigint>` |
+
+```typescript Example
+const threshold = await client.observer.getOperationalThreshold();
+console.log(`Threshold: ${Number(threshold) / 10}%`); // e.g. "66.7%"
+```
+
+---
+
+### getParticipantCount
+
+Returns the number of active DKG validators in the latest round.
+
+| Method | Type |
+| ------ | ---- |
+| `getParticipantCount` | `(fromBlock?: bigint) => Promise<number>` |
+
+Parameters:
+
+- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events.
+
+```typescript Example
+const count = await client.observer.getParticipantCount();
+console.log(`Active validators: ${count}`);
+```
+
+---
+
+### getThreshold
+
+Returns the calculated absolute threshold: `ceil(participants * operationalThreshold / 1000)`. This is the minimum number of partial decryptions needed.
+
+| Method | Type |
+| ------ | ---- |
+| `getThreshold` | `(fromBlock?: bigint) => Promise<number>` |
+
+Parameters:
+
+- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events.
+
+```typescript Example
+const threshold = await client.observer.getThreshold();
+console.log(`Need ${threshold} partials to decrypt`); // e.g. "Need 2 partials to decrypt"
+```

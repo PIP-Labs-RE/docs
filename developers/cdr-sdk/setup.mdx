@@ -1,0 +1,257 @@
+---
+title: Setup CDR Client
+description: Learn how to install and configure the CDR SDK.
+---
+
+### Prerequisites
+
+- Node.js 18+ and npm 8+
+- A funded wallet on Story testnet
+- [viem](https://www.npmjs.com/package/viem) (v2.21+) for blockchain interactions
+
+### Install the Dependencies
+
+<CodeGroup>
+
+```bash npm
+npm install --save @piplabs/cdr-sdk viem
+```
+
+```bash pnpm
+pnpm install @piplabs/cdr-sdk viem
+```
+
+```bash yarn
+yarn add @piplabs/cdr-sdk viem
+```
+
+</CodeGroup>
+
+<Note>`viem` (v2.21+) is a required peer dependency.</Note>
+
+## Initialize WASM
+
+The CDR SDK uses a WebAssembly module for threshold cryptography. You must initialize it once before performing any encryption or decryption operations.
+
+```typescript
+import { initWasm } from "@piplabs/cdr-sdk";
+
+// Call once at application startup
+await initWasm();
+```
+
+<Note>
+  In a React application, initialize WASM in a provider component or top-level
+  effect so it's ready before any CDR operations are attempted.
+</Note>
+
+## Create the CDR Client
+
+The `CDRClient` provides three sub-clients:
+
+- **`observer`** - Read-only queries (fees, vault data, DKG state). Always available.
+- **`uploader`** - Encryption and vault allocation. Requires a `walletClient`.
+- **`consumer`** - Decryption and read requests. Requires a `walletClient`.
+
+### In React (Wallet Connector)
+
+In a React app, you typically get the wallet from a connector like Privy, RainbowKit, or wagmi. Create a read-only `CDRClient` up front, and build a write-capable client on demand from the wallet's provider.
+
+```typescript hooks/use-cdr-client.ts
+import { useMemo } from "react";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+// Example using Privy — adapt for your wallet connector
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+
+export function useCDRClient() {
+  const { authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const wallet = wallets[0];
+
+  // Read-only client — always available
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
+    [],
+  );
+
+  const client = useMemo(
+    () => new CDRClient({ network: "testnet", publicClient }),
+    [publicClient],
+  );
+
+  // Write client — created on demand from the wallet's provider
+  const getWriteClient = async () => {
+    if (!wallet) throw new Error("No wallet connected");
+    const provider = await wallet.getEthereumProvider();
+    const walletClient = createWalletClient({
+      transport: custom(provider),
+      account: wallet.address as `0x${string}`,
+    });
+    return new CDRClient({
+      network: "testnet",
+      publicClient,
+      walletClient,
+    });
+  };
+
+  return { client, publicClient, getWriteClient, address: wallet?.address };
+}
+```
+
+Then in your components:
+
+```typescript
+const { client, getWriteClient } = useCDRClient();
+
+// Read-only operations work immediately
+const vault = await client.observer.getVault(42);
+
+// Write operations — get a write client first
+const writeClient = await getWriteClient();
+await writeClient.uploader.write({ uuid, accessAuxData: "0x", encryptedData });
+```
+
+### With Private Key (Backend / Scripts)
+
+For server-side code, scripts, or CLI tools, you can use a private key directly:
+
+```typescript
+import { createPublicClient, createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+const account = privateKeyToAccount(`0x${process.env.WALLET_PRIVATE_KEY}`);
+
+const publicClient = createPublicClient({
+  transport: http(process.env.RPC_PROVIDER_URL),
+});
+
+const walletClient = createWalletClient({
+  account,
+  transport: http(process.env.RPC_PROVIDER_URL),
+});
+
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+});
+```
+
+### Read-Only (No Wallet)
+
+If you only need to query vault data or DKG state, you can omit the `walletClient`:
+
+```typescript
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+});
+
+// observer methods work without a wallet
+const vault = await client.observer.getVault(123);
+const allocateFee = await client.observer.getAllocateFee();
+```
+
+<Warning>
+  Attempting to use `client.uploader` or `client.consumer` without a
+  `walletClient` will throw a `WalletClientRequiredError`.
+</Warning>
+
+## Network Configuration
+
+### Supported Networks
+
+| Network | `network` param | Default RPC URL              | Description                    |
+| ------- | --------------- | ---------------------------- | ------------------------------ |
+| Testnet | `"testnet"`     | `https://aeneid.storyrpc.io` | Public testnet for development |
+
+```typescript Testnet
+const publicClient = createPublicClient({
+  transport: http("https://aeneid.storyrpc.io"),
+});
+const client = new CDRClient({ network: "testnet", publicClient });
+```
+
+### Custom RPC URL
+
+You can point the SDK to any Story-compatible RPC endpoint by changing the `http()` transport URL. This is useful for devnets, local development nodes, or third-party RPC providers with higher rate limits.
+
+```typescript
+const publicClient = createPublicClient({
+  transport: http("https://your-devnet-rpc.example.com"),
+});
+const walletClient = createWalletClient({
+  account,
+  transport: http("https://your-devnet-rpc.example.com"),
+});
+
+// Use "testnet"
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+});
+```
+
+### Using Environment Variables
+
+A common pattern is to configure the network via environment variables:
+
+```typescript config.ts
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
+
+const publicClient = createPublicClient({ transport: http(RPC_URL) });
+const client = new CDRClient({ network: NETWORK, publicClient });
+```
+
+```bash .env
+# Testnet (default)
+RPC_URL=https://aeneid.storyrpc.io
+NETWORK=testnet
+
+# Custom devnet
+RPC_URL=http://localhost:8545
+NETWORK=testnet
+```
+
+## Contract Addresses
+
+Both networks use the same pre-deployed system contract addresses:
+
+| Contract | Address                                      |
+| -------- | -------------------------------------------- |
+| DKG      | `0xcccccc0000000000000000000000000000000004` |
+| CDR      | `0xcccccc0000000000000000000000000000000005` |
+
+These are pre-configured in the SDK -- you do not need to specify them manually.
+
+## Error Handling
+
+The SDK throws typed errors you can catch and handle:
+
+| Error Class                     | Code                         | When                                                                       |
+| ------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `WalletClientRequiredError`     | `WALLET_CLIENT_REQUIRED`     | Accessing `uploader` or `consumer` without a `walletClient`                |
+| `PartialCollectionTimeoutError` | `PARTIAL_COLLECTION_TIMEOUT` | `collectPartials` or `accessCDR` times out waiting for validator responses |
+| `ContractRevertError`           | `CONTRACT_REVERT`            | On-chain transaction reverted                                              |
+
+All errors extend `CDRError`, which has a `code` property for programmatic handling:
+
+```typescript
+import { CDRError, PartialCollectionTimeoutError } from "@piplabs/cdr-sdk";
+
+try {
+  const { dataKey } = await client.consumer.accessCDR({ ... });
+} catch (err) {
+  if (err instanceof PartialCollectionTimeoutError) {
+    console.error("Not enough validators responded in time. Try increasing timeoutMs.");
+  } else if (err instanceof CDRError) {
+    console.error(`CDR error [${err.code}]: ${err.message}`);
+  }
+}
+```
