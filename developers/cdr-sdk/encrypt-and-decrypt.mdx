@@ -11,6 +11,15 @@ This guide walks through the simplest CDR flow: encrypting a secret that only yo
 
 ## Encrypt a Secret
 
+The diagram below shows the high-level encryption flow: allocate a vault, encrypt the data locally, and write the encrypted key material plus data URL to the vault.
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-encryption-flow.png"
+    alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
+  />
+</Frame>
+
 The high-level `uploadCDR` method handles vault allocation, encryption, and writing in a single call.
 
 ```typescript
@@ -55,6 +64,13 @@ console.log(`Write tx: ${txHashes.write}`);
 ## Decrypt a Secret
 
 Decryption requires submitting a read request on-chain, collecting partial decryptions from validators, and combining them client-side.
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-decryption-flow.png"
+    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
+  />
+</Frame>
 
 ```typescript
 import { secp256k1 } from "@noble/curves/secp256k1";

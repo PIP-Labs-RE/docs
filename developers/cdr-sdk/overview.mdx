@@ -5,7 +5,7 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
 
 ## What is CDR?
 
-**Confidential Data Rails (CDR)** is a threshold encryption system built on Story L1 that allows you to encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts.
+**Confidential Data Rails (CDR)** is Story's application layer for threshold-encrypted data on Story L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
 
 CDR enables powerful use cases like:
 
@@ -40,7 +40,7 @@ CDR revolves around **vaults**. Each vault stores encrypted data and has two con
 3. **Collect** partial decryptions from validators (need a threshold number)
 4. **Combine** the partials client-side to recover the original data
 
-All encryption and decryption happens **client-side**. The CDR contract and validators never see your plaintext data.
+Plaintext encryption and final decryption happen **client-side**. Validators only produce TEE-confined partial decryptions, and neither the CDR contract nor validators ever see your plaintext data.
 
 ## Access Control Patterns
 

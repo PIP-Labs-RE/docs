@@ -16,7 +16,7 @@ DKG participation is **optional**. You can continue running a validator without 
 **What to know before joining:**
 - **SGX hardware required** — your machine must have Intel SGX support
 - **Self-undelegation is blocked** while you are an active DKG committee member. You cannot unstake your own delegation until the current DKG round ends (~7 days with production parameters). Other delegators are not affected.
-- If your kernel goes down, you miss the current round but **automatically rejoin** on the next one. Your validator continues producing blocks normally.
+- If your kernel goes down, your validator continues producing blocks normally. If the kernel restarts and the node finalizes successfully before the current round ends, it can rejoin that round; otherwise, it rejoins on the next one.
 
 ## Hardware Requirements
 
@@ -337,10 +337,12 @@ The SGX machine needs network access to your CometBFT RPC (port 26657).
 | Go | 1.24.0 |
 | Gramine | 1.9 (apt) |
 | gramine-ratls-dcap | 1.9 |
-| story-kernel | 0.1.0 (tag) |
+| story-kernel | v0.1.0 (tag) |
 | cb-mpc | v0.0.1-alpha |
 
 ### Enclave Measurement
+
+The measurements below correspond to `story-kernel` release `v0.1.0`. They can change when `story-kernel` or its measured build inputs are upgraded.
 
 ```
 MRENCLAVE:   6b2fb25e0084ad6ecbf6cfcefe09e2fa0fca2b84092f72c01f8fe98e9d7db5cd
@@ -355,7 +357,7 @@ Binary hash: 320a744e87426e36de63ebc8c7ff3af23e00ac7b29ad6093acdafd0bb029ca36
 No. SGX is only needed for DKG committee participation. Set `dkg.enable = false` to run without it.
 
 **What happens if my kernel goes down?**
-Your validator continues producing blocks. You miss the current DKG round but automatically rejoin on the next one.
+Your validator continues producing blocks. If the kernel restarts and the node finalizes successfully before the current DKG round ends, it can rejoin that round; otherwise, it rejoins on the next one.
 
 **What is MRENCLAVE?**
 A cryptographic hash of the SGX enclave contents. All validators must produce the same value to participate in the same DKG committee.
