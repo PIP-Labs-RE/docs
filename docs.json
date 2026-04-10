@@ -306,6 +306,7 @@
                     "pages": [
                       "developers/cdr-sdk/overview",
                       "developers/cdr-sdk/setup",
+                      "developers/cdr-sdk/advanced-configuration",
                       "developers/cdr-sdk/encrypt-and-decrypt",
                       "developers/cdr-sdk/ip-asset-vaults"
                     ]

@@ -11,9 +11,16 @@ The `Uploader` sub-client handles vault allocation, TDH2 encryption, and writing
 const uploader = client.uploader;
 ```
 
+<Note>
+  Use `uploadCDR()` for small secrets stored directly in the vault and
+  `uploadFile()` when the encrypted bytes should live in an external storage
+  backend.
+</Note>
+
 ### Methods
 
 - uploadCDR
+- uploadFile
 - allocate
 - write
 - encryptDataKey
@@ -71,6 +78,65 @@ interface UploadCDRResponse {
   };
 }
 ```
+
+---
+
+### uploadFile
+
+High-level method that encrypts file bytes locally, uploads the encrypted blob
+through a `StorageProvider`, and writes the encrypted file key plus content
+pointer to CDR in one call.
+
+Parameters:
+
+- `params.content`: `Uint8Array` - File bytes to encrypt and upload
+- `params.storageProvider`: `StorageProvider` - Backend used for upload and download
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.updatable`: `boolean` - Whether the vault can be rewritten
+- `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract
+- `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract
+- `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded write condition data
+- `params.readConditionData`: `` `0x${string}` `` - ABI-encoded read condition data
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to conditions during write
+- `params.allocateFeeOverride` *(optional)*: `bigint` - Skip the allocate fee query
+- `params.writeFeeOverride` *(optional)*: `bigint` - Skip the write fee query
+
+```typescript Example
+import { HeliaProvider } from "@piplabs/cdr-sdk";
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
+
+const helia = await createHelia();
+const storage = new HeliaProvider({
+  helia,
+  unixfs: unixfs(helia),
+  CID: (s) => CID.parse(s),
+});
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const { uuid, cid } = await client.uploader.uploadFile({
+  content: new TextEncoder().encode("Hello, CDR!"),
+  storageProvider: storage,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  accessAuxData: "0x",
+});
+
+console.log(`Vault UUID: ${uuid}`);
+console.log(`Stored CID: ${cid}`);
+```
+
+<Note>
+  `HeliaProvider` is the only storage backend fully tested on Aeneid in the
+  current release. `GatewayProvider`, `StorachaProvider`, and
+  `SynapseProvider` are implemented but were not yet end-to-end validated in
+  the release run.
+</Note>
 
 ---
 

@@ -14,6 +14,7 @@ const consumer = client.consumer;
 ### Methods
 
 - accessCDR
+- downloadFile
 - read
 - collectPartials
 - decryptDataKey
@@ -73,6 +74,36 @@ interface AccessCDRResponse {
 
 ---
 
+### downloadFile
+
+High-level method that reads the encrypted file key through CDR, downloads the
+encrypted blob from a `StorageProvider`, and returns the decrypted file bytes.
+
+Parameters:
+
+- `params.uuid`: `number` - The vault UUID
+- `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
+- `params.storageProvider`: `StorageProvider` - Backend used to fetch the encrypted content
+- `params.timeoutMs` *(optional)*: `number` - Timeout for validator partial collection
+
+```typescript Example
+const { content } = await client.consumer.downloadFile({
+  uuid: 42,
+  accessAuxData: "0x",
+  storageProvider,
+  timeoutMs: 120_000,
+});
+
+console.log(new TextDecoder().decode(content));
+```
+
+<Note>
+  For Story license-gated reads, `accessAuxData` should encode the caller's
+  license token IDs as `abi.encode(uint256[] licenseTokenIds)`.
+</Note>
+
+---
+
 ### read
 
 Submits a read request on-chain. The caller must satisfy the vault's read condition. Emits an event that validators listen for to begin generating partial decryptions.
@@ -117,6 +148,7 @@ Parameters:
 - `params.uuid`: `number` - The vault UUID
 - `params.minPartials`: `number` - Number of partials needed (= threshold)
 - `params.fromBlock`: `bigint` - Block number where the read request was submitted
+- `params.requesterPubKey` *(optional)*: `` `0x${string}` `` - Required in `cosmos-abci` mode
 - `params.timeoutMs` *(optional)*: `number` - Timeout in milliseconds (default: `60000`)
 - `params.pollIntervalMs` *(optional)*: `number` - Polling interval (default: `3000`)
 

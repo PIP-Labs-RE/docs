@@ -3,37 +3,44 @@ title: Setup CDR Client
 description: Learn how to install and configure the CDR SDK.
 ---
 
-<Warning>
-
-The below CDR docs are not yet complete. Additionally the SDK is not yet published to npm. It will be live soon.
-
-</Warning>
+<Note>
+  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`). The
+  SDK is not yet published to npm, so install it from source for now.
+</Note>
 
 ### Prerequisites
 
 - Node.js 18+ and npm 8+
-- A funded wallet on Story testnet
+- Node.js 22+ if you plan to use `HeliaProvider`
+- A funded wallet on Aeneid testnet
 - [viem](https://www.npmjs.com/package/viem) (v2.21+) for blockchain interactions
 
-### Install the Dependencies
+## Install from Source
 
 <CodeGroup>
 
-```bash npm
-npm install --save @piplabs/cdr-sdk viem
+```bash Build SDK
+git clone https://github.com/piplabs/cdr-sdk.git --branch 0.1.1
+cd cdr-sdk
+pnpm install
+pnpm build
 ```
 
-```bash pnpm
-pnpm install @piplabs/cdr-sdk viem
-```
-
-```bash yarn
-yarn add @piplabs/cdr-sdk viem
+```bash Install in your app
+npm install viem
+npm install --save <path-to-cdr-sdk>/packages/sdk
+npm install --save <path-to-cdr-sdk>/packages/contracts
+npm install --save <path-to-cdr-sdk>/packages/crypto
 ```
 
 </CodeGroup>
 
 <Note>`viem` (v2.21+) is a required peer dependency.</Note>
+
+<Note>
+  If you plan to mint Story license tokens in an IP-gated flow, also install
+  `@story-protocol/core-sdk`.
+</Note>
 
 ## Initialize WASM
 
@@ -169,11 +176,11 @@ const allocateFee = await client.observer.getAllocateFee();
 
 ## Network Configuration
 
-### Supported Networks
+### Supported Network
 
-| Network | `network` param | Default RPC URL              | Description                    |
-| ------- | --------------- | ---------------------------- | ------------------------------ |
-| Testnet | `"testnet"`     | `https://aeneid.storyrpc.io` | Public testnet for development |
+| Network | `network` param | Default RPC URL              | Description              |
+| ------- | --------------- | ---------------------------- | ------------------------ |
+| Aeneid  | `"testnet"`     | `https://aeneid.storyrpc.io` | Current supported release |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
@@ -184,15 +191,17 @@ const client = new CDRClient({ network: "testnet", publicClient });
 
 ### Custom RPC URL
 
-You can point the SDK to any Story-compatible RPC endpoint by changing the `http()` transport URL. This is useful for devnets, local development nodes, or third-party RPC providers with higher rate limits.
+You can point the SDK to any Aeneid-compatible RPC endpoint by changing the
+`http()` transport URL. This is useful for third-party RPC providers with
+higher rate limits.
 
 ```typescript
 const publicClient = createPublicClient({
-  transport: http("https://your-devnet-rpc.example.com"),
+  transport: http("https://your-aeneid-rpc.example.com"),
 });
 const walletClient = createWalletClient({
   account,
-  transport: http("https://your-devnet-rpc.example.com"),
+  transport: http("https://your-aeneid-rpc.example.com"),
 });
 
 // Use "testnet"
@@ -220,21 +229,18 @@ const client = new CDRClient({ network: NETWORK, publicClient });
 RPC_URL=https://aeneid.storyrpc.io
 NETWORK=testnet
 
-# Custom devnet
-RPC_URL=http://localhost:8545
+# Alternate Aeneid RPC
+RPC_URL=https://your-aeneid-rpc.example.com
 NETWORK=testnet
 ```
 
-## Contract Addresses
+## Next Steps
 
-Both networks use the same pre-deployed system contract addresses:
-
-| Contract | Address                                      |
-| -------- | -------------------------------------------- |
-| DKG      | `0xcccccc0000000000000000000000000000000004` |
-| CDR      | `0xcccccc0000000000000000000000000000000005` |
-
-These are pre-configured in the SDK -- you do not need to specify them manually.
+- For DKG backends, validation RPCs, system addresses, and current Aeneid
+  runtime notes, see
+  [Runtime Configuration](/developers/cdr-sdk/advanced-configuration).
+- For the main integration flows, continue to
+  [Encrypt & Decrypt](/developers/cdr-sdk/encrypt-and-decrypt).
 
 ## Error Handling
 

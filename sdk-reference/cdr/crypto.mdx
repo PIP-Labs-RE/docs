@@ -11,6 +11,13 @@ These are the low-level cryptographic functions used internally by the CDR SDK. 
   All crypto functions require WASM to be initialized first via `initWasm()`.
 </Note>
 
+<Note>
+  The current Aeneid release also includes SGX attestation verification
+  utilities, including `verifyAttestation()`, for checking validator
+  attestations against expected enclave measurements and security version
+  values.
+</Note>
+
 ### Functions
 
 - initWasm
@@ -18,6 +25,7 @@ These are the low-level cryptographic functions used internally by the CDR SDK. 
 - tdh2Verify
 - tdh2Combine
 - decryptPartial
+- verifyAttestation
 - uuidToLabel
 
 ---
@@ -170,6 +178,15 @@ const rawPartial = await decryptPartial({
 1. ECDH: `sharedPoint = secp256k1(recipientPrivKey, ephemeralPubKey)`
 2. HKDF-SHA256: `aesKey = hkdf(sha256, sharedSecret, info="dkg-tdh2-partial", 32)`
 3. AES-256-GCM: decrypt with 12-byte nonce from the encrypted partial
+
+---
+
+### verifyAttestation
+
+Verifies a validator SGX attestation document against the expected enclave
+measurements and minimum security version checks. Use it with the data returned
+by `observer.getValidatorAttestations()` when your application wants an
+explicit `MRENCLAVE`, `MRSIGNER`, and `SVN` trust check.
 
 ---
 

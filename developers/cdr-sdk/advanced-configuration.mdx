@@ -1,0 +1,75 @@
+---
+title: Runtime Configuration
+description: DKG backends, validation RPCs, system addresses, and Aeneid runtime notes for the CDR SDK.
+---
+
+<Note>
+  This page covers the release-specific and operational details that sit beyond
+  basic setup. Start with [Setup CDR Client](/developers/cdr-sdk/setup) first.
+</Note>
+
+## DKG Query Modes
+
+The SDK supports two backends for reading DKG state:
+
+| Mode | What it does | When to use it |
+| ---- | ------------ | -------------- |
+| `evm-events` | Scans DKG contract events via standard EVM RPC | Default, works anywhere |
+| `cosmos-abci` | Queries the `x/dkg` keeper via CometBFT `abci_query` | Faster when you have access to a Comet RPC |
+
+```typescript
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+  dkgSource: "cosmos-abci",
+  cometRpcUrl: "http://172.192.41.96:26657",
+});
+```
+
+<Note>
+  In `cosmos-abci` mode, the SDK does not re-verify partial decryption
+  signatures locally. The `x/dkg` keeper verifies them before storage, so the
+  trust model is equivalent to reading that state through RPC.
+</Note>
+
+## Validation RPCs
+
+If you want to defend against a single compromised RPC returning an incorrect
+DKG public key, configure additional validation RPCs. When set,
+`observer.getGlobalPubKey()` cross-checks them and throws if the nodes disagree.
+
+```typescript
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+  validationRpcUrls: [
+    "https://aeneid-rpc-2.storyrpc.io",
+    "https://aeneid-rpc-3.storyrpc.io",
+  ],
+});
+```
+
+## Contract Addresses
+
+The current Aeneid release uses the following core system addresses:
+
+| Contract | Address                                      |
+| -------- | -------------------------------------------- |
+| DKG | `0xCcCcCC0000000000000000000000000000000004` |
+| CDR | `0xCcCcCC0000000000000000000000000000000005` |
+
+The SDK already knows these addresses. For Story license-gated condition
+contracts, see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults).
+
+## Current Release Notes
+
+- The SDK is installable from source, not npm.
+- Story license-gated vaults still require manual condition encoding.
+- The CDR SDK does not auto-wrap IP to WIP or auto-approve WIP for license
+  minting.
+- `getRegisteredValidators()` can return an empty list in `cosmos-abci` mode
+  for finalized rounds on the current Aeneid deployment.
+- `timeoutMs: 120_000` is a good starting point for `accessCDR()` and
+  `downloadFile()`.

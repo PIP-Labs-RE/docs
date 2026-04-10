@@ -21,6 +21,9 @@ const observer = client.observer;
 - getOperationalThreshold
 - getParticipantCount
 - getThreshold
+- getMaxEncryptedDataSize
+- getRegisteredValidators
+- getValidatorAttestations
 
 ---
 
@@ -122,6 +125,11 @@ const globalPubKey = await client.observer.getGlobalPubKey();
 console.log(globalPubKey.length); // 34
 ```
 
+<Note>
+  If `validationRpcUrls` are configured on the client, this method cross-checks
+  the key across those RPCs and throws if they disagree.
+</Note>
+
 ---
 
 ### getOperationalThreshold
@@ -173,4 +181,54 @@ Parameters:
 ```typescript Example
 const threshold = await client.observer.getThreshold();
 console.log(`Need ${threshold} partials to decrypt`); // e.g. "Need 2 partials to decrypt"
+```
+
+---
+
+### getMaxEncryptedDataSize
+
+Returns the maximum encrypted payload size supported by the on-chain vault path.
+
+| Method | Type |
+| ------ | ---- |
+| `getMaxEncryptedDataSize` | `() => Promise<number>` |
+
+```typescript Example
+const maxSize = await client.observer.getMaxEncryptedDataSize();
+console.log(`Max encrypted payload size: ${maxSize} bytes`);
+```
+
+---
+
+### getRegisteredValidators
+
+Returns the validator registrations for the latest DKG round.
+
+| Method | Type |
+| ------ | ---- |
+| `getRegisteredValidators` | `() => Promise<unknown[]>` |
+
+```typescript Example
+const validators = await client.observer.getRegisteredValidators();
+console.log(validators);
+```
+
+<Note>
+  On the current Aeneid release, this can return an empty list in
+  `cosmos-abci` mode after a round has finalized.
+</Note>
+
+---
+
+### getValidatorAttestations
+
+Returns the SGX attestation documents associated with the active validators.
+
+| Method | Type |
+| ------ | ---- |
+| `getValidatorAttestations` | `() => Promise<unknown[]>` |
+
+```typescript Example
+const attestations = await client.observer.getValidatorAttestations();
+console.log(attestations);
 ```

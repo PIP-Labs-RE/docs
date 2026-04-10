@@ -5,10 +5,10 @@ description: "Overview of all available Story TypeScript SDKs"
 
 Story provides two TypeScript SDKs for building on the protocol:
 
-| Package                                                              | Description                                                                 | npm                                                           | GitHub                                                 |
+| Package                                                              | Description                                                                 | Install                                                       | GitHub                                                 |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------ |
 | <Icon icon="screwdriver-wrench" iconType="solid" /> **Protocol SDK** | Register IP Assets, manage licensing, royalties, disputes, and more         | [npm](https://www.npmjs.com/package/@story-protocol/core-sdk) | [Code](https://github.com/storyprotocol/sdk/tree/main) |
-| <Icon icon="lock" iconType="solid" /> **CDR SDK**                    | Threshold encryption, confidential data vaults, and on-chain access control | [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk)         | [Code](https://github.com/piplabs/cdr-sdk)             |
+| <Icon icon="lock" iconType="solid" /> **CDR SDK**                    | Threshold encryption, confidential data vaults, and on-chain access control | [Source install](https://github.com/piplabs/cdr-sdk/releases/tag/0.1.1) | [Code](https://github.com/piplabs/cdr-sdk)             |
 
 A Python SDK is also available for the Protocol SDK:
 
@@ -92,7 +92,11 @@ The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting
 
 ## CDR SDK
 
-The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's Confidential Data Rails system. Use it to encrypt secrets using threshold cryptography, store them in on-chain vaults with configurable access control, and decrypt them by collecting partial decryptions from validators.
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's
+Confidential Data Rails system. The current release targets Aeneid and covers
+both on-chain secret vaults (`uploadCDR` / `accessCDR`) and encrypted-file
+workflows (`uploadFile` / `downloadFile`). The package is installable from
+source today and is not yet published to npm.
 
 <CardGroup cols={2}>
   <Card title="Step-by-Step Guide" icon="house" href="/developers/cdr-sdk">

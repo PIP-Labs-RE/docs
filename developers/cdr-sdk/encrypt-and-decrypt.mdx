@@ -3,7 +3,10 @@ title: Encrypt & Decrypt
 description: Learn how to encrypt a secret and decrypt it using CDR threshold decryption.
 ---
 
-This guide walks through the simplest CDR flow: encrypting a secret that only your wallet can decrypt.
+This guide walks through the two main CDR flows:
+
+- `uploadCDR` / `accessCDR` for small secrets stored directly on-chain
+- `uploadFile` / `downloadFile` for larger encrypted files stored off-chain
 
 ### Prerequisites
 
@@ -110,6 +113,69 @@ console.log(`Decrypted secret: ${secret}`);
   this timeout, try another read request.
 </Note>
 
+## Encrypt and Download a File
+
+Use the file workflow when the encrypted payload should live off-chain and only
+the encrypted file key plus pointer should be stored in the vault.
+
+```typescript
+import { HeliaProvider } from "@piplabs/cdr-sdk";
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+
+const helia = await createHelia();
+const storage = new HeliaProvider({
+  helia,
+  unixfs: unixfs(helia),
+  CID: (s) => CID.parse(s),
+});
+
+const { uuid, cid } = await client.uploader.uploadFile({
+  content: new TextEncoder().encode("Hello, CDR!"),
+  storageProvider: storage,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  accessAuxData: "0x",
+});
+
+const { content } = await client.consumer.downloadFile({
+  uuid,
+  accessAuxData: "0x",
+  storageProvider: storage,
+  timeoutMs: 120_000,
+});
+
+console.log(`Stored at CID: ${cid}`);
+console.log(new TextDecoder().decode(content));
+```
+
+<Note>
+  `HeliaProvider` is the only storage backend fully tested on Aeneid in the
+  current release, and it requires Node.js 22+.
+</Note>
+
+### Storage Providers
+
+The encrypted-file workflow supports four storage backends:
+
+- `HeliaProvider` for in-process IPFS. This is the best starting point for
+  development and the only backend fully tested on Aeneid so far.
+- `GatewayProvider` for an external IPFS HTTP API plus a gateway URL.
+- `StorachaProvider` for Storacha / `web3.storage`.
+- `SynapseProvider` for Filecoin-backed storage via Synapse.
+
+<Note>
+  If you use `HeliaProvider`, pass the `CID.parse` function into the
+  constructor as shown above to avoid class mismatches.
+</Note>
+
 ## Step-by-Step (Low-Level)
 
 If you need more control over the process, you can call each step individually.
@@ -165,6 +231,7 @@ const partials = await consumer.collectPartials({
   minPartials: threshold,
   fromBlock: receipt.blockNumber,
   timeoutMs: 120_000,
+  requesterPubKey, // required if you use dkgSource: "cosmos-abci"
 });
 
 // 3. Combine partials and recover the data key

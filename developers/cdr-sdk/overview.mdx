@@ -3,6 +3,11 @@ title: CDR SDK Overview
 description: Learn how to integrate Confidential Data Rails (CDR) into your application using the CDR SDK.
 ---
 
+<Note>
+  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`).
+  The SDK is installable from source today and is not yet published to npm.
+</Note>
+
 ## What is CDR?
 
 **Confidential Data Rails (CDR)** is Story's application layer for threshold-encrypted data on Story L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
@@ -10,8 +15,23 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
 CDR enables powerful use cases like:
 
 - **Secret sharing** - encrypt and share secrets that only specific wallets can decrypt
+- **Encrypted file delivery** - keep large files off-chain while storing the encrypted file key on-chain
 - **Data marketplaces** - sell access to encrypted data with on-chain payment enforcement
 - **IP-gated content** - tie encrypted data to IP Assets and require license tokens to decrypt
+
+## What Ships in the Aeneid Release
+
+The current SDK surface is centered around two workflows:
+
+- **Data key vaults** via `uploadCDR` / `accessCDR` for small secrets stored directly on-chain
+- **Encrypted files** via `uploadFile` / `downloadFile` for off-chain content with on-chain key management
+
+The Aeneid release also includes:
+
+- `observer`, `uploader`, and `consumer` sub-clients
+- Two DKG query backends: `evm-events` (default) and `cosmos-abci`
+- Storage providers for Helia, gateway-backed IPFS, Storacha, and Synapse
+- Validator registration, attestation queries, and SGX attestation verification utilities
 
 ## How It Works
 
@@ -26,19 +46,32 @@ CDR revolves around **vaults**. Each vault stores encrypted data and has two con
   the simplest access control pattern.
 </Note>
 
-### Encryption Flow
+There are two common ways to use a vault:
+
+- **On-chain secret**: store the encrypted bytes directly in the vault
+- **Off-chain file**: store an encrypted file in a storage backend and keep the
+  encrypted AES key plus content pointer in the vault
+
+### Data Key Vault Flow
 
 1. **Allocate** a vault on-chain with your desired read/write conditions
 2. **Fetch** the DKG global public key from the validator network
 3. **Encrypt** your data locally using TDH2 threshold encryption
 4. **Write** the encrypted ciphertext to the vault on-chain
 
+### Encrypted File Flow
+
+1. **Encrypt** the file locally with an AES key
+2. **Upload** the encrypted file to a storage backend such as IPFS
+3. **Encrypt** the AES key through CDR and write the resulting vault data
+4. **Read** the vault, recover the AES key, and decrypt the file client-side
+
 ### Decryption Flow
 
-1. **Generate** an ephemeral keypair (used only for this decryption session)
+1. **Generate** an ephemeral keypair for the decryption session
 2. **Submit** a read request on-chain (validated against the read condition)
-3. **Collect** partial decryptions from validators (need a threshold number)
-4. **Combine** the partials client-side to recover the original data
+3. **Collect** partial decryptions from validators until you meet threshold
+4. **Combine** the partials client-side to recover the original data key
 
 Plaintext encryption and final decryption happen **client-side**. Validators only produce TEE-confined partial decryptions, and neither the CDR contract nor validators ever see your plaintext data.
 
@@ -60,15 +93,11 @@ await uploader.allocate({
 
 ### License Token (IP-Gated)
 
-Register the vault as an IP Asset and require a license token to decrypt. The creator writes data, and anyone holding a license token can read it.
-
-```typescript
-// Create vault with IP Asset registration
-const { tokenId, uuid, ipId } = await cdrVaultNFT.createVault(licenseTermsId);
-
-// Mint license tokens to grant read access
-await cdrVaultNFT.mintLicenseTokens(tokenId, amount, receiverAddress);
-```
+Use the deployed `LicenseReadCondition` contract on Aeneid and encode
+`abi.encode(licenseTokenAddress, ipId)` as `readConditionData`. The vault
+writer typically uses the deployed `OwnerWriteCondition` contract so only the
+uploader can write, while readers must present valid Story license token IDs in
+`accessAuxData`.
 
 ### Custom Condition Contracts
 
@@ -78,25 +107,53 @@ Deploy your own condition contract implementing `checkReadCondition` and `checkW
 - **Time-based** - access only during a specific time window
 - **Marketplace** - listing owner controls writes, purchasers can read
 
+### Condition Helpers
+
+The SDK includes helper encoders for common access patterns:
+
+```typescript
+import { conditions } from "@piplabs/cdr-sdk";
+
+conditions.ownerOnly({ address: conditionAddr, owner: "0x..." });
+conditions.custom({ address: conditionAddr, conditionData: "0x..." });
+conditions.open({ address: conditionAddr });
+conditions.tokenGate({ address: conditionAddr, token: "0x...", minBalance: 1n });
+conditions.merkle({ address: conditionAddr, root: "0x..." });
+```
+
+<Note>
+  On Aeneid, `ownerOnly()` and `custom()` are the practical built-in patterns
+  today. `open()`, `tokenGate()`, and `merkle()` help encode condition data,
+  but you still need to deploy a matching condition contract yourself.
+  `conditions.storyLicense()` is not available yet.
+</Note>
+
 ## Next Steps
 
 <CardGroup cols={2}>
   <Card title="Setup" icon="gear" href="/developers/cdr-sdk/setup">
-    Install dependencies and initialize the CDR client.
+    Install the SDK from source and initialize the client for Aeneid.
+  </Card>
+  <Card
+    title="Runtime Config"
+    icon="sliders"
+    href="/developers/cdr-sdk/advanced-configuration"
+  >
+    DKG backends, validation RPCs, system addresses, and release notes.
   </Card>
   <Card
     title="Encrypt & Decrypt"
     icon="lock"
     href="/developers/cdr-sdk/encrypt-and-decrypt"
   >
-    Encrypt a secret and decrypt it with threshold decryption.
+    Use both the on-chain secret and encrypted-file workflows.
   </Card>
   <Card
     title="IP Asset Vaults"
     icon="certificate"
     href="/developers/cdr-sdk/ip-asset-vaults"
   >
-    Create IP-gated vaults that require license tokens to decrypt.
+    Configure license-gated reads with Story license tokens on Aeneid.
   </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
     Full API reference for every CDR SDK method.

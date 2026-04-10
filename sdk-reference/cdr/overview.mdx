@@ -3,17 +3,16 @@ title: "CDR SDK Reference Overview"
 description: "A detailed description of every function in the CDR SDK"
 ---
 
-<Warning>
-
-The below CDR docs are not yet complete. Additionally the SDK is not yet published to npm. It will be live soon.
-
-</Warning>
+<Note>
+  This reference tracks the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`).
+  The package is installable from source today and is not yet available on npm.
+</Note>
 
 The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for interacting with Story's Confidential Data Rails system. It handles threshold encryption, vault management, and on-chain access control.
 
 | Language                                                       | Package                                                                                         | GitHub                                                                                                 |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [Source install](https://github.com/piplabs/cdr-sdk/releases/tag/0.1.1) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
 
 ---
 
@@ -29,15 +28,28 @@ The main entry point. Provides access to three sub-clients:
 import { CDRClient } from "@piplabs/cdr-sdk";
 
 const client = new CDRClient({
-  network: "testnet", // or "mainnet"
+  network: "testnet",
   publicClient, // viem PublicClient
   walletClient, // optional viem WalletClient
+  dkgSource: "evm-events", // default
+  // cometRpcUrl: "http://<comet-host>:26657", // only for cosmos-abci mode
+  // validationRpcUrls: ["https://aeneid-rpc-2.storyrpc.io"],
 });
 
 client.observer; // read-only queries
 client.uploader; // encryption & vault allocation
 client.consumer; // decryption & read requests
 ```
+
+## Current Surface Area
+
+- `observer`: vaults, fees, DKG state, validator registrations, and validator
+  attestations
+- `uploader`: `uploadCDR`, `uploadFile`, `allocate`, `write`, and
+  `encryptDataKey`
+- `consumer`: `accessCDR`, `downloadFile`, `read`, `collectPartials`, and
+  `decryptDataKey`
+- `crypto`: low-level TDH2, ECIES, and SGX attestation verification helpers
 
 ## Sub-Clients
 
@@ -46,10 +58,10 @@ client.consumer; // decryption & read requests
     Read-only queries for vault data, fees, and DKG state.
   </Card>
   <Card title="Uploader" icon="lock" href="/sdk-reference/cdr/uploader">
-    Encrypt data and write it to CDR vaults.
+    Encrypt data, upload encrypted files, and write to CDR vaults.
   </Card>
   <Card title="Consumer" icon="lock-open" href="/sdk-reference/cdr/consumer">
-    Request decryption and recover encrypted data.
+    Request decryption, download encrypted files, and recover plaintext.
   </Card>
 </CardGroup>
 
