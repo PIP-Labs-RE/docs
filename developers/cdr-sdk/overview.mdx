@@ -59,12 +59,18 @@ There are two common ways to use a vault:
 3. **Encrypt** your data locally using TDH2 threshold encryption
 4. **Write** the encrypted ciphertext to the vault on-chain
 
+Walkthrough:
+[Encrypt a Secret](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
+
 ### Encrypted File Flow
 
 1. **Encrypt** the file locally with an AES key
 2. **Upload** the encrypted file to a storage backend such as IPFS
 3. **Encrypt** the AES key through CDR and write the resulting vault data
 4. **Read** the vault, recover the AES key, and decrypt the file client-side
+
+Walkthrough:
+[Encrypt and Download a File](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
 
 ### Decryption Flow
 
@@ -91,6 +97,9 @@ await uploader.allocate({
 });
 ```
 
+For an end-to-end example, see
+[Encrypt a Secret](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
+
 ### License Token (IP-Gated)
 
 Use the deployed `LicenseReadCondition` contract on Aeneid and encode
@@ -98,6 +107,9 @@ Use the deployed `LicenseReadCondition` contract on Aeneid and encode
 writer typically uses the deployed `OwnerWriteCondition` contract so only the
 uploader can write, while readers must present valid Story license token IDs in
 `accessAuxData`.
+
+Technical walkthrough:
+[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
 
 ### Custom Condition Contracts
 
@@ -127,6 +139,9 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
   but you still need to deploy a matching condition contract yourself.
   `conditions.storyLicense()` is not available yet.
 </Note>
+
+For the deployed Story license-gated pattern, see
+[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
 
 ## Next Steps
 

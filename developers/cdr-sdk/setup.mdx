@@ -20,17 +20,10 @@ description: Learn how to install and configure the CDR SDK.
 <CodeGroup>
 
 ```bash Build SDK
-git clone https://github.com/piplabs/cdr-sdk.git --branch 0.1.1
-cd cdr-sdk
-pnpm install
-pnpm build
-```
-
-```bash Install in your app
-npm install viem
-npm install --save <path-to-cdr-sdk>/packages/sdk
-npm install --save <path-to-cdr-sdk>/packages/contracts
-npm install --save <path-to-cdr-sdk>/packages/crypto
+git clone https://github.com/piplabs/cdr-sdk.git --branch 0.1.1 --depth 1
+cd cdr-sdk && pnpm install && pnpm build
+cd ../your-project
+npm install ../cdr-sdk/packages/sdk viem
 ```
 
 </CodeGroup>
@@ -236,8 +229,7 @@ NETWORK=testnet
 
 ## Next Steps
 
-- For DKG backends, validation RPCs, system addresses, and current Aeneid
-  runtime notes, see
+- For network-side runtime behavior, see
   [Runtime Configuration](/developers/cdr-sdk/advanced-configuration).
 - For the main integration flows, continue to
   [Encrypt & Decrypt](/developers/cdr-sdk/encrypt-and-decrypt).

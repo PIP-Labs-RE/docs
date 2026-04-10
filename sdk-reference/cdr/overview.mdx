@@ -51,6 +51,13 @@ client.consumer; // decryption & read requests
   `decryptDataKey`
 - `crypto`: low-level TDH2, ECIES, and SGX attestation verification helpers
 
+`v0.1.1` also adds high-level aliases:
+
+- `createVault` as an alias for `uploadCDR`
+- `readVault` as an alias for `accessCDR`
+- `createFileVault` as an alias for `uploadFile`
+- `readFileVault` as an alias for `downloadFile`
+
 ## Sub-Clients
 
 <CardGroup cols={3}>

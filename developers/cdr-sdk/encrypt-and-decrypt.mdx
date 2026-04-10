@@ -108,6 +108,12 @@ console.log(`Decrypted secret: ${secret}`);
 ```
 
 <Note>
+  In `v0.1.1`, `accessCDR()` can generate the ephemeral keypair and query the
+  threshold for you when those params are omitted. This guide passes them
+  explicitly so the underlying decryption flow stays visible.
+</Note>
+
+<Note>
   The timeout of the request on the server side is 200 blocks, which is
   approximately 7 minutes. If you're not able to collect enough partials within
   this timeout, try another read request.

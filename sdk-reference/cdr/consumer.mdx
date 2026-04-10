@@ -11,6 +11,11 @@ The `Consumer` sub-client handles read requests, partial decryption collection f
 const consumer = client.consumer;
 ```
 
+<Note>
+  `v0.1.1` also exposes `readVault` as an alias for `accessCDR`, and
+  `readFileVault` as an alias for `downloadFile`.
+</Note>
+
 ### Methods
 
 - accessCDR
@@ -33,10 +38,10 @@ Parameters:
 
 - `params.uuid`: `number` - The vault UUID
 - `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
-- `params.requesterPubKey`: `` `0x${string}` `` - Uncompressed secp256k1 public key (65 bytes, `0x04` prefix)
-- `params.recipientPrivKey`: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials)
+- `params.requesterPubKey` *(optional)*: `` `0x${string}` `` - Uncompressed secp256k1 public key (65 bytes, `0x04` prefix). If omitted, the SDK generates an ephemeral keypair.
+- `params.recipientPrivKey` *(optional)*: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials). If omitted, the SDK generates an ephemeral keypair.
 - `params.globalPubKey`: `Uint8Array` - DKG global public key (from `observer.getGlobalPubKey()`)
-- `params.threshold`: `number` - Minimum partials needed (from `observer.getThreshold()`)
+- `params.threshold` *(optional)*: `number` - Minimum partials needed (from `observer.getThreshold()`). If omitted, the SDK queries it for you.
 - `params.timeoutMs` *(optional)*: `number` - Timeout for collecting partials (default: `60000`)
 - `params.feeOverride` *(optional)*: `bigint` - Skip fee query
 
@@ -64,6 +69,11 @@ const { dataKey, txHash } = await client.consumer.accessCDR({
 const secret = new TextDecoder().decode(dataKey);
 console.log(`Decrypted: ${secret}`);
 ```
+
+<Note>
+  If you want the shortest high-level path, you can omit `requesterPubKey`,
+  `recipientPrivKey`, and `threshold` and let `accessCDR()` fill them in.
+</Note>
 
 ```typescript AccessCDRResponse
 interface AccessCDRResponse {

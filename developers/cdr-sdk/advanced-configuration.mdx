@@ -12,9 +12,9 @@ description: DKG backends, validation RPCs, system addresses, and Aeneid runtime
 
 The SDK supports two backends for reading DKG state:
 
-| Mode | What it does | When to use it |
-| ---- | ------------ | -------------- |
-| `evm-events` | Scans DKG contract events via standard EVM RPC | Default, works anywhere |
+| Mode          | What it does                                         | When to use it                             |
+| ------------- | ---------------------------------------------------- | ------------------------------------------ |
+| `evm-events`  | Scans DKG contract events via standard EVM RPC       | Default, works anywhere                    |
 | `cosmos-abci` | Queries the `x/dkg` keeper via CometBFT `abci_query` | Faster when you have access to a Comet RPC |
 
 ```typescript
@@ -23,7 +23,7 @@ const client = new CDRClient({
   publicClient,
   walletClient,
   dkgSource: "cosmos-abci",
-  cometRpcUrl: "http://172.192.41.96:26657",
+  cometRpcUrl: "http://your-node:26657",
 });
 ```
 
@@ -57,11 +57,12 @@ The current Aeneid release uses the following core system addresses:
 
 | Contract | Address                                      |
 | -------- | -------------------------------------------- |
-| DKG | `0xCcCcCC0000000000000000000000000000000004` |
-| CDR | `0xCcCcCC0000000000000000000000000000000005` |
+| DKG      | `0xCcCcCC0000000000000000000000000000000004` |
+| CDR      | `0xCcCcCC0000000000000000000000000000000005` |
 
 The SDK already knows these addresses. For Story license-gated condition
-contracts, see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults).
+contracts, see
+[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
 
 ## Current Release Notes
 
@@ -69,6 +70,10 @@ contracts, see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults).
 - Story license-gated vaults still require manual condition encoding.
 - The CDR SDK does not auto-wrap IP to WIP or auto-approve WIP for license
   minting.
+- `accessCDR()` can auto-generate the ephemeral keypair and query `threshold`
+  when those params are omitted.
+- `createVault` / `readVault` / `createFileVault` / `readFileVault` are
+  available as high-level aliases.
 - `getRegisteredValidators()` can return an empty list in `cosmos-abci` mode
   for finalized rounds on the current Aeneid deployment.
 - `timeoutMs: 120_000` is a good starting point for `accessCDR()` and

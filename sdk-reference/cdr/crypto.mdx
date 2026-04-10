@@ -188,6 +188,16 @@ measurements and minimum security version checks. Use it with the data returned
 by `observer.getValidatorAttestations()` when your application wants an
 explicit `MRENCLAVE`, `MRSIGNER`, and `SVN` trust check.
 
+```typescript Example
+import { verifyAttestation } from "@piplabs/cdr-sdk";
+
+const result = verifyAttestation(report, {
+  mrEnclave,
+  mrSigner,
+  minSvn: 1,
+});
+```
+
 ---
 
 ### uuidToLabel
