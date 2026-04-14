@@ -42,11 +42,11 @@ High-level method that allocates a vault, encrypts your data, and writes the cip
 
 Parameters:
 
-- `params.dataKey`: `Uint8Array` - The secret data to encrypt (arbitrary bytes, up to 32 bytes for a key)
+- `params.dataKey`: `Uint8Array` - The secret payload bytes to encrypt. Despite the name, this can be arbitrary data, not only a cryptographic key.
 - `params.globalPubKey`: `Uint8Array` - The DKG global public key (from `observer.getGlobalPubKey()`)
 - `params.updatable`: `boolean` - Whether the vault can be rewritten after initial write
-- `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract (or wallet address for simple access)
-- `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract (or wallet address for simple access)
+- `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract
+- `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract
 - `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded data passed to the write condition
 - `params.readConditionData`: `` `0x${string}` `` - ABI-encoded data passed to the read condition
 - `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to conditions during write
@@ -54,6 +54,14 @@ Parameters:
 - `params.writeFeeOverride` *(optional)*: `bigint` - Skip fee query and use this value
 
 ```typescript Example
+import { encodeAbiParameters } from "viem";
+
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletClient.account!.address],
+);
+
 const globalPubKey = await client.observer.getGlobalPubKey();
 const dataKey = new TextEncoder().encode("my secret");
 
@@ -61,10 +69,10 @@ const { uuid, ciphertext, txHashes } = await client.uploader.uploadCDR({
   dataKey,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: walletAddress,
-  readConditionAddr: walletAddress,
-  writeConditionData: "0x",
-  readConditionData: "0x",
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
   accessAuxData: "0x",
 });
 
@@ -72,6 +80,12 @@ console.log(`Vault UUID: ${uuid}`);
 console.log(`Allocate tx: ${txHashes.allocate}`);
 console.log(`Write tx: ${txHashes.write}`);
 ```
+
+<Note>
+  Keep `uploadCDR()` payloads small enough that the resulting TDH2 ciphertext
+  fits the vault limit (`observer.getMaxEncryptedDataSize()`, which is 1024
+  bytes on Aeneid).
+</Note>
 
 ```typescript UploadCDRResponse
 interface UploadCDRResponse {
@@ -108,9 +122,11 @@ Parameters:
 
 ```typescript Example
 import { HeliaProvider } from "@piplabs/cdr-sdk";
+import { readFile } from "node:fs/promises";
 import { createHelia } from "helia";
 import { unixfs } from "@helia/unixfs";
 import { CID } from "multiformats/cid";
+import { encodeAbiParameters } from "viem";
 
 const helia = await createHelia();
 const storage = new HeliaProvider({
@@ -119,16 +135,23 @@ const storage = new HeliaProvider({
   CID: (s) => CID.parse(s),
 });
 
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletClient.account!.address],
+);
+
+const fileBytes = await readFile("./example.pdf");
 const globalPubKey = await client.observer.getGlobalPubKey();
 const { uuid, cid } = await client.uploader.uploadFile({
-  content: new TextEncoder().encode("Hello, CDR!"),
+  content: new Uint8Array(fileBytes),
   storageProvider: storage,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: walletAddress,
-  readConditionAddr: walletAddress,
-  writeConditionData: "0x",
-  readConditionData: "0x",
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
   accessAuxData: "0x",
 });
 
@@ -141,6 +164,16 @@ console.log(`Stored CID: ${cid}`);
   current release. `GatewayProvider`, `StorachaProvider`, and
   `SynapseProvider` are implemented but were not yet end-to-end validated in
   the release run.
+</Note>
+
+<Note>
+  `uploadFile()` keeps the file bytes off-chain. The vault stores a TDH2
+  ciphertext of a small JSON payload containing `{ cid, key }`.
+</Note>
+
+<Note>
+  In browser code, pass file bytes from
+  `new Uint8Array(await file.arrayBuffer())` instead of `readFile(...)`.
 </Note>
 
 ---
@@ -161,18 +194,27 @@ Parameters:
 - `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded write condition data
 - `params.readConditionData`: `` `0x${string}` `` - ABI-encoded read condition data
 - `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+- `params.skipConditionValidation` *(optional)*: `boolean` - Skip interface validation when intentionally using an EOA condition address
 
 ```typescript Example
+const userAddress = walletClient.account!.address;
+
 const { txHash, uuid } = await client.uploader.allocate({
   updatable: false,
-  writeConditionAddr: walletAddress,
-  readConditionAddr: walletAddress,
+  writeConditionAddr: userAddress,
+  readConditionAddr: userAddress,
   writeConditionData: "0x",
   readConditionData: "0x",
+  skipConditionValidation: true,
 });
 
 console.log(`Vault ${uuid} allocated at tx: ${txHash}`);
 ```
+
+<Note>
+  `uploadCDR()` and `uploadFile()` do not expose `skipConditionValidation`, so
+  use a real condition contract with those high-level helpers.
+</Note>
 
 ```typescript AllocateResponse
 interface AllocateResponse {

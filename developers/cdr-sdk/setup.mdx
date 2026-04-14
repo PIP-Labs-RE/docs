@@ -51,6 +51,26 @@ await initWasm();
   effect so it's ready before any CDR operations are attempted.
 </Note>
 
+## Browser and Bundler Guidance
+
+- **Vite / webpack** - Import the SDK from normal ESM application code and call
+  `initWasm()` before the first encryption or decryption. If your SSR build
+  tries to evaluate the SDK server-side, move the import behind a client-only
+  boundary.
+- **Next.js / SSR** - Keep browser wallet flows in `"use client"` components.
+  For route handlers or scripts that use CDR cryptography, run them in the Node
+  runtime instead of Edge.
+- **Edge runtime** - The current release is not documented for Edge runtimes.
+  Prefer the browser or Node.js runtime on Aeneid.
+- **TypeScript** - Use modern ESM resolution. `moduleResolution: "Bundler"` is
+  a good default for browser apps; `moduleResolution: "NodeNext"` fits pure
+  Node ESM projects.
+
+```typescript
+// Next.js route handlers / server actions
+export const runtime = "nodejs";
+```
+
 ## Create the CDR Client
 
 The `CDRClient` provides three sub-clients:
@@ -227,6 +247,80 @@ RPC_URL=https://your-aeneid-rpc.example.com
 NETWORK=testnet
 ```
 
+## Quick Start: End-to-End Secret Example
+
+The script below creates an owner-only vault, writes a small secret, then reads
+it back with the same wallet. It is fully runnable once `WALLET_PRIVATE_KEY` is
+set.
+
+```typescript quickstart-cdr.ts
+import { CDRClient, initWasm } from "@piplabs/cdr-sdk";
+import {
+  createPublicClient,
+  createWalletClient,
+  encodeAbiParameters,
+  http,
+} from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+
+if (!PRIVATE_KEY) {
+  throw new Error("Set WALLET_PRIVATE_KEY before running this script.");
+}
+
+const account = privateKeyToAccount(PRIVATE_KEY);
+const publicClient = createPublicClient({ transport: http(RPC_URL) });
+const walletClient = createWalletClient({
+  account,
+  transport: http(RPC_URL),
+});
+
+await initWasm();
+
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+});
+
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [account.address],
+);
+
+const { uuid, txHashes } = await client.uploader.uploadCDR({
+  dataKey: new TextEncoder().encode("hello from CDR"),
+  globalPubKey: await client.observer.getGlobalPubKey(),
+  updatable: false,
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
+  accessAuxData: "0x",
+});
+
+console.log("Vault UUID:", uuid);
+console.log("Allocate tx:", txHashes.allocate);
+console.log("Write tx:", txHashes.write);
+
+const { dataKey, txHash } = await client.consumer.accessCDR({
+  uuid,
+  accessAuxData: "0x",
+  timeoutMs: 120_000,
+});
+
+console.log("Read tx:", txHash);
+console.log("Recovered secret:", new TextDecoder().decode(dataKey));
+```
+
+<Note>
+  This example sends three transactions total: `allocate()`, `write()`, and
+  `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`.
+</Note>
+
 ## Next Steps
 
 - For network-side runtime behavior, see
@@ -240,8 +334,16 @@ The SDK throws typed errors you can catch and handle:
 
 | Error Class                     | Code                         | When                                                                       |
 | ------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `CDRError`                      | varies                       | Base class for all SDK-specific errors                                     |
 | `WalletClientRequiredError`     | `WALLET_CLIENT_REQUIRED`     | Accessing `uploader` or `consumer` without a `walletClient`                |
+| `ObserverRequiredError`         | `OBSERVER_REQUIRED`          | Auto-querying `globalPubKey` / `threshold` without an `observer`           |
+| `InvalidParamsError`            | `INVALID_PARAMS`             | Invalid parameter combinations, such as only passing one keypair parameter |
+| `InvalidConditionContractError` | `INVALID_CONDITION_CONTRACT` | Condition address does not implement the required interface                |
+| `LabelMismatchError`            | `LABEL_MISMATCH`             | Ciphertext label does not match the vault UUID                             |
+| `ContentSizeExceededError`      | `CONTENT_SIZE_EXCEEDED`      | Encrypted data exceeds `maxEncryptedDataSize`                              |
 | `PartialCollectionTimeoutError` | `PARTIAL_COLLECTION_TIMEOUT` | `collectPartials` or `accessCDR` times out waiting for validator responses |
+| `CidIntegrityError`             | `CID_INTEGRITY`              | Downloaded encrypted file does not match the vault CID                     |
+| `RpcConsensusError`             | `RPC_CONSENSUS`              | Validation RPCs disagree about a DKG value                                 |
 | `ContractRevertError`           | `CONTRACT_REVERT`            | On-chain transaction reverted                                              |
 
 All errors extend `CDRError`, which has a `code` property for programmatic handling:

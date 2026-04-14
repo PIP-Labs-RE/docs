@@ -12,43 +12,61 @@ This guide walks through the two main CDR flows:
 
 - [CDR SDK setup](/developers/cdr-sdk/setup) complete with WASM initialized and client created
 
+## What Runs On-Chain vs Off-Chain
+
+| Operation                    | Sends transaction?           | What happens                                                               |
+| ---------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `observer.getGlobalPubKey()` | No                           | Pure RPC read of DKG state                                                 |
+| `uploadCDR()`                | Yes, 2 txs                   | Local TDH2 encryption plus `allocate()` and `write()`                      |
+| `uploadFile()`               | Yes, 2 txs + storage upload  | Local AES encryption, storage upload, then `allocate()` and `write()`      |
+| `accessCDR()`                | Yes, 1 tx                    | `read()` on-chain, then off-chain partial collection and local combination |
+| `downloadFile()`             | Yes, 1 tx + storage download | `accessCDR()` plus encrypted file download and local AES decryption        |
+
 ## Encrypt a Secret
 
-The diagram below shows the high-level encryption flow: allocate a vault, encrypt the data locally, and write the encrypted key material plus data URL to the vault.
+The diagram below shows the on-chain secret flow: allocate a vault, encrypt the
+secret locally with TDH2, and write the ciphertext to the vault.
 
 <Frame>
   <img
-    src="/images/developers/cdr-sdk/cdr-encryption-flow.png"
-    alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
+    src="/images/developers/cdr-sdk/cdr-encryption-flow-text.png"
+    alt="CDR encryption flow showing vault allocation, local encryption, and writing the ciphertext to the vault"
   />
 </Frame>
 
 The high-level `uploadCDR` method handles vault allocation, encryption, and writing in a single call.
 
 ```typescript
-import { initWasm, CDRClient } from "@piplabs/cdr-sdk";
+import { initWasm } from "@piplabs/cdr-sdk";
+import { encodeAbiParameters } from "viem";
 
 await initWasm();
 
-// Assumes `client` is already created (see Setup)
+// Assumes `client` and `walletClient` are already created (see Setup)
 const { uploader, observer } = client;
+const walletAddress = walletClient.account!.address;
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletAddress],
+);
 
-// 1. Fetch the DKG global public key
+// Pure read: fetch the DKG global public key
 const globalPubKey = await observer.getGlobalPubKey();
 
-// 2. Encode your secret as bytes
+// Encode your secret as bytes
 const secret = "my confidential data";
 const dataKey = new TextEncoder().encode(secret);
 
-// 3. Upload: allocate vault + encrypt + write (single call)
+// Sends 2 transactions: allocate + write
 const { uuid, ciphertext, txHashes } = await uploader.uploadCDR({
   dataKey,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: walletAddress, // only you can write
-  readConditionAddr: walletAddress, // only you can read
-  writeConditionData: "0x",
-  readConditionData: "0x",
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
   accessAuxData: "0x",
 });
 
@@ -64,53 +82,48 @@ console.log(`Write tx: ${txHashes.write}`);
 
 <Note>The value of the transaction must be exactly the same as the fee.</Note>
 
+<Note>
+  `dataKey` is the historical parameter name. In `uploadCDR()` it can be any
+  secret bytes, not just a cryptographic key.
+</Note>
+
+<Warning>
+  Vault encrypted data is limited to **1024 bytes** on Aeneid
+  (`maxEncryptedDataSize`). TDH2 adds overhead, so the maximum plaintext is
+  smaller. For larger content, use `uploadFile()` so only a small `{cid, key}`
+  payload is written to the vault.
+</Warning>
+
 ## Decrypt a Secret
 
-Decryption requires submitting a read request on-chain, collecting partial decryptions from validators, and combining them client-side.
+Decryption requires submitting a read request on-chain, collecting partial
+decryptions from validators, and combining them client-side.
 
 <Frame>
   <img
-    src="/images/developers/cdr-sdk/cdr-decryption-flow.png"
+    src="/images/developers/cdr-sdk/cdr-decryption-flow-text.png"
     alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
   />
 </Frame>
 
 ```typescript
-import { secp256k1 } from "@noble/curves/secp256k1";
-import { toHex } from "viem";
+const { consumer } = client;
 
-const { consumer, observer } = client;
-
-// 1. Fetch DKG state
-const globalPubKey = await observer.getGlobalPubKey();
-const threshold = await observer.getThreshold();
-
-// 2. Generate an ephemeral keypair for this decryption session
-const recipientPrivKey = secp256k1.utils.randomPrivateKey();
-const requesterPubKey = toHex(
-  secp256k1.getPublicKey(recipientPrivKey, false), // uncompressed, 65 bytes
-);
-
-// 3. Decrypt: read request + collect partials + combine (single call)
+// Sends 1 transaction, then collects partials and combines them locally
 const { dataKey, txHash } = await consumer.accessCDR({
   uuid,
   accessAuxData: "0x",
-  requesterPubKey,
-  recipientPrivKey,
-  globalPubKey,
-  threshold,
   timeoutMs: 120_000, // wait up to 2 minutes for validators
 });
 
-// 4. Decode the recovered secret
 const secret = new TextDecoder().decode(dataKey);
+console.log(`Read tx: ${txHash}`);
 console.log(`Decrypted secret: ${secret}`);
 ```
 
 <Note>
-  In `v0.1.1`, `accessCDR()` can generate the ephemeral keypair and query the
-  threshold for you when those params are omitted. This guide passes them
-  explicitly so the underlying decryption flow stays visible.
+  In `v0.1.1`, `accessCDR()` can auto-generate the ephemeral keypair and
+  auto-query `globalPubKey` / `threshold` when you omit them.
 </Note>
 
 <Note>
@@ -119,17 +132,79 @@ console.log(`Decrypted secret: ${secret}`);
   this timeout, try another read request.
 </Note>
 
+<Accordion title="Advanced: Manual Keypair Control" icon="key">
+  ```typescript
+  import { secp256k1 } from "@noble/curves/secp256k1";
+  import { toHex } from "viem";
+
+  const { consumer, observer } = client;
+
+  const globalPubKey = await observer.getGlobalPubKey();
+  const threshold = await observer.getThreshold();
+
+  const recipientPrivKey = secp256k1.utils.randomPrivateKey();
+  const requesterPubKey = toHex(
+  secp256k1.getPublicKey(recipientPrivKey, false),
+  );
+
+  const { dataKey, txHash } = await consumer.accessCDR({
+    uuid,
+    accessAuxData: "0x",
+    requesterPubKey,
+    recipientPrivKey,
+    globalPubKey,
+    threshold,
+    timeoutMs: 120_000,
+  });
+
+  console.log(`Read tx: ${txHash}`);
+  console.log(new TextDecoder().decode(dataKey));
+
+  ```
+</Accordion>
+
 ## Encrypt and Download a File
+
+<Columns cols={2}>
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-encryption-flow-file.png"
+    alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
+  />
+</Frame>
+
+<Frame>
+  <img
+    src="/images/developers/cdr-sdk/cdr-decryption-flow-file.png"
+    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
+  />
+</Frame>
+
+</Columns>
 
 Use the file workflow when the encrypted payload should live off-chain and only
 the encrypted file key plus pointer should be stored in the vault.
 
+Upload happens once by the data owner. Download happens later by an authorized
+reader who recovers the vault payload and then decrypts the stored file.
+
 ```typescript
 import { HeliaProvider } from "@piplabs/cdr-sdk";
+import { readFile, writeFile } from "node:fs/promises";
 import { createHelia } from "helia";
 import { unixfs } from "@helia/unixfs";
 import { CID } from "multiformats/cid";
+import { encodeAbiParameters } from "viem";
 
+const walletAddress = walletClient.account!.address;
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletAddress],
+);
+
+// Pure read
 const globalPubKey = await client.observer.getGlobalPubKey();
 
 const helia = await createHelia();
@@ -139,19 +214,23 @@ const storage = new HeliaProvider({
   CID: (s) => CID.parse(s),
 });
 
+const sourceFile = await readFile("./example.pdf");
+
+// Off-chain upload + 2 on-chain transactions
 const { uuid, cid } = await client.uploader.uploadFile({
-  content: new TextEncoder().encode("Hello, CDR!"),
+  content: new Uint8Array(sourceFile),
   storageProvider: storage,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: walletAddress,
-  readConditionAddr: walletAddress,
-  writeConditionData: "0x",
-  readConditionData: "0x",
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
   accessAuxData: "0x",
 });
 
-const { content } = await client.consumer.downloadFile({
+// 1 on-chain read transaction + off-chain download + local AES decryption
+const { content, txHash } = await client.consumer.downloadFile({
   uuid,
   accessAuxData: "0x",
   storageProvider: storage,
@@ -159,12 +238,20 @@ const { content } = await client.consumer.downloadFile({
 });
 
 console.log(`Stored at CID: ${cid}`);
-console.log(new TextDecoder().decode(content));
-```
+console.log(`Read tx: ${txHash}`);
+await writeFile("./example.decrypted.pdf", Buffer.from(content));
+console.log("Decrypted file written to ./example.decrypted.pdf");
+````
 
 <Note>
   `HeliaProvider` is the only storage backend fully tested on Aeneid in the
   current release, and it requires Node.js 22+.
+</Note>
+
+<Note>
+  `uploadFile()` and `downloadFile()` work with raw file bytes. In a browser,
+  start from a `File` object and convert it with `new Uint8Array(await
+  file.arrayBuffer())`.
 </Note>
 
 ### Storage Providers
@@ -178,39 +265,53 @@ The encrypted-file workflow supports four storage backends:
 - `SynapseProvider` for Filecoin-backed storage via Synapse.
 
 <Note>
-  If you use `HeliaProvider`, pass the `CID.parse` function into the
-  constructor as shown above to avoid class mismatches.
+  If you use `HeliaProvider`, pass the `CID.parse` function into the constructor
+  as shown above to avoid class mismatches.
 </Note>
 
 ## Step-by-Step (Low-Level)
 
 If you need more control over the process, you can call each step individually.
 
+<Note>
+  These snippets continue from the variables in the examples above:
+  `walletClient`, `globalPubKey`, `threshold`, `requesterPubKey`,
+  `recipientPrivKey`, and `dataKey`.
+</Note>
+
 ### Encrypt (Low-Level)
 
 ```typescript
 import { uuidToLabel } from "@piplabs/cdr-sdk";
+import { encodeAbiParameters, toHex } from "viem";
 
-// 1. Allocate a vault
+const walletAddress = walletClient.account!.address;
+const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const ownerConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletAddress],
+);
+
+// On-chain transaction: allocate a vault
 const { txHash: allocateTx, uuid } = await uploader.allocate({
   updatable: false,
-  writeConditionAddr: walletAddress,
-  readConditionAddr: walletAddress,
-  writeConditionData: "0x",
-  readConditionData: "0x",
+  writeConditionAddr: OWNER_CONDITION,
+  readConditionAddr: OWNER_CONDITION,
+  writeConditionData: ownerConditionData,
+  readConditionData: ownerConditionData,
 });
 
-// 2. Derive the label from the UUID
+// Local: derive the label from the UUID
 const label = uuidToLabel(uuid);
 
-// 3. Encrypt locally
+// Local: TDH2 encrypt the secret
 const ciphertext = await uploader.encryptDataKey({
   dataKey,
   globalPubKey,
   label,
 });
 
-// 4. Write encrypted data to the vault
+// On-chain transaction: write encrypted data to the vault
 const { txHash: writeTx } = await uploader.write({
   uuid,
   accessAuxData: "0x",
@@ -221,7 +322,9 @@ const { txHash: writeTx } = await uploader.write({
 ### Decrypt (Low-Level)
 
 ```typescript
-// 1. Submit read request
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+// On-chain transaction: submit read request
 const { txHash: readTx } = await consumer.read({
   uuid,
   accessAuxData: "0x",
@@ -231,7 +334,7 @@ const { txHash: readTx } = await consumer.read({
 // Get the block number for polling
 const receipt = await publicClient.getTransactionReceipt({ hash: readTx });
 
-// 2. Collect partial decryptions from validators
+// Off-chain/network: collect partial decryptions from validators
 const partials = await consumer.collectPartials({
   uuid,
   minPartials: threshold,
@@ -240,9 +343,11 @@ const partials = await consumer.collectPartials({
   requesterPubKey, // required if you use dkgSource: "cosmos-abci"
 });
 
-// 3. Combine partials and recover the data key
+// Pure read: fetch the vault ciphertext
 const label = uuidToLabel(uuid);
 const vault = await observer.getVault(uuid);
+
+// Local: decrypt each partial, then combine them
 const recoveredDataKey = await consumer.decryptDataKey({
   ciphertext: {
     raw: Uint8Array.from(Buffer.from(vault.encryptedData.slice(2), "hex")),

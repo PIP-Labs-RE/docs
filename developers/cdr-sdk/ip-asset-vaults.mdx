@@ -38,6 +38,11 @@ The CDR SDK does not register the IP Asset or mint the license token for you.
 Create the IP and obtain its `ipId` with Story tooling first, then configure
 the vault.
 
+If you have not registered the asset yet, start with
+[Register IP Asset](/developers/typescript-sdk/register-ip-asset). If you need
+to attach or inspect license terms before minting, see
+[Attach Terms](/developers/typescript-sdk/attach-terms).
+
 ## Upload a License-Gated Vault
 
 ```typescript
@@ -80,6 +85,10 @@ await client.uploader.uploadCDR({
 
 Before a user can read a Story license-gated vault, they still need to mint a
 license token. The current release requires three manual steps.
+
+**WIP** is **Wrapped IP**, the ERC-20 wrapped form of the native `IP` token.
+Story's royalty / license flows use WIP, so the reader first wraps IP, then
+approves the RoyaltyModule to spend it.
 
 ### 1. Wrap IP to WIP
 
@@ -145,33 +154,39 @@ const mintResult = await storyClient.license.mintLicenseTokens({
 const licenseTokenId = mintResult.licenseTokenIds[0];
 ```
 
+<Note>
+  `licenseTermsId: 2054` is only an example. Replace it with the license terms
+  ID actually attached to your IP Asset. You receive that ID when you register
+  the asset or attach terms.
+</Note>
+
+<Note>
+  `maxMintingFee` and `maxRevenueShare` are user-provided protection values,
+  not protocol defaults. Set them to the maximum fee and revenue share you are
+  willing to accept for the specific terms you are minting.
+</Note>
+
+<Note>
+  The wrap, approve, and mint steps above are all on-chain transactions. The
+  later `accessCDR()` call adds one more on-chain read request.
+</Note>
+
 ## Read with a License Token
 
 At read time, pass the caller's license token ID through `accessAuxData`.
 
 ```typescript
-import { secp256k1 } from "@noble/curves/secp256k1";
-import { encodeAbiParameters, toHex } from "viem";
+import { encodeAbiParameters } from "viem";
 
 const accessAuxData = encodeAbiParameters(
   [{ type: "uint256[]" }],
   [[BigInt(licenseTokenId)]],
 );
 
-const globalPubKey = await client.observer.getGlobalPubKey();
-const threshold = await client.observer.getThreshold();
-const recipientPrivKey = secp256k1.utils.randomPrivateKey();
-const requesterPubKey = toHex(
-  secp256k1.getPublicKey(recipientPrivKey, false),
-);
-
+// Sends 1 read transaction, then collects partials and combines locally
 const { dataKey } = await client.consumer.accessCDR({
   uuid,
   accessAuxData,
-  requesterPubKey,
-  recipientPrivKey,
-  globalPubKey,
-  threshold,
   timeoutMs: 120_000,
 });
 
@@ -187,17 +202,20 @@ console.log(`Decrypted IP content: ${content}`);
 
 ## Custom Condition Contracts
 
-License gating is just one pattern. You can deploy your own condition contract for any access control logic by implementing this interface:
+License gating is just one pattern. You can deploy your own condition contract
+for any access control logic by implementing one or both of these interfaces:
 
 ```solidity
-interface ICDRCondition {
+interface ICDRWriteCondition {
     function checkWriteCondition(
         uint32 uuid,
         bytes calldata accessAuxData,
         bytes calldata conditionData,
         address caller
     ) external view returns (bool);
+}
 
+interface ICDRReadCondition {
     function checkReadCondition(
         uint32 uuid,
         bytes calldata accessAuxData,

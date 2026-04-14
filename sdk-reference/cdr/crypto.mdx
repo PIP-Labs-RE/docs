@@ -25,6 +25,7 @@ These are the low-level cryptographic functions used internally by the CDR SDK. 
 - tdh2Verify
 - tdh2Combine
 - decryptPartial
+- parseSgxQuote
 - verifyAttestation
 - uuidToLabel
 
@@ -188,14 +189,60 @@ measurements and minimum security version checks. Use it with the data returned
 by `observer.getValidatorAttestations()` when your application wants an
 explicit `MRENCLAVE`, `MRSIGNER`, and `SVN` trust check.
 
+Parameters:
+
+- `report`: `Uint8Array` - Raw SGX DCAP Quote v3 bytes
+- `config.expectedMrEnclave` *(optional)*: `` `0x${string}` `` - Expected enclave measurement
+- `config.expectedMrSigner` *(optional)*: `` `0x${string}` `` - Expected signer measurement
+- `config.minSecurityVersion` *(optional)*: `number` - Minimum allowed ISV SVN
+
 ```typescript Example
 import { verifyAttestation } from "@piplabs/cdr-sdk";
 
-const result = verifyAttestation(report, {
-  mrEnclave,
-  mrSigner,
-  minSvn: 1,
+const result = await verifyAttestation(report, {
+  expectedMrEnclave: "0x51c08cf3...",
+  expectedMrSigner: "0xa6f9d44c...",
+  minSecurityVersion: 1,
 });
+
+if (!result.valid) {
+  console.error(result.error);
+}
+```
+
+<Note>
+  `verifyAttestation()` performs client-side field checks. The quote signature
+  chain itself is verified on-chain; this helper is an extra allowlist /
+  policy check for SDK consumers.
+</Note>
+
+---
+
+### parseSgxQuote
+
+Parses the key fields from an SGX DCAP Quote v3 without applying any policy.
+
+| Function | Type |
+| -------- | ---- |
+| `parseSgxQuote` | `(report: Uint8Array) => { mrEnclave, mrSigner, securityVersion }` |
+
+Parameters:
+
+- `report`: `Uint8Array` - Raw SGX DCAP Quote v3 bytes
+
+Returns:
+
+- `mrEnclave`: `` `0x${string}` `` - Parsed enclave measurement
+- `mrSigner`: `` `0x${string}` `` - Parsed signer measurement
+- `securityVersion`: `number` - Parsed ISV SVN
+
+```typescript Example
+import { parseSgxQuote } from "@piplabs/cdr-sdk";
+
+const fields = parseSgxQuote(report);
+console.log(fields.mrEnclave);
+console.log(fields.mrSigner);
+console.log(fields.securityVersion);
 ```
 
 ---

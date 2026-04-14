@@ -33,6 +33,16 @@ const client = new CDRClient({
   trust model is equivalent to reading that state through RPC.
 </Note>
 
+### Choosing `cosmos-abci`
+
+- Use `cosmos-abci` when you control or trust a Comet RPC and want faster DKG
+  reads than EVM event scanning.
+- Configure both `dkgSource: "cosmos-abci"` and `cometRpcUrl`.
+- When you call `collectPartials()` directly in this mode, pass the same
+  `requesterPubKey` you used for the read request.
+- Signature validation happens before keeper storage rather than inside the SDK
+  client, so your trust anchor is the Comet RPC's view of `x/dkg` state.
+
 ## Validation RPCs
 
 If you want to defend against a single compromised RPC returning an incorrect
@@ -45,8 +55,8 @@ const client = new CDRClient({
   publicClient,
   walletClient,
   validationRpcUrls: [
-    "https://aeneid-rpc-2.storyrpc.io",
-    "https://aeneid-rpc-3.storyrpc.io",
+    "https://your-rpc-provider-2.example.com",
+    "https://your-rpc-provider-3.example.com",
   ],
 });
 ```
@@ -63,6 +73,16 @@ The current Aeneid release uses the following core system addresses:
 The SDK already knows these addresses. For Story license-gated condition
 contracts, see
 [How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
+
+## Release Posture and Availability
+
+- Aeneid is the current public **testnet** release for the SDK.
+- Confidentiality depends on the DKG threshold and validator / enclave trust
+  assumptions described in the CDR overview.
+- Availability depends on enough validators responding before timeout. If reads
+  fail to reach threshold, retry or increase `timeoutMs`.
+- `validationRpcUrls` hardens `getGlobalPubKey()` against a single bad EVM RPC.
+  `cosmos-abci` similarly depends on your Comet RPC endpoint being correct.
 
 ## Current Release Notes
 

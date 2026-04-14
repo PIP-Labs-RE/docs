@@ -33,7 +33,7 @@ const client = new CDRClient({
   walletClient, // optional viem WalletClient
   dkgSource: "evm-events", // default
   // cometRpcUrl: "http://<comet-host>:26657", // only for cosmos-abci mode
-  // validationRpcUrls: ["https://aeneid-rpc-2.storyrpc.io"],
+  // validationRpcUrls: ["https://your-rpc-provider-2.example.com"],
 });
 
 client.observer; // read-only queries
@@ -57,6 +57,32 @@ client.consumer; // decryption & read requests
 - `readVault` as an alias for `accessCDR`
 - `createFileVault` as an alias for `uploadFile`
 - `readFileVault` as an alias for `downloadFile`
+
+## DKG Backends
+
+The client supports two DKG backends:
+
+| Backend | Purpose | Notes |
+| ------- | ------- | ----- |
+| `evm-events` | Reads DKG state from EVM logs | Default and most portable |
+| `cosmos-abci` | Reads DKG state from the `x/dkg` keeper | Faster when you have a Comet RPC and accept that trust model |
+
+When you use `cosmos-abci`, also set `cometRpcUrl`. If you call
+`collectPartials()` directly in that mode, pass the same `requesterPubKey` used
+for the read request. See
+[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-query-modes)
+for the operational guidance.
+
+## Attestation Utilities
+
+The SDK also exposes SGX helper functions in the crypto module:
+
+- `parseSgxQuote()` to read `MRENCLAVE`, `MRSIGNER`, and `securityVersion` from
+  a quote
+- `verifyAttestation()` to validate those fields against your expected values
+
+Use them together with `observer.getValidatorAttestations()` when your
+application wants an explicit validator enclave allowlist check.
 
 ## Sub-Clients
 

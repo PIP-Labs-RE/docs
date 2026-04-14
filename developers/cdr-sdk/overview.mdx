@@ -19,6 +19,22 @@ CDR enables powerful use cases like:
 - **Data marketplaces** - sell access to encrypted data with on-chain payment enforcement
 - **IP-gated content** - tie encrypted data to IP Assets and require license tokens to decrypt
 
+## Security and Trust Model
+
+- **Confidentiality** - Vault payloads stay encrypted unless a threshold number
+  of validators participate in decryption and the read condition passes.
+- **Metadata visibility** - Vault UUIDs, condition addresses, transactions, and
+  any off-chain storage pointers you disclose are not hidden by CDR.
+- **Availability** - Reads can fail if enough validators do not respond before
+  timeout. In that case, retry the read request or increase `timeoutMs`.
+- **Forward secrecy / revocation** - Treat CDR ciphertext as bound to the
+  access rules and validator set in effect when you encrypted it. If your
+  access model changes, rotate or re-encrypt the content at the application
+  layer.
+- **Release posture** - The current public release runs on Aeneid testnet.
+  Build and test integrations there, but do not treat it as a production
+  confidentiality environment.
+
 ## What Ships in the Aeneid Release
 
 The current SDK surface is centered around two workflows:
@@ -41,9 +57,15 @@ CDR revolves around **vaults**. Each vault stores encrypted data and has two con
 - **Read Condition** - determines who can request decryption of the vault's data
 
 <Note>
-  When a condition address matches the caller's address (e.g., your wallet is
-  set as the read condition), CDR skips the condition check entirely. This is
-  the simplest access control pattern.
+  When `msg.sender` equals the configured condition address, the CDR contract
+  bypasses the condition check. If you set your wallet address as the condition
+  address, only that wallet can operate; other callers revert because an EOA
+  does not implement `checkWriteCondition` / `checkReadCondition`.
+</Note>
+
+<Note>
+  The SDK validates condition addresses by default. If you intentionally use an
+  EOA with `allocate()`, pass `skipConditionValidation: true`.
 </Note>
 
 There are two common ways to use a vault:
@@ -64,10 +86,19 @@ Walkthrough:
 
 ### Encrypted File Flow
 
+**Upload (data owner):**
+
 1. **Encrypt** the file locally with an AES key
 2. **Upload** the encrypted file to a storage backend such as IPFS
-3. **Encrypt** the AES key through CDR and write the resulting vault data
-4. **Read** the vault, recover the AES key, and decrypt the file client-side
+3. **Encrypt** the AES key plus CID through CDR and write the resulting vault
+   payload
+
+**Download (authorized reader):**
+
+1. **Read** the vault and recover the AES key payload through threshold
+   decryption
+2. **Download** the encrypted file from storage
+3. **Decrypt** the file client-side with the recovered AES key
 
 Walkthrough:
 [Encrypt and Download a File](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
@@ -94,11 +125,18 @@ await uploader.allocate({
   readConditionAddr: userAddress, // only you can read
   writeConditionData: "0x",
   readConditionData: "0x",
+  skipConditionValidation: true,
 });
 ```
 
 For an end-to-end example, see
 [Encrypt a Secret](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
+
+<Note>
+  This EOA shortcut is most useful with `allocate()`. The high-level
+  `uploadCDR()` / `uploadFile()` helpers validate condition contracts and
+  therefore use the deployed owner-only condition contract in the examples.
+</Note>
 
 ### License Token (IP-Gated)
 
