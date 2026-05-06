@@ -8,6 +8,16 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
   The SDK is installable from source today and is not yet published to npm.
 </Note>
 
+<Card
+  title="Building with an AI agent? Install the CDR Skill"
+  icon="robot"
+  href="https://github.com/jacob-tucker/cdr-skill"
+>
+  Drop-in skill for Claude and other agents, plus three end-to-end examples
+  covering the on-chain secret, encrypted file, and IP-gated flows. The fastest
+  way to get a working CDR integration.
+</Card>
+
 ## What is CDR?
 
 **Confidential Data Rails (CDR)** is Story's application layer for threshold-encrypted data on Story L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
@@ -210,5 +220,12 @@ For the deployed Story license-gated pattern, see
   </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
     Full API reference for every CDR SDK method.
+  </Card>
+  <Card
+    title="CDR Skill & Examples"
+    icon="robot"
+    href="https://github.com/jacob-tucker/cdr-skill"
+  >
+    Install the CDR skill for your AI agent and explore three end-to-end examples.
   </Card>
 </CardGroup>
