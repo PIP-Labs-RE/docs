@@ -56,10 +56,21 @@ Parameters:
 ```typescript Example
 import { encodeAbiParameters } from "viem";
 
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const ownerConditionData = encodeAbiParameters(
+// Story license-gated pattern: only the uploader can write, and only callers
+// holding a license token for `ipId` can read. See
+// /developers/cdr-sdk/ip-asset-vaults for the full setup.
+const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
+const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
+
+const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [walletClient.account!.address],
+);
+
+const readConditionData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [LICENSE_TOKEN, ipId],
 );
 
 const globalPubKey = await client.observer.getGlobalPubKey();
@@ -69,10 +80,10 @@ const { uuid, ciphertext, txHashes } = await client.uploader.uploadCDR({
   dataKey,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  writeConditionAddr: OWNER_WRITE_CONDITION,
+  readConditionAddr: LICENSE_READ_CONDITION,
+  writeConditionData,
+  readConditionData,
   accessAuxData: "0x",
 });
 
@@ -80,6 +91,14 @@ console.log(`Vault UUID: ${uuid}`);
 console.log(`Allocate tx: ${txHashes.allocate}`);
 console.log(`Write tx: ${txHashes.write}`);
 ```
+
+<Note>
+  `OwnerWriteCondition` only implements `checkWriteCondition`, so it cannot
+  be used as `readConditionAddr`. For an owner-only flow where the same
+  wallet encrypts and decrypts, use the low-level `allocate()` example below
+  with your wallet (EOA) address as both conditions and
+  `skipConditionValidation: true`.
+</Note>
 
 <Note>
   Keep `uploadCDR()` payloads small enough that the resulting TDH2 ciphertext
@@ -135,10 +154,21 @@ const storage = new HeliaProvider({
   CID: (s) => CID.parse(s),
 });
 
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const ownerConditionData = encodeAbiParameters(
+// Story license-gated pattern: see /developers/cdr-sdk/ip-asset-vaults for
+// the full license setup. For an owner-only file flow, use the low-level
+// `allocate()` path with your wallet (EOA) address as both conditions.
+const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
+const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
+
+const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [walletClient.account!.address],
+);
+
+const readConditionData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [LICENSE_TOKEN, ipId],
 );
 
 const fileBytes = await readFile("./example.pdf");
@@ -148,10 +178,10 @@ const { uuid, cid } = await client.uploader.uploadFile({
   storageProvider: storage,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  writeConditionAddr: OWNER_WRITE_CONDITION,
+  readConditionAddr: LICENSE_READ_CONDITION,
+  writeConditionData,
+  readConditionData,
   accessAuxData: "0x",
 });
 

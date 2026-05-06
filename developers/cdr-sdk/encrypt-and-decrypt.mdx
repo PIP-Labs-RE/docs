@@ -34,22 +34,23 @@ secret locally with TDH2, and write the ciphertext to the vault.
   />
 </Frame>
 
-The high-level `uploadCDR` method handles vault allocation, encryption, and writing in a single call.
+The simplest "owner-only" pattern uses your wallet (EOA) address as both the
+write and read condition. The CDR contract bypasses the condition check when
+`msg.sender` equals the configured condition address, so only that wallet can
+write or read the vault. Because the high-level `uploadCDR()` helper validates
+that condition addresses point at deployed condition contracts, EOA conditions
+are configured through the low-level `allocate()` call with
+`skipConditionValidation: true`.
 
 ```typescript
-import { initWasm } from "@piplabs/cdr-sdk";
-import { encodeAbiParameters } from "viem";
+import { initWasm, uuidToLabel } from "@piplabs/cdr-sdk";
+import { toHex } from "viem";
 
 await initWasm();
 
 // Assumes `client` and `walletClient` are already created (see Setup)
 const { uploader, observer } = client;
 const walletAddress = walletClient.account!.address;
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const ownerConditionData = encodeAbiParameters(
-  [{ type: "address" }],
-  [walletAddress],
-);
 
 // Pure read: fetch the DKG global public key
 const globalPubKey = await observer.getGlobalPubKey();
@@ -58,33 +59,59 @@ const globalPubKey = await observer.getGlobalPubKey();
 const secret = "my confidential data";
 const dataKey = new TextEncoder().encode(secret);
 
-// Sends 2 transactions: allocate + write
-const { uuid, ciphertext, txHashes } = await uploader.uploadCDR({
+// On-chain transaction: allocate a vault using the wallet address as the
+// write AND read condition. Only this EOA can write or read.
+const { uuid, txHash: allocateTx } = await uploader.allocate({
+  updatable: false,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
+});
+
+// Local: TDH2-encrypt the secret, bound to this vault's UUID
+const label = uuidToLabel(uuid);
+const ciphertext = await uploader.encryptDataKey({
   dataKey,
   globalPubKey,
-  updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  label,
+});
+
+// On-chain transaction: write encrypted data to the vault
+const { txHash: writeTx } = await uploader.write({
+  uuid,
   accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
 });
 
 console.log(`Vault created with UUID: ${uuid}`);
-console.log(`Allocate tx: ${txHashes.allocate}`);
-console.log(`Write tx: ${txHashes.write}`);
+console.log(`Allocate tx: ${allocateTx}`);
+console.log(`Write tx: ${writeTx}`);
 ```
 
 <Note>
-  `uploadCDR` automatically queries the allocate and write fees. You can skip
-  those queries by passing `allocateFeeOverride` and `writeFeeOverride`.
+  You can use any EOA address as a write or read condition. Only that EOA can
+  perform the matching action — every other caller reverts because EOAs do not
+  implement `checkWriteCondition` / `checkReadCondition`. To restrict one side
+  only, set just that side to your wallet address and use a condition contract
+  (such as `LicenseReadCondition`) for the other.
+</Note>
+
+<Note>
+  The high-level `uploadCDR()` helper expects deployed condition contracts on
+  both sides, so it does not support EOA conditions. Use it for patterns like
+  Story license-gated reads (see [IP Asset
+  Vaults](/developers/cdr-sdk/ip-asset-vaults)), and use the low-level
+  `allocate()` (with `skipConditionValidation: true`) + `write()` flow shown
+  above for owner-only EOA conditions.
 </Note>
 
 <Note>The value of the transaction must be exactly the same as the fee.</Note>
 
 <Note>
-  `dataKey` is the historical parameter name. In `uploadCDR()` it can be any
-  secret bytes, not just a cryptographic key.
+  `dataKey` is the historical parameter name. In `encryptDataKey()` it can be
+  any secret bytes, not just a cryptographic key.
 </Note>
 
 <Warning>
@@ -137,30 +164,30 @@ console.log(`Decrypted secret: ${secret}`);
   import { secp256k1 } from "@noble/curves/secp256k1";
   import { toHex } from "viem";
 
-  const { consumer, observer } = client;
+const { consumer, observer } = client;
 
-  const globalPubKey = await observer.getGlobalPubKey();
-  const threshold = await observer.getThreshold();
+const globalPubKey = await observer.getGlobalPubKey();
+const threshold = await observer.getThreshold();
 
-  const recipientPrivKey = secp256k1.utils.randomPrivateKey();
-  const requesterPubKey = toHex(
-  secp256k1.getPublicKey(recipientPrivKey, false),
-  );
+const recipientPrivKey = secp256k1.utils.randomPrivateKey();
+const requesterPubKey = toHex(
+secp256k1.getPublicKey(recipientPrivKey, false),
+);
 
-  const { dataKey, txHash } = await consumer.accessCDR({
-    uuid,
-    accessAuxData: "0x",
-    requesterPubKey,
-    recipientPrivKey,
-    globalPubKey,
-    threshold,
-    timeoutMs: 120_000,
-  });
+const { dataKey, txHash } = await consumer.accessCDR({
+uuid,
+accessAuxData: "0x",
+requesterPubKey,
+recipientPrivKey,
+globalPubKey,
+threshold,
+timeoutMs: 120_000,
+});
 
-  console.log(`Read tx: ${txHash}`);
-  console.log(new TextDecoder().decode(dataKey));
+console.log(`Read tx: ${txHash}`);
+console.log(new TextDecoder().decode(dataKey));
 
-  ```
+````
 </Accordion>
 
 ## Encrypt and Download a File
@@ -168,17 +195,17 @@ console.log(`Decrypted secret: ${secret}`);
 <Columns cols={2}>
 
 <Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-encryption-flow-file.png"
-    alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
-  />
+<img
+  src="/images/developers/cdr-sdk/cdr-encryption-flow-file.png"
+  alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
+/>
 </Frame>
 
 <Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-decryption-flow-file.png"
-    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
-  />
+<img
+  src="/images/developers/cdr-sdk/cdr-decryption-flow-file.png"
+  alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
+/>
 </Frame>
 
 </Columns>
@@ -189,6 +216,14 @@ the encrypted file key plus pointer should be stored in the vault.
 Upload happens once by the data owner. Download happens later by an authorized
 reader who recovers the vault payload and then decrypts the stored file.
 
+The `uploadFile()` helper requires deployed condition contracts on both sides,
+so the example below uses Story's `OwnerWriteCondition` for the write side and
+`LicenseReadCondition` for the read side. License token holders can decrypt
+the file (see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults) for the
+end-to-end license setup). For an owner-only file flow, replicate the
+low-level steps shown earlier with your wallet (EOA) address as both
+conditions.
+
 ```typescript
 import { HeliaProvider } from "@piplabs/cdr-sdk";
 import { readFile, writeFile } from "node:fs/promises";
@@ -197,11 +232,19 @@ import { unixfs } from "@helia/unixfs";
 import { CID } from "multiformats/cid";
 import { encodeAbiParameters } from "viem";
 
-const walletAddress = walletClient.account!.address;
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const ownerConditionData = encodeAbiParameters(
+const uploaderAddress = walletClient.account!.address;
+const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
+const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
+
+const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
-  [walletAddress],
+  [uploaderAddress],
+);
+
+const readConditionData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [LICENSE_TOKEN, ipId],
 );
 
 // Pure read
@@ -222,10 +265,10 @@ const { uuid, cid } = await client.uploader.uploadFile({
   storageProvider: storage,
   globalPubKey,
   updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  writeConditionAddr: OWNER_WRITE_CONDITION,
+  readConditionAddr: LICENSE_READ_CONDITION,
+  writeConditionData,
+  readConditionData,
   accessAuxData: "0x",
 });
 
@@ -241,7 +284,7 @@ console.log(`Stored at CID: ${cid}`);
 console.log(`Read tx: ${txHash}`);
 await writeFile("./example.decrypted.pdf", Buffer.from(content));
 console.log("Decrypted file written to ./example.decrypted.pdf");
-````
+```
 
 <Note>
   `HeliaProvider` is the only storage backend fully tested on Aeneid in the
@@ -283,22 +326,19 @@ If you need more control over the process, you can call each step individually.
 
 ```typescript
 import { uuidToLabel } from "@piplabs/cdr-sdk";
-import { encodeAbiParameters, toHex } from "viem";
+import { toHex } from "viem";
 
 const walletAddress = walletClient.account!.address;
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const ownerConditionData = encodeAbiParameters(
-  [{ type: "address" }],
-  [walletAddress],
-);
 
-// On-chain transaction: allocate a vault
+// On-chain transaction: allocate a vault using the wallet address as the
+// write AND read condition. Only this EOA can write or read.
 const { txHash: allocateTx, uuid } = await uploader.allocate({
   updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  writeConditionAddr: walletAddress,
+  readConditionAddr: walletAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
 });
 
 // Local: derive the label from the UUID

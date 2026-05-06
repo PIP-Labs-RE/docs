@@ -254,18 +254,17 @@ it back with the same wallet. It is fully runnable once `WALLET_PRIVATE_KEY` is
 set.
 
 ```typescript quickstart-cdr.ts
-import { CDRClient, initWasm } from "@piplabs/cdr-sdk";
+import { CDRClient, initWasm, uuidToLabel } from "@piplabs/cdr-sdk";
 import {
   createPublicClient,
   createWalletClient,
-  encodeAbiParameters,
   http,
+  toHex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
-const OWNER_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
 
 if (!PRIVATE_KEY) {
   throw new Error("Set WALLET_PRIVATE_KEY before running this script.");
@@ -286,25 +285,33 @@ const client = new CDRClient({
   walletClient,
 });
 
-const ownerConditionData = encodeAbiParameters(
-  [{ type: "address" }],
-  [account.address],
-);
-
-const { uuid, txHashes } = await client.uploader.uploadCDR({
-  dataKey: new TextEncoder().encode("hello from CDR"),
-  globalPubKey: await client.observer.getGlobalPubKey(),
+// Use the wallet (EOA) address as both write and read condition. Only this
+// EOA can encrypt to or decrypt from the vault.
+const { uuid, txHash: allocateTx } = await client.uploader.allocate({
   updatable: false,
-  writeConditionAddr: OWNER_CONDITION,
-  readConditionAddr: OWNER_CONDITION,
-  writeConditionData: ownerConditionData,
-  readConditionData: ownerConditionData,
+  writeConditionAddr: account.address,
+  readConditionAddr: account.address,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
+});
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const ciphertext = await client.uploader.encryptDataKey({
+  dataKey: new TextEncoder().encode("hello from CDR"),
+  globalPubKey,
+  label: uuidToLabel(uuid),
+});
+
+const { txHash: writeTx } = await client.uploader.write({
+  uuid,
   accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
 });
 
 console.log("Vault UUID:", uuid);
-console.log("Allocate tx:", txHashes.allocate);
-console.log("Write tx:", txHashes.write);
+console.log("Allocate tx:", allocateTx);
+console.log("Write tx:", writeTx);
 
 const { dataKey, txHash } = await client.consumer.accessCDR({
   uuid,
@@ -318,7 +325,17 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 
 <Note>
   This example sends three transactions total: `allocate()`, `write()`, and
-  `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`.
+  `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`
+  with deployed condition contracts (such as the Story license-gated pattern
+  in [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)).
+</Note>
+
+<Note>
+  Any EOA address works as a write or read condition — only that EOA can
+  perform the matching action. The high-level `uploadCDR()` / `uploadFile()`
+  helpers validate that condition addresses point at deployed contracts, so
+  EOA conditions go through the low-level `allocate()` call with
+  `skipConditionValidation: true`.
 </Note>
 
 ## Next Steps
