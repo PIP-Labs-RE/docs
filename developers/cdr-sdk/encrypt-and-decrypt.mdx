@@ -16,7 +16,7 @@ This guide walks through the two main CDR flows:
 
 | Operation                    | Sends transaction?           | What happens                                                               |
 | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| `observer.getGlobalPubKey()` | No                           | Pure RPC read of DKG state                                                 |
+| `observer.getGlobalPubKey()` | No                           | Pure read of DKG state over the Story-API REST endpoint                    |
 | `uploadCDR()`                | Yes, 2 txs                   | Local TDH2 encryption plus `allocate()` and `write()`                      |
 | `uploadFile()`               | Yes, 2 txs + storage upload  | Local AES encryption, storage upload, then `allocate()` and `write()`      |
 | `accessCDR()`                | Yes, 1 tx                    | `read()` on-chain, then off-chain partial collection and local combination |
@@ -91,20 +91,14 @@ console.log(`Write tx: ${writeTx}`);
 ```
 
 <Note>
-  You can use any EOA address as a write or read condition. Only that EOA can
-  perform the matching action — every other caller reverts because EOAs do not
-  implement `checkWriteCondition` / `checkReadCondition`. To restrict one side
-  only, set just that side to your wallet address and use a condition contract
-  (such as `LicenseReadCondition`) for the other.
-</Note>
-
-<Note>
-  The high-level `uploadCDR()` helper expects deployed condition contracts on
-  both sides, so it does not support EOA conditions. Use it for patterns like
-  Story license-gated reads (see [IP Asset
-  Vaults](/developers/cdr-sdk/ip-asset-vaults)), and use the low-level
-  `allocate()` (with `skipConditionValidation: true`) + `write()` flow shown
-  above for owner-only EOA conditions.
+  Any EOA address works as a write or read condition — only that EOA can
+  perform the matching action. To gate just one side, set your wallet address
+  on that side and a condition contract (such as `LicenseReadCondition`) on the
+  other. The high-level `uploadCDR()` helper expects deployed condition
+  contracts on both sides and does not support EOA conditions, so use it for
+  patterns like Story license-gated reads (see [IP Asset
+  Vaults](/developers/cdr-sdk/ip-asset-vaults)) and use the low-level
+  `allocate()` + `write()` flow above for owner-only EOA conditions.
 </Note>
 
 <Note>The value of the transaction must be exactly the same as the fee.</Note>
@@ -149,8 +143,9 @@ console.log(`Decrypted secret: ${secret}`);
 ```
 
 <Note>
-  In `v0.1.1`, `accessCDR()` can auto-generate the ephemeral keypair and
-  auto-query `globalPubKey` / `threshold` when you omit them.
+  `accessCDR()` auto-generates the ephemeral keypair and auto-queries
+  `globalPubKey` when you omit them. The threshold is derived automatically
+  from the partial-decryption bucket's DKG round.
 </Note>
 
 <Note>
@@ -167,7 +162,6 @@ console.log(`Decrypted secret: ${secret}`);
 const { consumer, observer } = client;
 
 const globalPubKey = await observer.getGlobalPubKey();
-const threshold = await observer.getThreshold();
 
 const recipientPrivKey = secp256k1.utils.randomPrivateKey();
 const requesterPubKey = toHex(
@@ -180,7 +174,6 @@ accessAuxData: "0x",
 requesterPubKey,
 recipientPrivKey,
 globalPubKey,
-threshold,
 timeoutMs: 120_000,
 });
 
@@ -318,8 +311,8 @@ If you need more control over the process, you can call each step individually.
 
 <Note>
   These snippets continue from the variables in the examples above:
-  `walletClient`, `globalPubKey`, `threshold`, `requesterPubKey`,
-  `recipientPrivKey`, and `dataKey`.
+  `walletClient`, `globalPubKey`, `requesterPubKey`, `recipientPrivKey`, and
+  `dataKey`.
 </Note>
 
 ### Encrypt (Low-Level)
@@ -371,16 +364,12 @@ const { txHash: readTx } = await consumer.read({
   requesterPubKey,
 });
 
-// Get the block number for polling
-const receipt = await publicClient.getTransactionReceipt({ hash: readTx });
-
-// Off-chain/network: collect partial decryptions from validators
+// Off-chain: poll the Story-API endpoint for validator partial decryptions.
+// The required threshold is derived from the bucket's own DKG round.
 const partials = await consumer.collectPartials({
   uuid,
-  minPartials: threshold,
-  fromBlock: receipt.blockNumber,
+  requesterPubKey, // the secp256k1 pubkey used in the read request
   timeoutMs: 120_000,
-  requesterPubKey, // required if you use dkgSource: "cosmos-abci"
 });
 
 // Pure read: fetch the vault ciphertext
@@ -397,7 +386,6 @@ const recoveredDataKey = await consumer.decryptDataKey({
   recipientPrivKey,
   globalPubKey,
   label,
-  threshold,
 });
 ```
 
@@ -412,7 +400,11 @@ import { CDRClient } from "@piplabs/cdr-sdk";
 const publicClient = createPublicClient({
   transport: http("https://aeneid.storyrpc.io"),
 });
-const client = new CDRClient({ network: "testnet", publicClient });
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  apiUrl: "http://172.192.41.96:1317",
+});
 
 const threshold = await client.observer.getOperationalThreshold();
 console.log("Operational threshold:", threshold);

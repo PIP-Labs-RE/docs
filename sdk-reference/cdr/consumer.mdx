@@ -12,9 +12,15 @@ const consumer = client.consumer;
 ```
 
 <Note>
-  `v0.1.1` also exposes `readVault` as an alias for `accessCDR`, and
+  The SDK also exposes `readVault` as an alias for `accessCDR`, and
   `readFileVault` as an alias for `downloadFile`.
 </Note>
+
+Partial decryptions are collected from the Story-API REST endpoint
+(`/dkg/cdr_partials`), keyed by `(uuid, requesterPubKey)`. The keeper verifies
+each validator's signature on ingress, so the SDK does not re-verify signatures
+locally. For defense-in-depth, pass an `attestationConfig` to verify each
+validator's SGX enclave before accepting their partials.
 
 ### Methods
 
@@ -23,6 +29,7 @@ const consumer = client.consumer;
 - read
 - collectPartials
 - decryptDataKey
+- prefetchRegistry
 
 ---
 
@@ -39,12 +46,12 @@ Parameters:
 - `params.uuid`: `number` - The vault UUID
 - `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
 - `params.requesterPubKey` *(optional)*: `` `0x${string}` `` - Uncompressed secp256k1 public key (65 bytes, `0x04` prefix). If omitted, the SDK generates an ephemeral keypair.
-- `params.recipientPrivKey` *(optional)*: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials). If omitted, the SDK generates an ephemeral keypair.
+- `params.recipientPrivKey` *(optional)*: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials). If omitted, the SDK generates an ephemeral keypair and zeroes it after use.
 - `params.globalPubKey` *(optional)*: `Uint8Array` - DKG global public key (from `observer.getGlobalPubKey()`). If omitted, the SDK queries it for you.
-- `params.threshold` *(optional)*: `number` - Minimum partials needed (from `observer.getThreshold()`). If omitted, the SDK queries it for you.
-- `params.timeoutMs` *(optional)*: `number` - Timeout for collecting partials (default: `60000`)
-- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
-- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a partial fails signature verification in `evm-events` mode
+- `params.timeoutMs` *(optional)*: `number` - Timeout for collecting partials. `120_000` is a good starting point.
+- `params.feeOverride` *(optional)*: `bigint` - Explicit read fee. Skips the `readFee()` auto-query (strict-equality semantics — not a way to pay a different amount).
+- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a validator's partial is excluded because its attestation failed the `attestationConfig` checks.
+- `params.attestationConfig` *(optional)*: `AttestationConfig` - Verifies each validator's SGX enclave before accepting their partials.
 
 ```typescript Example
 const { dataKey, txHash } = await client.consumer.accessCDR({
@@ -59,10 +66,17 @@ console.log(`Decrypted: ${secret}`);
 ```
 
 <Note>
-  If you want the shortest high-level path, you can omit
-  `requesterPubKey`, `recipientPrivKey`, `globalPubKey`, and `threshold`
-  and let `accessCDR()` fill them in.
+  If you want the shortest high-level path, you can omit `requesterPubKey`,
+  `recipientPrivKey`, and `globalPubKey` and let `accessCDR()` fill them in.
+  The threshold is derived automatically from the partial-decryption bucket's
+  DKG round.
 </Note>
+
+<Warning>
+  Throws `EmptyVaultError` synchronously if the vault has never been written to.
+  This is raised by a preflight chain read *before* the fee-bearing `read()`
+  transaction is submitted, so no fee is spent.
+</Warning>
 
 ```typescript AccessCDRResponse
 interface AccessCDRResponse {
@@ -86,11 +100,11 @@ Parameters:
 - `params.requesterPubKey` *(optional)*: `` `0x${string}` `` - Explicit requester public key for the read flow
 - `params.recipientPrivKey` *(optional)*: `Uint8Array` - Explicit recipient private key for the read flow
 - `params.globalPubKey` *(optional)*: `Uint8Array` - DKG global public key. Auto-queried if omitted.
-- `params.threshold` *(optional)*: `number` - Minimum partials needed. Auto-queried if omitted.
 - `params.timeoutMs` *(optional)*: `number` - Timeout for validator partial collection
-- `params.feeOverride` *(optional)*: `bigint` - Skip read fee query
-- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a partial fails signature verification in `evm-events` mode
-- `params.skipCidVerification` *(optional)*: `boolean` - Skip CID integrity verification of the downloaded encrypted file
+- `params.feeOverride` *(optional)*: `bigint` - Explicit read fee. Skips the `readFee()` auto-query.
+- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a validator's partial is excluded because its attestation failed the `attestationConfig` checks.
+- `params.attestationConfig` *(optional)*: `AttestationConfig` - Verifies each validator's SGX enclave before accepting their partials.
+- `params.skipCidVerification` *(optional)*: `boolean` - Skip CID integrity verification of the downloaded encrypted file (default: `false`)
 
 ```typescript Example
 import { writeFile } from "node:fs/promises";
@@ -112,8 +126,8 @@ console.log("Saved ./example.decrypted.pdf");
 </Note>
 
 <Note>
-  `downloadFile()` inherits the same optional key / threshold auto-management
-  behavior as `accessCDR()`.
+  `downloadFile()` inherits the same optional key auto-management behavior as
+  `accessCDR()`, and returns `cid` and `txHash` alongside `content`.
 </Note>
 
 <Note>
@@ -125,7 +139,7 @@ console.log("Saved ./example.decrypted.pdf");
 
 ### read
 
-Submits a read request on-chain. The caller must satisfy the vault's read condition. Emits an event that validators listen for to begin generating partial decryptions.
+Submits a read request on-chain. The caller must satisfy the vault's read condition. This prompts validators to submit encrypted partial decryptions.
 
 | Method | Type |
 | ------ | ---- |
@@ -135,8 +149,8 @@ Parameters:
 
 - `params.uuid`: `number` - The vault UUID
 - `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to the read condition
-- `params.requesterPubKey`: `` `0x${string}` `` - Your ephemeral uncompressed secp256k1 public key
-- `params.feeOverride` *(optional)*: `bigint` - Skip fee query
+- `params.requesterPubKey`: `` `0x${string}` `` - Your ephemeral uncompressed secp256k1 public key. Partials are indexed by this value.
+- `params.feeOverride` *(optional)*: `bigint` - Explicit read fee. Skips the `readFee()` auto-query.
 
 ```typescript Example
 const { txHash } = await client.consumer.read({
@@ -156,7 +170,9 @@ interface ReadResponse {
 
 ### collectPartials
 
-Polls the blockchain for `EncryptedPartialDecryptionSubmitted` events until enough partial decryptions have been collected.
+Polls the Story-API REST endpoint (`/dkg/cdr_partials`) until at least a
+threshold's worth of partial-decryption submissions have been surfaced for the
+given `(uuid, requesterPubKey)`.
 
 | Method | Type |
 | ------ | ---- |
@@ -165,25 +181,27 @@ Polls the blockchain for `EncryptedPartialDecryptionSubmitted` events until enou
 Parameters:
 
 - `params.uuid`: `number` - The vault UUID
-- `params.minPartials`: `number` - Number of partials needed (= threshold)
-- `params.fromBlock`: `bigint` - Block number where the read request was submitted
-- `params.requesterPubKey` *(optional)*: `` `0x${string}` `` - Required in `cosmos-abci` mode
-- `params.timeoutMs` *(optional)*: `number` - Timeout in milliseconds (default: `60000`)
-- `params.pollIntervalMs` *(optional)*: `number` - Polling interval (default: `3000`)
-- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a partial fails signature verification in `evm-events` mode
-- `params.attestationConfig` *(optional)*: `AttestationConfig` - Verifies each validator attestation and rejects invalid partials
+- `params.requesterPubKey`: `` `0x${string}` `` - The uncompressed secp256k1 public key used in the matching `read()` request
+- `params.timeoutMs` *(optional)*: `number` - Timeout in milliseconds. `120_000` is a good starting point.
+- `params.pollIntervalMs` *(optional)*: `number` - Polling interval in milliseconds
+- `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a validator's partial is excluded because its attestation failed the `attestationConfig` checks
+- `params.attestationConfig` *(optional)*: `AttestationConfig` - Verifies each validator's SGX enclave and excludes partials from untrusted validators
+
+The required threshold is derived from the partial-decryption bucket's own DKG
+round (`observer.getThresholdAt(round)`), so a DKG rollover mid-poll does not
+measure the bucket against the wrong round. The vault ciphertext is read once at
+the start of the call and pinned for the rest of the poll loop.
 
 <Warning>
-  Throws `PartialCollectionTimeoutError` if the timeout is reached before enough partials are collected.
+  Throws `PartialCollectionTimeoutError` if the timeout is reached before enough
+  partials are collected. Throws `EmptyVaultError` if the vault has never been
+  written to.
 </Warning>
 
 ```typescript Example
-const receipt = await publicClient.getTransactionReceipt({ hash: readTxHash });
-
 const partials = await client.consumer.collectPartials({
   uuid: 42,
-  minPartials: threshold,
-  fromBlock: receipt.blockNumber,
+  requesterPubKey,
   timeoutMs: 120_000,
 });
 
@@ -197,16 +215,16 @@ interface PartialDecryptionEvent {
   pid: number;                      // 1-based participant index
   encryptedPartial: `0x${string}`;  // AES-GCM encrypted
   ephemeralPubKey: `0x${string}`;   // 65 bytes, uncompressed secp256k1
-  pubShare: `0x${string}`;          // 34 bytes, Ed25519 with prefix
+  pubShare: `0x${string}`;          // 34 bytes, Ed25519 with curve-code prefix
   uuid: number;
-  requesterPubKey?: `0x${string}`;  // optional: evm-events only
-  signature?: `0x${string}`;        // optional: evm-events only
+  ciphertext: `0x${string}`;        // TDH2 ciphertext this partial decrypts
 }
 ```
 
 <Note>
-  In `cosmos-abci` mode, `requesterPubKey` and `signature` are omitted because
-  the keeper verifies signatures on ingress and does not persist those fields.
+  Every event returned from a successful `collectPartials` call shares the same
+  `round` and `ciphertext` — the result is filtered to the bucket matching the
+  vault's current ciphertext.
 </Note>
 
 ---
@@ -226,11 +244,15 @@ Parameters:
 - `params.recipientPrivKey`: `Uint8Array` - Your ephemeral secp256k1 private key (32 bytes)
 - `params.globalPubKey`: `Uint8Array` - DKG global public key
 - `params.label`: `Uint8Array` - 32-byte label (from `uuidToLabel(uuid)`)
-- `params.threshold`: `number` - Minimum partials needed
+
+The TDH2 combine threshold is taken implicitly as `partials.length` —
+`collectPartials` already returns exactly the threshold count needed for
+reconstruction. Pass exactly the partials you want combined.
 
 <Warning>
-  Throws `InsufficientPartialsError` if `partials.length < threshold`.
-  Throws `InvalidCiphertextError` if the ciphertext is empty or malformed.
+  Throws `InsufficientPartialsError` if fewer partials are passed than the
+  ciphertext requires. Throws `InvalidCiphertextError` if the ciphertext is
+  empty or malformed.
 </Warning>
 
 ```typescript Example
@@ -243,8 +265,25 @@ const dataKey = await client.consumer.decryptDataKey({
   recipientPrivKey,
   globalPubKey,
   label,
-  threshold,
 });
 
 const secret = new TextDecoder().decode(dataKey);
+```
+
+---
+
+### prefetchRegistry
+
+Warms the validator `commPubKey` + attestation cache for the active DKG round.
+The first `accessCDR()` / `downloadFile()` call after construction would
+otherwise stall on this fetch. Frontends that know a read is imminent (for
+example, right after wallet connection) can call this in the background.
+
+| Method | Type |
+| ------ | ---- |
+| `prefetchRegistry` | `() => Promise<void>` |
+
+```typescript Example
+// Best-effort warm-up — safe to call repeatedly
+client.consumer.prefetchRegistry().catch(() => {});
 ```

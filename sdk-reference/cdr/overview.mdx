@@ -4,15 +4,15 @@ description: "A detailed description of every function in the CDR SDK"
 ---
 
 <Note>
-  This reference tracks the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`).
-  The package is installable from source today and is not yet available on npm.
+  This reference tracks the Aeneid release of `@piplabs/cdr-sdk` (`v0.2.1`),
+  available on npm.
 </Note>
 
 The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for interacting with Story's Confidential Data Rails system. It handles threshold encryption, vault management, and on-chain access control.
 
 | Language                                                       | Package                                                                                         | GitHub                                                                                                 |
 | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [Source install](https://github.com/piplabs/cdr-sdk/releases/tag/0.1.1) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
 
 ---
 
@@ -31,9 +31,8 @@ const client = new CDRClient({
   network: "testnet",
   publicClient, // viem PublicClient
   walletClient, // optional viem WalletClient
-  dkgSource: "evm-events", // default
-  // cometRpcUrl: "http://<comet-host>:26657", // only for cosmos-abci mode
-  // validationRpcUrls: ["https://your-rpc-provider-2.example.com"],
+  apiUrl: "http://172.192.41.96:1317", // Story-API REST endpoint
+  // minThresholdRatio: 0.67, // optional threshold override, in [0, 1]
 });
 
 client.observer; // read-only queries
@@ -51,27 +50,25 @@ client.consumer; // decryption & read requests
   `decryptDataKey`
 - `crypto`: low-level TDH2, ECIES, and SGX attestation verification helpers
 
-`v0.1.1` also adds high-level aliases:
+The client also exposes high-level aliases:
 
 - `createVault` as an alias for `uploadCDR`
 - `readVault` as an alias for `accessCDR`
 - `createFileVault` as an alias for `uploadFile`
 - `readFileVault` as an alias for `downloadFile`
 
-## DKG Backends
+## State Backends
 
-The client supports two DKG backends:
+The client reads from two backends:
 
-| Backend | Purpose | Notes |
-| ------- | ------- | ----- |
-| `evm-events` | Reads DKG state from EVM logs | Default and most portable |
-| `cosmos-abci` | Reads DKG state from the `x/dkg` keeper | Faster when you have a Comet RPC and accept that trust model |
+| Backend | Configured by | Purpose |
+| ------- | ------------- | ------- |
+| EVM | `publicClient` | CDR contract state — vaults, fees, `maxEncryptedDataSize`, operational threshold |
+| Story-API REST | `apiUrl` | DKG state — active round, global public key, threshold, validators, attestations |
 
-When you use `cosmos-abci`, also set `cometRpcUrl`. If you call
-`collectPartials()` directly in that mode, pass the same `requesterPubKey` used
-for the read request. See
-[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-query-modes)
-for the operational guidance.
+The `apiUrl` is a required parameter. See
+[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-story-api-endpoint)
+for operational guidance and the optional `minThresholdRatio` override.
 
 ## Attestation Utilities
 

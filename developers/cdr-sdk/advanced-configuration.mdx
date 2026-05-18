@@ -1,6 +1,6 @@
 ---
 title: Runtime Configuration
-description: DKG backends, validation RPCs, system addresses, and Aeneid runtime notes for the CDR SDK.
+description: Story-API endpoint, DKG state, threshold tuning, system addresses, and Aeneid runtime notes for the CDR SDK.
 ---
 
 <Note>
@@ -8,58 +8,62 @@ description: DKG backends, validation RPCs, system addresses, and Aeneid runtime
   basic setup. Start with [Setup CDR Client](/developers/cdr-sdk/setup) first.
 </Note>
 
-## DKG Query Modes
+## DKG State and the Story-API Endpoint
 
-The SDK supports two backends for reading DKG state:
+The SDK reads state from two backends:
 
-| Mode          | What it does                                         | When to use it                             |
-| ------------- | ---------------------------------------------------- | ------------------------------------------ |
-| `evm-events`  | Scans DKG contract events via standard EVM RPC       | Default, works anywhere                    |
-| `cosmos-abci` | Queries the `x/dkg` keeper via CometBFT `abci_query` | Faster when you have access to a Comet RPC |
+| Backend             | Configured by  | What it reads                                                                      |
+| ------------------- | -------------- | ---------------------------------------------------------------------------------- |
+| **EVM**             | `publicClient` | CDR contract state — vaults, fees, `maxEncryptedDataSize`, operational threshold    |
+| **Story-API REST**  | `apiUrl`       | DKG state — active round, global public key, threshold, validators, attestations   |
+
+The `apiUrl` is a **required** `CDRClient` parameter. It is the base URL of a
+Story-API REST endpoint, and the `observer` uses it for every DKG read.
 
 ```typescript
 const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  dkgSource: "cosmos-abci",
-  cometRpcUrl: "http://your-node:26657",
+  apiUrl: "http://172.192.41.96:1317",
 });
 ```
+
+For production deployments, point `apiUrl` at your own Story node's REST
+gateway rather than the shared endpoint. See
+[Story-API REST Endpoint](/developers/cdr-sdk/setup#story-api-rest-endpoint)
+for the per-network values.
 
 <Note>
-  In `cosmos-abci` mode, the SDK does not re-verify partial decryption
-  signatures locally. The `x/dkg` keeper verifies them before storage, so the
-  trust model is equivalent to reading that state through RPC.
+  The `observer` caches round-keyed DKG snapshots for rounds in the stable
+  Active and Ended stages, with in-flight request deduplication. The active
+  round itself is always re-fetched, since it can transition at any time.
 </Note>
 
-### Choosing `cosmos-abci`
+## Threshold Tuning
 
-- Use `cosmos-abci` when you control or trust a Comet RPC and want faster DKG
-  reads than EVM event scanning.
-- Configure both `dkgSource: "cosmos-abci"` and `cometRpcUrl`.
-- When you call `collectPartials()` directly in this mode, pass the same
-  `requesterPubKey` you used for the read request.
-- Signature validation happens before keeper storage rather than inside the SDK
-  client, so your trust anchor is the Comet RPC's view of `x/dkg` state.
-
-## Validation RPCs
-
-If you want to defend against a single compromised RPC returning an incorrect
-DKG public key, configure additional validation RPCs. When set,
-`observer.getGlobalPubKey()` cross-checks them and throws if the nodes disagree.
+By default the SDK uses the network's own DKG threshold when combining partial
+decryptions. You can raise the bar with the optional `minThresholdRatio`
+parameter, a value in `[0, 1]`:
 
 ```typescript
 const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  validationRpcUrls: [
-    "https://your-rpc-provider-2.example.com",
-    "https://your-rpc-provider-3.example.com",
-  ],
+  apiUrl: "http://172.192.41.96:1317",
+  minThresholdRatio: 0.67,
 });
 ```
+
+The effective threshold becomes
+`max(network.threshold, ceil(participants * minThresholdRatio))`.
+
+<Warning>
+  Values above `1` would require more partials than there are participants,
+  causing `collectPartials` / `accessCDR` to time out forever. The SDK rejects
+  them.
+</Warning>
 
 ## Contract Addresses
 
@@ -81,12 +85,11 @@ contracts, see
   assumptions described in the CDR overview.
 - Availability depends on enough validators responding before timeout. If reads
   fail to reach threshold, retry or increase `timeoutMs`.
-- `validationRpcUrls` hardens `getGlobalPubKey()` against a single bad EVM RPC.
-  `cosmos-abci` similarly depends on your Comet RPC endpoint being correct.
+- DKG reads depend on the `apiUrl` Story-API endpoint being correct and
+  reachable. Point it at a node you trust for production use.
 
 ## Current Release Notes
 
-- The SDK is installable from source, not npm.
 - Story license-gated vaults still require manual condition encoding.
 - The CDR SDK does not auto-wrap IP to WIP or auto-approve WIP for license
   minting.
@@ -94,7 +97,7 @@ contracts, see
   when those params are omitted.
 - `createVault` / `readVault` / `createFileVault` / `readFileVault` are
   available as high-level aliases.
-- `getRegisteredValidators()` can return an empty list in `cosmos-abci` mode
-  for finalized rounds on the current Aeneid deployment.
+- `getRegisteredValidators()` only includes validators whose registration is
+  fully ratified (`status = Finalized`).
 - `timeoutMs: 120_000` is a good starting point for `accessCDR()` and
   `downloadFile()`.

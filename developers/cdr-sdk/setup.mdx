@@ -4,8 +4,7 @@ description: Learn how to install and configure the CDR SDK.
 ---
 
 <Note>
-  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`). The
-  SDK is not yet published to npm, so install it from source for now.
+  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.2.1`).
 </Note>
 
 ### Prerequisites
@@ -15,20 +14,32 @@ description: Learn how to install and configure the CDR SDK.
 - A funded wallet on Aeneid testnet
 - [viem](https://www.npmjs.com/package/viem) (v2.21+) for blockchain interactions
 
-## Install from Source
+## Install
 
 <CodeGroup>
 
-```bash Build SDK
-git clone https://github.com/piplabs/cdr-sdk.git --branch 0.1.1 --depth 1
-cd cdr-sdk && pnpm install && pnpm build
-cd ../your-project
-npm install ../cdr-sdk/packages/sdk viem
+```bash npm
+npm install @piplabs/cdr-sdk viem
+```
+
+```bash pnpm
+pnpm add @piplabs/cdr-sdk viem
+```
+
+```bash yarn
+yarn add @piplabs/cdr-sdk viem
 ```
 
 </CodeGroup>
 
 <Note>`viem` (v2.21+) is a required peer dependency.</Note>
+
+<Note>
+  Storage providers are optional and pull their own peer dependencies. Install
+  them only for the backend you use: `helia`, `multiformats`, and
+  `@helia/unixfs` for `HeliaProvider`, `@storacha/client` for `StorachaProvider`,
+  or `@filoz/synapse-sdk` for `SynapseProvider`.
+</Note>
 
 <Note>
   If you plan to mint Story license tokens in an IP-gated flow, also install
@@ -71,6 +82,24 @@ await initWasm();
 export const runtime = "nodejs";
 ```
 
+## Story-API REST Endpoint
+
+Every `CDRClient` requires an `apiUrl` — the base URL of a Story-API REST
+endpoint. The SDK reads all DKG state (active round, global public key,
+threshold, participant count, registered validators, and validator
+attestations) over this REST API. Contract state such as vaults and fees is
+still read over the EVM `publicClient`.
+
+| Network | Story-API REST URL          | Notes                                       |
+| ------- | --------------------------- | ------------------------------------------- |
+| Aeneid  | `http://172.192.41.96:1317` | Plain HTTP. May change between deployments. |
+
+<Note>
+  For production deployments you can point `apiUrl` at your own Story node's
+  REST gateway instead of the shared endpoint. Configure it through an
+  environment variable so it is easy to swap.
+</Note>
+
 ## Create the CDR Client
 
 The `CDRClient` provides three sub-clients:
@@ -103,9 +132,11 @@ export function useCDRClient() {
     [],
   );
 
+  const apiUrl = process.env.NEXT_PUBLIC_STORY_API_URL!;
+
   const client = useMemo(
-    () => new CDRClient({ network: "testnet", publicClient }),
-    [publicClient],
+    () => new CDRClient({ network: "testnet", publicClient, apiUrl }),
+    [publicClient, apiUrl],
   );
 
   // Write client — created on demand from the wallet's provider
@@ -120,6 +151,7 @@ export function useCDRClient() {
       network: "testnet",
       publicClient,
       walletClient,
+      apiUrl,
     });
   };
 
@@ -164,6 +196,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
+  apiUrl: process.env.STORY_API_URL!,
 });
 ```
 
@@ -175,6 +208,7 @@ If you only need to query vault data or DKG state, you can omit the `walletClien
 const client = new CDRClient({
   network: "testnet",
   publicClient,
+  apiUrl: process.env.STORY_API_URL!,
 });
 
 // observer methods work without a wallet
@@ -191,22 +225,27 @@ const allocateFee = await client.observer.getAllocateFee();
 
 ### Supported Network
 
-| Network | `network` param | Default RPC URL              | Description              |
-| ------- | --------------- | ---------------------------- | ------------------------ |
-| Aeneid  | `"testnet"`     | `https://aeneid.storyrpc.io` | Current supported release |
+| Network | `network` param | Default RPC URL              | Story-API REST URL          | Description               |
+| ------- | --------------- | ---------------------------- | --------------------------- | ------------------------- |
+| Aeneid  | `"testnet"`     | `https://aeneid.storyrpc.io` | `http://172.192.41.96:1317` | Current supported release |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
   transport: http("https://aeneid.storyrpc.io"),
 });
-const client = new CDRClient({ network: "testnet", publicClient });
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  apiUrl: "http://172.192.41.96:1317",
+});
 ```
 
 ### Custom RPC URL
 
 You can point the SDK to any Aeneid-compatible RPC endpoint by changing the
 `http()` transport URL. This is useful for third-party RPC providers with
-higher rate limits.
+higher rate limits. The `apiUrl` is configured independently — point it at the
+shared Story-API endpoint or your own Story node's REST gateway.
 
 ```typescript
 const publicClient = createPublicClient({
@@ -222,6 +261,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
+  apiUrl: "http://172.192.41.96:1317",
 });
 ```
 
@@ -231,19 +271,26 @@ A common pattern is to configure the network via environment variables:
 
 ```typescript config.ts
 const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
 const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
 
 const publicClient = createPublicClient({ transport: http(RPC_URL) });
-const client = new CDRClient({ network: NETWORK, publicClient });
+const client = new CDRClient({
+  network: NETWORK,
+  publicClient,
+  apiUrl: STORY_API_URL,
+});
 ```
 
 ```bash .env
 # Testnet (default)
 RPC_URL=https://aeneid.storyrpc.io
+STORY_API_URL=http://172.192.41.96:1317
 NETWORK=testnet
 
 # Alternate Aeneid RPC
 RPC_URL=https://your-aeneid-rpc.example.com
+STORY_API_URL=http://your-story-node:1317
 NETWORK=testnet
 ```
 
@@ -264,6 +311,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 
 const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 
 if (!PRIVATE_KEY) {
@@ -283,6 +331,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
+  apiUrl: STORY_API_URL,
 });
 
 // Use the wallet (EOA) address as both write and read condition. Only this
@@ -353,15 +402,18 @@ The SDK throws typed errors you can catch and handle:
 | ------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
 | `CDRError`                      | varies                       | Base class for all SDK-specific errors                                     |
 | `WalletClientRequiredError`     | `WALLET_CLIENT_REQUIRED`     | Accessing `uploader` or `consumer` without a `walletClient`                |
-| `ObserverRequiredError`         | `OBSERVER_REQUIRED`          | Auto-querying `globalPubKey` / `threshold` without an `observer`           |
 | `InvalidParamsError`            | `INVALID_PARAMS`             | Invalid parameter combinations, such as only passing one keypair parameter |
 | `InvalidConditionContractError` | `INVALID_CONDITION_CONTRACT` | Condition address does not implement the required interface                |
 | `LabelMismatchError`            | `LABEL_MISMATCH`             | Ciphertext label does not match the vault UUID                             |
 | `ContentSizeExceededError`      | `CONTENT_SIZE_EXCEEDED`      | Encrypted data exceeds `maxEncryptedDataSize`                              |
+| `EmptyVaultError`               | `EMPTY_VAULT`                | Reading a vault that has never been written to                            |
 | `PartialCollectionTimeoutError` | `PARTIAL_COLLECTION_TIMEOUT` | `collectPartials` or `accessCDR` times out waiting for validator responses |
 | `CidIntegrityError`             | `CID_INTEGRITY`              | Downloaded encrypted file does not match the vault CID                     |
-| `RpcConsensusError`             | `RPC_CONSENSUS`              | Validation RPCs disagree about a DKG value                                 |
-| `ContractRevertError`           | `CONTRACT_REVERT`            | On-chain transaction reverted                                              |
+
+<Note>
+  On-chain transaction reverts (for example, a failed condition check) surface
+  as the underlying `viem` contract errors, not a CDR-specific error class.
+</Note>
 
 All errors extend `CDRError`, which has a `code` property for programmatic handling:
 

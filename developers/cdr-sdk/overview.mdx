@@ -4,8 +4,8 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
 ---
 
 <Note>
-  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.1.1`).
-  The SDK is installable from source today and is not yet published to npm.
+  These docs track the Aeneid release of `@piplabs/cdr-sdk` (`v0.2.1`),
+  available on npm.
 </Note>
 
 <Card
@@ -55,7 +55,7 @@ The current SDK surface is centered around two workflows:
 The Aeneid release also includes:
 
 - `observer`, `uploader`, and `consumer` sub-clients
-- Two DKG query backends: `evm-events` (default) and `cosmos-abci`
+- DKG state reads over the Story-API REST endpoint (`apiUrl`)
 - Storage providers for Helia, gateway-backed IPFS, Storacha, and Synapse
 - Validator registration, attestation queries, and SGX attestation verification utilities
 
@@ -68,14 +68,11 @@ CDR revolves around **vaults**. Each vault stores encrypted data and has two con
 
 <Note>
   When `msg.sender` equals the configured condition address, the CDR contract
-  bypasses the condition check. If you set your wallet address as the condition
-  address, only that wallet can operate; other callers revert because an EOA
-  does not implement `checkWriteCondition` / `checkReadCondition`.
-</Note>
-
-<Note>
-  The SDK validates condition addresses by default. If you intentionally use an
-  EOA with `allocate()`, pass `skipConditionValidation: true`.
+  bypasses the condition check — so setting your own wallet address as the
+  condition makes a vault owner-only (other callers revert, since an EOA does
+  not implement `checkWriteCondition` / `checkReadCondition`). The SDK validates
+  condition addresses by default; when you intentionally use an EOA this way,
+  call `allocate()` with `skipConditionValidation: true`.
 </Note>
 
 There are two common ways to use a vault:
@@ -195,7 +192,7 @@ For the deployed Story license-gated pattern, see
 
 <CardGroup cols={2}>
   <Card title="Setup" icon="gear" href="/developers/cdr-sdk/setup">
-    Install the SDK from source and initialize the client for Aeneid.
+    Install the SDK from npm and initialize the client for Aeneid.
   </Card>
   <Card
     title="Runtime Config"

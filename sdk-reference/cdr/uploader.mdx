@@ -18,7 +18,7 @@ const uploader = client.uploader;
 </Note>
 
 <Note>
-  `v0.1.1` also exposes `createVault` as an alias for `uploadCDR`, and
+  The SDK also exposes `createVault` as an alias for `uploadCDR`, and
   `createFileVault` as an alias for `uploadFile`.
 </Note>
 
@@ -43,7 +43,7 @@ High-level method that allocates a vault, encrypts your data, and writes the cip
 Parameters:
 
 - `params.dataKey`: `Uint8Array` - The secret payload bytes to encrypt. Despite the name, this can be arbitrary data, not only a cryptographic key.
-- `params.globalPubKey`: `Uint8Array` - The DKG global public key (from `observer.getGlobalPubKey()`)
+- `params.globalPubKey` *(optional)*: `Uint8Array` - The DKG global public key (from `observer.getGlobalPubKey()`). Auto-queried via the Observer if omitted.
 - `params.updatable`: `boolean` - Whether the vault can be rewritten after initial write
 - `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract
 - `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract
@@ -129,13 +129,14 @@ Parameters:
 
 - `params.content`: `Uint8Array` - File bytes to encrypt and upload
 - `params.storageProvider`: `StorageProvider` - Backend used for upload and download
-- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.globalPubKey` *(optional)*: `Uint8Array` - DKG global public key. Auto-queried via the Observer if omitted.
 - `params.updatable`: `boolean` - Whether the vault can be rewritten
 - `params.writeConditionAddr`: `` `0x${string}` `` - Address of the write condition contract
 - `params.readConditionAddr`: `` `0x${string}` `` - Address of the read condition contract
 - `params.writeConditionData`: `` `0x${string}` `` - ABI-encoded write condition data
 - `params.readConditionData`: `` `0x${string}` `` - ABI-encoded read condition data
 - `params.accessAuxData`: `` `0x${string}` `` - Auxiliary data passed to conditions during write
+- `params.pin` *(optional)*: `boolean` - Whether the storage provider should pin the uploaded blob
 - `params.allocateFeeOverride` *(optional)*: `bigint` - Skip the allocate fee query
 - `params.writeFeeOverride` *(optional)*: `bigint` - Skip the write fee query
 
@@ -299,7 +300,7 @@ Locally encrypts data using TDH2 threshold encryption. No blockchain interaction
 Parameters:
 
 - `params.dataKey`: `Uint8Array` - The plaintext data to encrypt
-- `params.globalPubKey`: `Uint8Array` - DKG global public key (34 bytes)
+- `params.globalPubKey` *(optional)*: `Uint8Array` - DKG global public key (34 bytes). Auto-queried via the Observer if omitted.
 - `params.label`: `Uint8Array` - 32-byte label binding ciphertext to a vault (use `uuidToLabel(uuid)`)
 
 ```typescript Example

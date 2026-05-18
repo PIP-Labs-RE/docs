@@ -5,11 +5,23 @@ description: Read-only methods for querying CDR vault data, fees, and DKG state.
 
 ## Observer
 
-The `Observer` sub-client is always available, even without a `walletClient`. It provides read-only access to on-chain CDR and DKG state.
+The `Observer` sub-client is always available, even without a `walletClient`. It provides read-only access to CDR and DKG state.
 
 ```typescript
 const observer = client.observer;
 ```
+
+The Observer reads from two backends: CDR contract state (vaults, fees,
+`maxEncryptedDataSize`, operational threshold) over the EVM `publicClient`, and
+DKG state (active round, global public key, threshold, validators,
+attestations) over the Story-API REST endpoint configured by `apiUrl`.
+
+<Note>
+  Round-keyed DKG snapshots are cached for the lifetime of the Observer for
+  rounds in the stable Active and Ended stages, with in-flight request
+  deduplication. `getActiveRound()` always re-fetches, since the active round
+  can transition at any time.
+</Note>
 
 ### Methods
 
@@ -17,11 +29,13 @@ const observer = client.observer;
 - getAllocateFee
 - getWriteFee
 - getReadFee
-- getGlobalPubKey
+- getMaxEncryptedDataSize
 - getOperationalThreshold
+- getActiveRound
+- getGlobalPubKey
 - getParticipantCount
 - getThreshold
-- getMaxEncryptedDataSize
+- getThresholdAt
 - getRegisteredValidators
 - getValidatorAttestations
 
@@ -108,33 +122,27 @@ console.log(`Read fee: ${fee} wei`);
 
 ---
 
-### getGlobalPubKey
+### getMaxEncryptedDataSize
 
-Returns the DKG global public key used for TDH2 encryption. This is an Ed25519 key (34 bytes: 2-byte curve prefix + 32-byte key).
+Returns the maximum encrypted payload size (in bytes) supported by the on-chain
+vault path. The CDR contract treats this as a constant, so it is cached for the
+lifetime of the Observer.
 
 | Method | Type |
 | ------ | ---- |
-| `getGlobalPubKey` | `(fromBlock?: bigint) => Promise<Uint8Array>` |
-
-Parameters:
-
-- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events. Defaults to searching recent blocks.
+| `getMaxEncryptedDataSize` | `() => Promise<bigint>` |
 
 ```typescript Example
-const globalPubKey = await client.observer.getGlobalPubKey();
-console.log(globalPubKey.length); // 34
+const maxSize = await client.observer.getMaxEncryptedDataSize();
+console.log(`Max encrypted payload size: ${maxSize} bytes`);
 ```
-
-<Note>
-  If `validationRpcUrls` are configured on the client, this method cross-checks
-  the key across those RPCs and throws if they disagree.
-</Note>
 
 ---
 
 ### getOperationalThreshold
 
-Returns the operational threshold as basis points (e.g., `667` = 66.7%).
+Returns the DKG operational threshold as a basis-points constant read from the
+DKG contract (e.g., `667` = 66.7%).
 
 | Method | Type |
 | ------ | ---- |
@@ -147,88 +155,147 @@ console.log(`Threshold: ${Number(threshold) / 10}%`); // e.g. "66.7%"
 
 ---
 
-### getParticipantCount
+### getActiveRound
 
-Returns the number of active DKG validators in the latest round.
+Returns the currently active DKG round number. Always hits the Story-API REST
+endpoint — the active round can transition at any time, so it is never served
+from cache.
 
 | Method | Type |
 | ------ | ---- |
-| `getParticipantCount` | `(fromBlock?: bigint) => Promise<number>` |
+| `getActiveRound` | `() => Promise<number>` |
 
-Parameters:
+```typescript Example
+const round = await client.observer.getActiveRound();
+console.log(`Active DKG round: ${round}`);
+```
 
-- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events.
+---
+
+### getGlobalPubKey
+
+Returns the DKG global public key from the active round, used for TDH2
+encryption. This is an Ed25519 point with a 2-byte curve-code prefix (`0x043f`),
+34 bytes total, so it can be passed directly to the WASM TDH2 functions.
+
+| Method | Type |
+| ------ | ---- |
+| `getGlobalPubKey` | `() => Promise<Uint8Array>` |
+
+```typescript Example
+const globalPubKey = await client.observer.getGlobalPubKey();
+console.log(globalPubKey.length); // 34
+```
+
+---
+
+### getParticipantCount
+
+Returns the number of validators selected to participate in the active DKG round.
+
+| Method | Type |
+| ------ | ---- |
+| `getParticipantCount` | `() => Promise<number>` |
 
 ```typescript Example
 const count = await client.observer.getParticipantCount();
-console.log(`Active validators: ${count}`);
+console.log(`Participating validators: ${count}`);
 ```
 
 ---
 
 ### getThreshold
 
-Returns the calculated absolute threshold: `ceil(participants * operationalThreshold / 1000)`. This is the minimum number of partial decryptions needed.
+Returns the absolute threshold for the currently active DKG round — the minimum
+number of partial decryptions needed to combine. If `minThresholdRatio` is set
+on the client, the effective value is
+`max(network.threshold, ceil(participants * minThresholdRatio))`.
 
 | Method | Type |
 | ------ | ---- |
-| `getThreshold` | `(fromBlock?: bigint) => Promise<number>` |
-
-Parameters:
-
-- `fromBlock` *(optional)*: Block number to search from for DKG `Finalized` events.
+| `getThreshold` | `() => Promise<number>` |
 
 ```typescript Example
 const threshold = await client.observer.getThreshold();
-console.log(`Need ${threshold} partials to decrypt`); // e.g. "Need 2 partials to decrypt"
+console.log(`Need ${threshold} partials to decrypt`);
 ```
+
+<Note>
+  Use this for UI / status display. Do **not** use it to validate a specific
+  partial-decryption bucket from `collectPartials` — a bucket carries its own
+  round, which can differ from the active round during DKG rollover. Use
+  `getThresholdAt` for that.
+</Note>
 
 ---
 
-### getMaxEncryptedDataSize
+### getThresholdAt
 
-Returns the maximum encrypted payload size supported by the on-chain vault path.
+Returns the absolute threshold for a specific DKG round, computed against that
+round's own participant total. Used internally by `collectPartials` so a DKG
+rollover mid-poll does not measure a bucket against the wrong round.
 
 | Method | Type |
 | ------ | ---- |
-| `getMaxEncryptedDataSize` | `() => Promise<number>` |
+| `getThresholdAt` | `(round: number) => Promise<number>` |
+
+Parameters:
+
+- `round`: The DKG round number to compute the threshold for
 
 ```typescript Example
-const maxSize = await client.observer.getMaxEncryptedDataSize();
-console.log(`Max encrypted payload size: ${maxSize} bytes`);
+const threshold = await client.observer.getThresholdAt(4);
+console.log(`Round 4 threshold: ${threshold}`);
 ```
 
 ---
 
 ### getRegisteredValidators
 
-Returns the validator registrations for the latest DKG round.
+Returns a map of validator address → `commPubKey` bytes for the given DKG round
+(defaults to the active round). Only includes validators with `Finalized`
+status. The `commPubKey` is the secp256k1 public key the validator's TEE uses to
+sign partial decryption responses.
 
 | Method | Type |
 | ------ | ---- |
-| `getRegisteredValidators` | `() => Promise<unknown[]>` |
+| `getRegisteredValidators` | `(params?: { round?: number }) => Promise<Map<string, Uint8Array>>` |
+
+Parameters:
+
+- `params.round` *(optional)*: DKG round number. Defaults to the active round.
 
 ```typescript Example
 const validators = await client.observer.getRegisteredValidators();
-console.log(validators);
+for (const [address, commPubKey] of validators) {
+  console.log(address, commPubKey.length);
+}
 ```
-
-<Note>
-  On the current Aeneid release, this can return an empty list in
-  `cosmos-abci` mode after a round has finalized.
-</Note>
 
 ---
 
 ### getValidatorAttestations
 
-Returns the SGX attestation documents associated with the active validators.
+Returns a map of validator address → `enclaveReport` (raw SGX quote bytes) for
+the given DKG round (defaults to the active round). Only includes validators
+with `Finalized` status. Shares a per-round cache with `getRegisteredValidators`.
 
 | Method | Type |
 | ------ | ---- |
-| `getValidatorAttestations` | `() => Promise<unknown[]>` |
+| `getValidatorAttestations` | `(params?: { round?: number }) => Promise<Map<string, Uint8Array>>` |
+
+Parameters:
+
+- `params.round` *(optional)*: DKG round number. Defaults to the active round.
 
 ```typescript Example
 const attestations = await client.observer.getValidatorAttestations();
-console.log(attestations);
+for (const [address, enclaveReport] of attestations) {
+  console.log(address, enclaveReport.length);
+}
 ```
+
+<Note>
+  Use with `verifyAttestation()` to verify each validator's TEE enclave before
+  trusting their partial decryptions.
+</Note>
