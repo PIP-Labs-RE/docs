@@ -233,9 +233,7 @@
                       "concepts/spg/overview",
                       "concepts/spg/batch-spg-function-calls"
                     ]
-                  },
-                  "concepts/story-attestation-service",
-                  "concepts/faq"
+                  }
                 ]
               },
               {
@@ -243,8 +241,7 @@
                 "pages": [
                   "concepts/programmable-ip-license/overview",
                   "concepts/programmable-ip-license/pil-terms",
-                  "concepts/programmable-ip-license/pil-flavors",
-                  "concepts/programmable-ip-license/how-does-story-protect-ip"
+                  "concepts/programmable-ip-license/pil-flavors"
                 ]
               },
               {
@@ -423,9 +420,6 @@
                       "sdk-reference/ipasset",
                       "sdk-reference/ipaccount",
                       "sdk-reference/license",
-                      "sdk-reference/royalty",
-                      "sdk-reference/dispute",
-                      "sdk-reference/group",
                       "sdk-reference/permissions",
                       "sdk-reference/nftclient",
                       "sdk-reference/wipclient"
