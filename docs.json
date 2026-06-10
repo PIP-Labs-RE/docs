@@ -470,66 +470,6 @@
             ]
           },
           {
-            "tab": "Smart Contract Reference",
-            "groups": [
-              {
-                "group": "Get Started",
-                "pages": ["smart-contract-reference/overview"]
-              },
-              {
-                "group": "Smart Contract Reference",
-                "pages": [
-                  "smart-contract-reference/ipaccountimpl",
-                  {
-                    "group": "Licensing",
-                    "pages": [
-                      "smart-contract-reference/license/licensingmodule",
-                      "smart-contract-reference/license/pilicensetemplate",
-                      "smart-contract-reference/license/licensetoken"
-                    ]
-                  },
-                  {
-                    "group": "Royalty",
-                    "pages": [
-                      "smart-contract-reference/royalty/royaltymodule",
-                      "smart-contract-reference/royalty/iproyaltyvault",
-                      "smart-contract-reference/royalty/royaltypolicylap",
-                      "smart-contract-reference/royalty/royaltypolicylrp"
-                    ]
-                  },
-                  {
-                    "group": "Dispute",
-                    "pages": ["smart-contract-reference/dispute/disputemodule"]
-                  },
-                  {
-                    "group": "Registry",
-                    "pages": [
-                      "smart-contract-reference/registry/ipassetregistry",
-                      "smart-contract-reference/registry/ipaccountregistry",
-                      "smart-contract-reference/registry/groupipassetregistry",
-                      "smart-contract-reference/registry/licenseregistry",
-                      "smart-contract-reference/registry/moduleregistry"
-                    ]
-                  },
-                  {
-                    "group": "Group",
-                    "pages": [
-                      "smart-contract-reference/group/groupingmodule",
-                      "smart-contract-reference/group/evensplitgrouppool"
-                    ]
-                  },
-                  {
-                    "group": "Metadata",
-                    "pages": [
-                      "smart-contract-reference/metadata/coremetadatamodule",
-                      "smart-contract-reference/metadata/coremetadataviewmodule"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
             "tab": "API Reference",
             "dropdowns": [
               {
