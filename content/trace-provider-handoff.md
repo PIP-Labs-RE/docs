@@ -89,13 +89,18 @@ Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`.
 
 A provider does not need to send a transaction hash in write payloads. Story owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until Story fills it after broadcast.
 
+Initial registrations must include one canonical content hash. Accepted fields
+are `asset.hash`, `content_hash`, `file.content_sha256`, or
+`file.hashes.sha256`; all normalize to `sha256:<64-lowercase-hex>`. If more
+than one alias is present, they must represent the same hash.
+
 Recommended top-level shape:
 
 ```json
 {
   "schema_version": "trace-v1.0",
   "file": {
-    "content_sha256": "sha256hex",
+    "content_sha256": "sha256:<64-hex>",
     "mime_type": "video/mp4",
     "media_category": "video",
     "size_bytes": 123456,
@@ -179,17 +184,24 @@ Recommended top-level shape:
 Current exact-match searchable fields:
 
 ```text
+provider
 source_record_id
 media_id_public              (alias for source_record_id when present in metadata)
-file.content_sha256         (also accepts file.hashes.sha256)
+file.content_sha256         (also accepts content_hash and file.hashes.sha256)
+file.mime_type              (also accepts mime_type / mimetype aliases)
+file.media_category         (also accepts media_category)
 user.source_user_id
 collection_id
 customer_id
 task_id
-file.hashes.phash64
+user.kyc_status
+user.kyc_country
+contributor.geo_region
+tos_hash                    (also accepts contributor.consent.tos_hash)
+privacy_policy_hash         (also accepts contributor.consent.privacy_policy_hash)
 ```
 
-Fields like `file.mime_type`, `file.media_category`, KYC fields, TOS/Privacy Policy fields, `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_specific.base.motion`, `dhash64`, `ahash64`, `md5`, and `keyframe_phashes` may be preserved in the stored payload, but they are not exact-match indexed in the current staging implementation. Use `/stats` for distributions and use `provider` as an optional query scope for Trace frontend/audit views.
+Fields like `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_specific.base.motion`, `file.hashes.phash64`, `dhash64`, `ahash64`, `md5`, and `keyframe_phashes` may be preserved in the stored payload, but they are not exact-match indexed in the current staging implementation. Use `/stats` for distributions and use `provider` as an optional query scope for Trace frontend/audit views.
 
 ### Field guidance
 
@@ -266,7 +278,7 @@ Request body is a JSON array:
     "initial_metadata_json": {
       "schema_version": "trace-v1.0",
       "file": {
-        "content_sha256": "b1946ac92492d2347c6235b4d2611184",
+        "content_sha256": "sha256:<64-hex>",
         "mime_type": "video/mp4",
         "media_category": "video",
         "size_bytes": 123456,
@@ -569,7 +581,8 @@ GET /api/v1/data-audit/search?field=file.content_sha256&value=<64-hex-or-sha256-
 GET /api/v1/data-audit/search?field=customer_id&value=<customer-id>
 GET /api/v1/data-audit/search?field=task_id&value=<task-id>
 GET /api/v1/data-audit/search?field=collection_id&value=<collection-id>
-GET /api/v1/data-audit/search?field=file.hashes.phash64&value=facebeef01234567
+GET /api/v1/data-audit/search?field=contributor.consent.tos_hash&value=sha256:<64-hex-policy-hash>
+GET /api/v1/data-audit/search?field=contributor.consent.privacy_policy_hash&value=sha256:<64-hex-policy-hash>
 GET /api/v1/data-audit/search?field=collection_id&value=<collection-id>&provider=kled&limit=100&cursor=<next_cursor>
 ```
 
