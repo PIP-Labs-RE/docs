@@ -73,7 +73,7 @@ Current staging behavior:
 
 - Metadata update cap is now `100` per `data_id` on staging. Multiple mutable field changes can be coalesced into one metadata update with one `seq` when they are part of the same provider-side revision.
 - Read/search/scoped-group APIs are public audit views in the current staging build. Do not put enterprise-only or sensitive fields into the public Trace payload. If a future provider-only or partner-only read tier is needed, it should be a separate API/product decision.
-- Indexed hash types are canonical content SHA-256 and `phash64`. `dhash64`, `ahash64`, and `keyframe_phashes` should still be sent when useful, but they are stored-only for now.
+- The only searchable hash type is canonical content SHA-256. `phash64`, `dhash64`, `ahash64`, and `keyframe_phashes` should still be sent when useful, but they are stored-only for now.
 - Recommended `tax_status` values are `submitted`, `not_submitted`, `not_applicable`, and `unknown`. A provider can map `tax_form_on_file=true` to `submitted` and `false` to `not_submitted`.
 - Recommended `account_verification_status` values are `verified`, `pending`, `failed`, and `unverified`.
 - Attestation signature is optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
