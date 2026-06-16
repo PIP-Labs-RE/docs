@@ -47,7 +47,7 @@ A provider's draft public payload maps cleanly into the current Trace Schema v1.
 
 These fields are part of the current Trace v1.0 working shape:
 
-- `user.kyc_country`: country-level KYC jurisdiction signal. Country only; no address or GPS-derived country.
+- `contributor.kyc_country`: country-level KYC jurisdiction signal. Country only; no address or GPS-derived country.
 - `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`: the exact policy versions and hashes the contributor accepted for the record.
 - `attestation.signed_at_utc` and `attestation.key_url`: verification metadata for the top-level `attestation` block.
 - `file.behavior`: non-PII capture/upload behavior signals.
@@ -74,8 +74,8 @@ Current staging behavior:
 - Metadata update cap is now `100` per `data_id` on staging. Multiple mutable field changes can be coalesced into one metadata update with one `seq` when they are part of the same provider-side revision.
 - Read/search/scoped-group APIs are public audit views in the current staging build. Do not put enterprise-only or sensitive fields into the public Trace payload. If a future provider-only or partner-only read tier is needed, it should be a separate API/product decision.
 - The only searchable hash type is canonical content SHA-256. `phash64`, `dhash64`, `ahash64`, and `keyframe_phashes` should still be sent when useful, but they are stored-only for now.
-- Recommended `tax_status` values are `submitted`, `not_submitted`, `not_applicable`, and `unknown`. A provider can map `tax_form_on_file=true` to `submitted` and `false` to `not_submitted`.
-- Recommended `account_verification_status` values are `verified`, `pending`, `failed`, and `unverified`.
+- Recommended `contributor.tax_status` values are `submitted`, `not_submitted`, `not_applicable`, and `unknown`. A provider can map `tax_form_on_file=true` to `submitted` and `false` to `not_submitted`.
+- Recommended `contributor.account_verification_status` values are `verified`, `pending`, `failed`, and `unverified`.
 - Attestation signature is optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
 - `source_record_id` should contain the provider's stable public media ID, for example `kmf_...`. Staging trims surrounding whitespace, preserves case, rejects control characters, and accepts source IDs up to 512 bytes.
 
@@ -137,16 +137,10 @@ Recommended top-level shape:
     "image": {},
     "document": {}
   },
-  "user": {
-    "source_user_id": "kled-public-user-id",
-    "kyc_status": "verified",
-    "kyc_country": "US",
-    "tax_status": "submitted",
-    "account_verification_status": "verified"
-  },
   "contributor": {
     "anon_id": "kled-public-user-id",
     "kyc_status": "verified",
+    "kyc_country": "US",
     "geo_region": "US",
     "tax_status": "submitted",
     "account_verification_status": "verified",
@@ -190,12 +184,12 @@ media_id_public              (alias for source_record_id when present in metadat
 file.content_sha256         (also accepts content_hash and file.hashes.sha256)
 file.mime_type              (also accepts mime_type / mimetype aliases)
 file.media_category         (also accepts media_category)
-user.source_user_id
+contributor.anon_id
 collection_id
 customer_id
 task_id
-user.kyc_status
-user.kyc_country
+contributor.kyc_status
+contributor.kyc_country
 contributor.geo_region
 tos_hash                    (also accepts contributor.consent.tos_hash)
 privacy_policy_hash         (also accepts contributor.consent.privacy_policy_hash)
@@ -206,10 +200,11 @@ Fields like `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_spec
 ### Field guidance
 
 - `source_record_id`: provider-owned stable public media ID. The provider's `kmf_...` value belongs here. Staging accepts this value up to 512 bytes.
-- `user.kyc_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
-- `user.kyc_country`: ISO 3166-1 alpha-2 country code from KYC, if available. Country only; no address or GPS-derived country.
-- `user.tax_status`: recommended values are `submitted`, `not_submitted`, `not_applicable`, `unknown`. For a provider's `tax_form_on_file`, map `true` to `submitted` and `false` to `not_submitted`.
-- `user.account_verification_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
+- `contributor.anon_id`: provider-owned public anonymized contributor ID.
+- `contributor.kyc_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
+- `contributor.kyc_country`: ISO 3166-1 alpha-2 country code from KYC, if available. Country only; no address or GPS-derived country.
+- `contributor.tax_status`: recommended values are `submitted`, `not_submitted`, `not_applicable`, `unknown`. For a provider's `tax_form_on_file`, map `true` to `submitted` and `false` to `not_submitted`.
+- `contributor.account_verification_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
 - `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`: the accepted policy version, hash, and URI for this record.
 - Provider active policies are set separately through `PUT /webhook/v1/data-audit/provider-policy`.
 - `attestation.signature`: optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
@@ -317,16 +312,10 @@ Request body is a JSON array:
           "height": 1080
         }
       },
-      "user": {
-        "source_user_id": "kup_123",
-        "kyc_status": "verified",
-        "kyc_country": "US",
-        "tax_status": "submitted",
-        "account_verification_status": "verified"
-      },
       "contributor": {
         "anon_id": "kup_123",
         "kyc_status": "verified",
+        "kyc_country": "US",
         "geo_region": "US",
         "tax_status": "submitted",
         "account_verification_status": "verified",
@@ -430,10 +419,6 @@ Request body is a JSON array:
     "metadata_root": "sha256:<new-canonical-trace-schema-v1-json>",
     "metadata_json": {
       "schema_version": "trace-v1.0",
-      "user": {
-        "source_user_id": "kup_123",
-        "kyc_status": "unverified"
-      },
       "contributor": {
         "anon_id": "kup_123",
         "kyc_status": "unverified",
