@@ -1,0 +1,796 @@
+# Trace Provider Data Audit Staging Handoff
+
+This document describes the current staging API shape for Trace data audit ingestion and reads. It reflects the latest Trace Schema.
+
+The API and Trace Schema described here are provider-agnostic — every provider integrates through the same endpoints, headers, and schema. The concrete examples below use Kled, a live provider, to make the request and response shapes easier to follow. Substitute your own provider identity (the `X-Provider` value, source IDs, URLs, and policy references) wherever Kled appears.
+
+## Getting Access
+
+Write access is gated. Before integrating, a provider must contact the Story team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
+
+To request access, reach out to the Story team to start the onboarding process.
+
+Base URL:
+
+```text
+https://staging-api.storyprotocol.net
+```
+
+## API Flow
+
+```text
+Provider client
+  -> story-api webhook batch endpoint
+  -> asynchronous Story processing
+  -> story-api read/search endpoints
+```
+
+A `records:batch` response always includes per-item statuses. `202 Accepted` means at least one item was accepted for asynchronous processing and no item conflicted. `200 OK` means no new async work was enqueued because every item was a duplicate. `409 Conflict` means at least one item conflicted; any `accepted` items in that response were still enqueued. Clients should inspect item statuses and retry transient request failures with the same payload and the same `X-Batch-Id`.
+
+## Auth and Provider Scope
+
+Every write request must include:
+
+```text
+X-API-Key: <provider staging key>
+X-Provider: kled
+X-Batch-Id: <stable batch id>
+```
+
+Use the provided staging API key for write testing. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
+
+Read APIs are keyed by global Story `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
+
+## Current Provider / Trace Alignment
+
+A provider's draft public payload maps cleanly into the current Trace Schema v1.0 working shape. The provider should send the normalized Trace fields shown below and include the full provider public payload under `provider_payload` so no provider-specific detail is lost.
+
+These fields are part of the current Trace v1.0 working shape:
+
+- `user.kyc_country`: country-level KYC jurisdiction signal. Country only; no address or GPS-derived country.
+- `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`: the exact policy versions and hashes the contributor accepted for the record.
+- `attestation.signed_at_utc` and `attestation.key_url`: verification metadata for the top-level `attestation` block.
+- `file.behavior`: non-PII capture/upload behavior signals.
+- `file_specific.base.motion`: shared motion signals across media types.
+- `app.legal_entity`: legal counterparty information alongside the app/platform name.
+
+Provider-level active ToS and Privacy Policy are set through the provider policy endpoint, not inside each record payload. Trace stores the active policy version, hash, and URI so records and stats can link accepted policy references to the provider's current policy documents.
+
+These fields are stored in the payload but are not indexed in the current staging implementation:
+
+- `app.legal_entity`
+- `file.behavior.*`
+- `file_specific.base.motion.*`
+- `file.hashes.dhash64`
+- `file.hashes.ahash64`
+- `file.hashes.keyframe_phashes`
+- `file.content_md5` / `file.hashes.md5`
+- `app.platform_name`
+
+The current exact-match indexes cover the fields needed by the Trace frontend and audit flows. The richer provider fields are still stored so they can be surfaced or indexed later without asking the provider to resend old data.
+
+Current staging behavior:
+
+- Metadata update cap is now `100` per `data_id` on staging. Multiple mutable field changes can be coalesced into one metadata update with one `seq` when they are part of the same provider-side revision.
+- Read/search/scoped-group APIs are public audit views in the current staging build. Do not put enterprise-only or sensitive fields into the public Trace payload. If a future provider-only or partner-only read tier is needed, it should be a separate API/product decision.
+- Indexed hash types are canonical content SHA-256 and `phash64`. `dhash64`, `ahash64`, and `keyframe_phashes` should still be sent when useful, but they are stored-only for now.
+- Recommended `tax_status` values are `submitted`, `not_submitted`, `not_applicable`, and `unknown`. A provider can map `tax_form_on_file=true` to `submitted` and `false` to `not_submitted`.
+- Recommended `account_verification_status` values are `verified`, `pending`, `failed`, and `unverified`.
+- Attestation signature is optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
+- `source_record_id` should contain the provider's stable public media ID, for example `kmf_...`. Staging trims surrounding whitespace, preserves case, rejects control characters, and accepts source IDs up to 512 bytes.
+
+## Trace Schema v1.0
+
+Story stores a provider-normalized trace metadata object instead of treating the provider's raw payload as the top-level Story contract. The provider's full original public payload should be preserved under `provider_payload`.
+
+The provider should populate the standardized Trace Schema fields directly. Story also preserves the provider's full original public payload under `provider_payload`, but the normalized fields are the portable Trace contract that other providers and the frontend should use.
+
+Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`. Story canonicalizes metadata JSON before computing internal event hashes, so object key order does not affect idempotency or conflict detection.
+
+A provider does not need to send a transaction hash in write payloads. Story owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until Story fills it after broadcast.
+
+Recommended top-level shape:
+
+```json
+{
+  "schema_version": "trace-v1.0",
+  "file": {
+    "content_sha256": "sha256hex",
+    "mime_type": "video/mp4",
+    "media_category": "video",
+    "size_bytes": 123456,
+    "hashes": {
+      "phash64": "facebeef01234567",
+      "dhash64": "1b9072d44a8be3c1",
+      "ahash64": "ff7e3c1a90d5e8c2",
+      "keyframe_phashes": [
+        "0011223344556677",
+        "8899aabbccddeeff"
+      ]
+    },
+    "behavior": {
+      "captured_at_utc": "2026-05-13",
+      "uploaded_at_utc": "2026-05-13",
+      "capture_to_upload_seconds": 421,
+      "capture_to_upload_bucket": "5-60min",
+      "upload_session_size": 3,
+      "upload_session_kind": "gallery_pick",
+      "captured_via": "ios_native_camera",
+      "uploaded_via": "ios_app",
+      "client_version": "ios-1.42.0"
+    }
+  },
+  "file_specific": {
+    "base": {
+      "motion": {
+        "compass_heading": 247.3,
+        "compass_heading_reference": "true_north",
+        "speed_bucket": "stationary"
+      }
+    },
+    "video": {},
+    "image": {},
+    "document": {}
+  },
+  "user": {
+    "source_user_id": "kled-public-user-id",
+    "kyc_status": "verified",
+    "kyc_country": "US",
+    "tax_status": "submitted",
+    "account_verification_status": "verified"
+  },
+  "contributor": {
+    "anon_id": "kled-public-user-id",
+    "kyc_status": "verified",
+    "geo_region": "US",
+    "tax_status": "submitted",
+    "account_verification_status": "verified",
+    "consent": {
+      "tos_version": "2026-05-20",
+      "tos_hash": "sha256:<64-hex-policy-hash>",
+      "tos_uri": "https://kled.ai/terms/2026-05-20",
+      "privacy_policy_version": "2026-05-20",
+      "privacy_policy_hash": "sha256:<64-hex-policy-hash>",
+      "privacy_policy_uri": "https://kled.ai/privacy/2026-05-20"
+    }
+  },
+  "app": {
+    "platform_name": "kled.ai",
+    "legal_entity": "Nitrility Inc. (Delaware, USA)"
+  },
+  "timestamps": {
+    "occurred_at": "2026-05-13T00:00:00Z",
+    "uploaded_at": "2026-05-13T00:00:00Z",
+    "captured_at": "2026-05-12T23:59:00Z"
+  },
+  "attestation": {
+    "payload_hash": "sha256:<canonical-trace-schema-v1-json>",
+    "signature": "optional-signature",
+    "key_id": "optional-key-id",
+    "key_url": "https://kled.ai/.well-known/verification-keys.json",
+    "signed_at_utc": "2026-05-13T00:00:02Z"
+  },
+  "provider_payload": {
+    "...": "full provider public payload"
+  }
+}
+```
+
+Current exact-match searchable fields:
+
+```text
+source_record_id
+media_id_public              (alias for source_record_id when present in metadata)
+file.content_sha256         (also accepts file.hashes.sha256)
+user.source_user_id
+collection_id
+customer_id
+task_id
+file.hashes.phash64
+```
+
+Fields like `file.mime_type`, `file.media_category`, KYC fields, TOS/Privacy Policy fields, `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_specific.base.motion`, `dhash64`, `ahash64`, `md5`, and `keyframe_phashes` may be preserved in the stored payload, but they are not exact-match indexed in the current staging implementation. Use `/stats` for distributions and use `provider` as an optional query scope for Trace frontend/audit views.
+
+### Field guidance
+
+- `source_record_id`: provider-owned stable public media ID. The provider's `kmf_...` value belongs here. Staging accepts this value up to 512 bytes.
+- `user.kyc_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
+- `user.kyc_country`: ISO 3166-1 alpha-2 country code from KYC, if available. Country only; no address or GPS-derived country.
+- `user.tax_status`: recommended values are `submitted`, `not_submitted`, `not_applicable`, `unknown`. For a provider's `tax_form_on_file`, map `true` to `submitted` and `false` to `not_submitted`.
+- `user.account_verification_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
+- `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`: the accepted policy version, hash, and URI for this record.
+- Provider active policies are set separately through `PUT /webhook/v1/data-audit/provider-policy`.
+- `attestation.signature`: optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
+- `file.behavior`: non-PII upload/capture behavior signals.
+- `file_specific.base.motion`: shared motion signals that can apply across media kinds.
+
+## Write API
+
+### Set active provider policies
+
+Use this endpoint when the provider publishes a new current Terms of Service or Privacy Policy. Trace stores the active version, SHA-256 hash, and URI so the frontend can link to the policy document and stats can compare record-level accepted policy references to the provider's current policies.
+
+The policy document rows are stored for audit/visibility only. They are not indexed or aggregated directly. Record payloads should still include `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`; those record-level accepted policy references are what `/stats`, scoped-group summaries, and policy hash search use.
+
+```http
+PUT /webhook/v1/data-audit/provider-policy
+Content-Type: application/json
+X-API-Key: <provider staging key>
+X-Provider: kled
+```
+
+```json
+{
+  "tos": {
+    "version": "2026-06-01",
+    "hash": "sha256:<64-hex-policy-hash>",
+    "uri": "https://kled.ai/terms/2026-06-01",
+    "effective_at": "2026-06-01T00:00:00Z"
+  },
+  "privacy_policy": {
+    "version": "2026-06-01",
+    "hash": "sha256:<64-hex-policy-hash>",
+    "uri": "https://kled.ai/privacy/2026-06-01",
+    "effective_at": "2026-06-01T00:00:00Z"
+  }
+}
+```
+
+Read current and historical policy documents:
+
+```http
+GET /api/v1/data-audit/providers/kled/policy
+GET /api/v1/data-audit/providers/kled/policies/tos/sha256:<64-hex-policy-hash>
+GET /api/v1/data-audit/providers/kled/policies/privacy_policy/sha256:<64-hex-policy-hash>
+```
+
+### Register records
+
+Use this endpoint for initial backlog and live registration batches. The provider sends its stable `source_record_id`; Story generates the `data_id` and returns the mapping.
+
+```http
+POST /webhook/v1/data-audit/records:batch
+Content-Type: application/json
+X-API-Key: <provider staging key>
+X-Provider: kled
+X-Batch-Id: kled-records-000001
+```
+
+Request body is a JSON array:
+
+```json
+[
+  {
+    "source_record_id": "kmf_8a9c2e7d4b1f0e23",
+    "initial_metadata_root": "sha256:<canonical-trace-schema-v1-json>",
+    "initial_metadata_json": {
+      "schema_version": "trace-v1.0",
+      "file": {
+        "content_sha256": "b1946ac92492d2347c6235b4d2611184",
+        "mime_type": "video/mp4",
+        "media_category": "video",
+        "size_bytes": 123456,
+        "hashes": {
+          "phash64": "facebeef01234567",
+          "dhash64": "1b9072d44a8be3c1",
+          "ahash64": "ff7e3c1a90d5e8c2",
+          "keyframe_phashes": [
+            "0011223344556677",
+            "8899aabbccddeeff"
+          ]
+        },
+        "behavior": {
+          "captured_at_utc": "2026-05-13",
+          "uploaded_at_utc": "2026-05-13",
+          "capture_to_upload_seconds": 421,
+          "capture_to_upload_bucket": "5-60min",
+          "upload_session_size": 3,
+          "upload_session_kind": "gallery_pick",
+          "captured_via": "ios_native_camera",
+          "uploaded_via": "ios_app",
+          "client_version": "ios-1.42.0"
+        }
+      },
+      "file_specific": {
+        "base": {
+          "motion": {
+            "compass_heading": 247.3,
+            "compass_heading_reference": "true_north",
+            "speed_bucket": "stationary"
+          }
+        },
+        "video": {
+          "duration_ms": 120000,
+          "width": 1920,
+          "height": 1080
+        }
+      },
+      "user": {
+        "source_user_id": "kup_123",
+        "kyc_status": "verified",
+        "kyc_country": "US",
+        "tax_status": "submitted",
+        "account_verification_status": "verified"
+      },
+      "contributor": {
+        "anon_id": "kup_123",
+        "kyc_status": "verified",
+        "geo_region": "US",
+        "tax_status": "submitted",
+        "account_verification_status": "verified",
+        "consent": {
+          "tos_version": "2026-05-20",
+          "tos_hash": "sha256:<64-hex-policy-hash>",
+          "tos_uri": "https://kled.ai/terms/2026-05-20",
+          "privacy_policy_version": "2026-05-20",
+          "privacy_policy_hash": "sha256:<64-hex-policy-hash>",
+          "privacy_policy_uri": "https://kled.ai/privacy/2026-05-20"
+        }
+      },
+      "app": {
+        "platform_name": "kled.ai",
+        "legal_entity": "Nitrility Inc. (Delaware, USA)"
+      },
+      "timestamps": {
+        "occurred_at": "2026-05-13T00:00:00Z",
+        "uploaded_at": "2026-05-13T00:00:00Z"
+      },
+      "attestation": {
+        "payload_hash": "sha256:<canonical-trace-schema-v1-json>",
+        "signature": "optional-on-staging",
+        "key_id": "kled-verify-2026-q1",
+        "key_url": "https://kled.ai/.well-known/verification-keys.json",
+        "signed_at_utc": "2026-05-13T00:00:02Z"
+      },
+      "provider_payload": {
+        "media_id_public": "kmf_8a9c2e7d4b1f0e23"
+      }
+    },
+    "occurred_at": "2026-05-13T00:00:00Z"
+  }
+]
+```
+
+`initial_metadata_root` should be the provider's deterministic hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
+
+Successful response:
+
+- `202 Accepted`: one or more records were newly accepted and enqueued.
+- `200 OK`: request was processed, but no records were enqueued because every item was `duplicate`.
+- `409 Conflict`: one or more items were `conflict`; any `accepted` items in the same response were still enqueued.
+
+```json
+{
+  "request_id": "story-request-uuid",
+  "provider": "kled",
+  "batch_id": "kled-records-000001",
+  "format": "json",
+  "kind": "records",
+  "records": 1,
+  "accepted": 1,
+  "duplicates": 0,
+  "conflicts": 0,
+  "messages": 1,
+  "items": [
+    {
+      "source_record_id": "kmf_8a9c2e7d4b1f0e23",
+      "data_id": "story-generated-uuid",
+      "status": "accepted"
+    }
+  ]
+}
+```
+
+The returned `data_id` is the Story ID for future metadata updates and reads. Re-sending the same `X-Provider` + `source_record_id` generates the same `data_id`.
+
+If a record was already persisted with the exact same initial registration payload, the item returns `status: "duplicate"` and is not re-enqueued. If the same `source_record_id` was already persisted with different initial metadata, the item returns `status: "conflict"` and is not enqueued. An overlapping retry while the first request is still queued may return `accepted`; downstream ingestion remains idempotent. Other valid items in the same batch can still return `accepted`.
+
+If a caller already has Story-assigned UUIDs, the lower-level endpoint is:
+
+```http
+POST /webhook/v1/data-audit/data-ids:batch
+```
+
+That endpoint requires `data_id` on every record and is not the recommended vendor path.
+
+### Submit metadata updates
+
+Use this endpoint for later corrections or mutable metadata changes. `seq` must be between `1` and `100` for the same `data_id`.
+
+`metadata_json` should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets Story rebuild the latest state without provider-specific merge rules.
+
+```http
+POST /webhook/v1/data-audit/metadata-updates:batch
+Content-Type: application/json
+X-API-Key: <provider staging key>
+X-Provider: kled
+X-Batch-Id: kled-metadata-000001
+```
+
+Request body is a JSON array:
+
+```json
+[
+  {
+    "data_id": "11111111-1111-4111-8111-111111111111",
+    "seq": 1,
+    "prev_metadata_root": "sha256:<previous-canonical-trace-schema-v1-json>",
+    "metadata_root": "sha256:<new-canonical-trace-schema-v1-json>",
+    "metadata_json": {
+      "schema_version": "trace-v1.0",
+      "user": {
+        "source_user_id": "kup_123",
+        "kyc_status": "unverified"
+      },
+      "contributor": {
+        "anon_id": "kup_123",
+        "kyc_status": "unverified",
+        "consent": {
+          "tos_version": "2026-06-01",
+          "tos_hash": "sha256:<64-hex-policy-hash>",
+          "tos_uri": "https://kled.ai/terms/2026-06-01",
+          "privacy_policy_version": "2026-05-20",
+          "privacy_policy_hash": "sha256:<64-hex-policy-hash>",
+          "privacy_policy_uri": "https://kled.ai/privacy/2026-05-20"
+        }
+      },
+      "app": {
+        "platform_name": "kled.ai"
+      },
+      "provider_payload": {
+        "media_id_public": "kmf_8a9c2e7d4b1f0e23",
+        "reason": "kyc_status_changed"
+      }
+    },
+    "occurred_at": "2026-05-13T00:00:01Z"
+  }
+]
+```
+
+`metadata_root` should be the provider's deterministic hash of the canonical full updated Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `metadata_json` is not enforced yet.
+
+### Optional backlog file endpoints
+
+The normal integration path is `application/json` on `/records:batch`. For backlog tooling, these lower-level route variants also exist, but data ID file routes require `data_id` in every record.
+
+```text
+POST /webhook/v1/data-audit/data-ids:batch-ndjson
+POST /webhook/v1/data-audit/metadata-updates:batch-ndjson
+POST /webhook/v1/data-audit/data-ids:batch-csv
+POST /webhook/v1/data-audit/metadata-updates:batch-csv
+POST /webhook/v1/data-audit/data-ids:batch-txt
+POST /webhook/v1/data-audit/metadata-updates:batch-txt
+```
+
+NDJSON requires:
+
+```text
+Content-Type: application/x-ndjson
+Content-Encoding: gzip
+```
+
+Each decompressed line is one JSON record with the same fields shown above.
+
+CSV requires `Content-Type: text/csv`.
+
+Data ID CSV columns:
+
+```text
+data_id,source_record_id,initial_metadata_root,initial_metadata_json,occurred_at
+```
+
+Metadata update CSV columns:
+
+```text
+data_id,seq,prev_metadata_root,metadata_root,metadata_json,occurred_at
+```
+
+`initial_metadata_json` and `metadata_json` must be valid JSON in a quoted CSV field when present.
+
+TXT requires `Content-Type: text/plain` and accepts line-delimited JSON, a JSON array, or header-delimited comma/tab text using the same CSV columns.
+
+## Read API
+
+Read endpoints are public audit views. `provider` is optional and acts as a narrowing filter.
+
+Read model:
+
+- `GET /data-ids/{data_id}` returns the registration profile plus the latest raw metadata event. The latest metadata event is not guaranteed to be a diff; it is the exact update payload submitted for the highest sequence currently stored.
+- `GET /data-ids/{data_id}/metadatas` returns the full append-only metadata history, including registration at `seq: 0` and later metadata updates.
+- Search, asset receipt lookup, and scoped-group summaries use Story's normalized latest-state projection derived from those events. This projection is what powers fields such as MIME type, media category, KYC status, TOS/privacy versions, lifecycle status, and `tx_hash`.
+
+### Get trace by Story data ID
+
+```http
+GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
+```
+
+Response excerpt:
+
+```json
+{
+  "data_id": "11111111-1111-4111-8111-111111111111",
+  "provider": "kled",
+  "profile": {
+    "data_id": "11111111-1111-4111-8111-111111111111",
+    "provider": "kled",
+    "tx_hash": ""
+  },
+  "latest_metadata": {
+    "data_id": "11111111-1111-4111-8111-111111111111",
+    "seq": 0,
+    "event_type": "DataRegistered",
+    "tx_hash": ""
+  }
+}
+```
+
+### List metadata history
+
+```http
+GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111/metadatas
+```
+
+Each metadata row includes `tx_hash`, initially as an empty string:
+
+```json
+{
+  "data_id": "11111111-1111-4111-8111-111111111111",
+  "metadatas": [
+    {
+      "seq": 0,
+      "event_type": "DataRegistered",
+      "tx_hash": ""
+    },
+    {
+      "seq": 1,
+      "event_type": "MetadataUpdated",
+      "tx_hash": ""
+    }
+  ]
+}
+```
+
+### Search by indexed field
+
+```http
+GET /api/v1/data-audit/search?field=source_record_id&value=kmf_8a9c2e7d4b1f0e23
+```
+
+Each search match includes `tx_hash`, initially as an empty string. Search responses include `next_cursor`. Use `/search` to locate records by an exact field value, then use `/api/v1/data-audit/data-ids/{data_id}` or `/api/v1/data-audit/data-ids/{data_id}/metadatas` for the canonical event payload used in audit verification. Use `/stats` for broad distribution counts such as MIME type, media category, KYC status, country/region, TOS, and Privacy Policy versions. Use `/recent` or `/feed` when the UI needs the newest records.
+`source_record_id` search is exact and case-sensitive.
+
+Other examples:
+
+```text
+GET /api/v1/data-audit/search?field=source_record_id&value=kmf_8a9c2e7d4b1f0e23
+GET /api/v1/data-audit/search?field=asset_hash&value=sha256:<64-hex>
+GET /api/v1/data-audit/search?field=file.content_sha256&value=<64-hex-or-sha256-prefixed-hex>
+GET /api/v1/data-audit/search?field=customer_id&value=<customer-id>
+GET /api/v1/data-audit/search?field=task_id&value=<task-id>
+GET /api/v1/data-audit/search?field=collection_id&value=<collection-id>
+GET /api/v1/data-audit/search?field=file.hashes.phash64&value=facebeef01234567
+GET /api/v1/data-audit/search?field=collection_id&value=<collection-id>&provider=kled&limit=100&cursor=<next_cursor>
+```
+
+### Provider totals
+
+```http
+GET /api/v1/data-audit/stats
+GET /api/v1/data-audit/stats?provider=kled
+```
+
+Response excerpt:
+
+```json
+{
+  "total_records": 1000324,
+  "total_contributors": 902111,
+  "provider": "kled",
+  "provider_records": 100234,
+  "provider_contributors": 87234,
+  "kyc_status": { "verified": 91234, "pending": 9000 },
+  "account_verification": { "verified": 90000, "pending": 10234 },
+  "tax_status": { "complete": 80000, "submitted": 20234 },
+  "tos_versions": { "2026-05": 100234 },
+  "privacy_policy_versions": { "2026-05": 100234 },
+  "media_category_coverage": { "video": 80000, "image": 20234 },
+  "mime_distribution": { "video/mp4": 80000, "image/jpeg": 20234 },
+  "geo_distribution": { "us": 70234, "ca": 30000 },
+  "total_size_bytes": 1234567890,
+  "size_record_count": 100234,
+  "average_size_bytes": 12316,
+  "active_tos_version": "2026-05",
+  "active_tos_hash": "sha256:<64-hex-policy-hash>",
+  "active_tos_uri": "https://kled.ai/terms/2026-05",
+  "active_privacy_policy_version": "2026-05",
+  "active_privacy_policy_hash": "sha256:<64-hex-policy-hash>",
+  "active_privacy_policy_uri": "https://kled.ai/privacy/2026-05"
+}
+```
+
+Record totals count registered records once. Contributor totals count distinct `provider + contributor_anon_id` values when a contributor ID is present. Metadata updates do not increase these totals. Distribution maps and size totals follow the latest asset projection, so full-state metadata updates can move a record from one bucket to another. `average_size_bytes` is `total_size_bytes / size_record_count`, where `size_record_count` counts latest projections with a positive size. App/platform fields can be stored on records, but they are not stats scopes.
+
+### Recent ingestion feed
+
+```http
+GET /api/v1/data-audit/feed?limit=50
+GET /api/v1/data-audit/feed?provider=kled&limit=50
+GET /api/v1/data-audit/feed?provider=kled&limit=50&cursor=<next_cursor>
+```
+
+The feed returns recent audit events, including both registrations and metadata updates. Rows are newest first by ingestion time and include `event_type`, `seq`, `data_id`, `source_record_id`, `asset_hash`, `occurred_at`, and `ingested_at`. Use `next_cursor` to fetch older rows.
+
+### Recent registered records
+
+```http
+GET /api/v1/data-audit/recent?limit=50
+GET /api/v1/data-audit/recent?provider=kled&limit=50
+GET /api/v1/data-audit/recent?provider=kled&limit=50&cursor=<next_cursor>
+```
+
+This returns registered receipt rows only, newest first by ingestion time. Use `next_cursor` to fetch older rows.
+
+### Asset receipts by content hash
+
+```http
+GET /api/v1/data-audit/assets/sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+```
+
+Accepted hash forms are `sha256:<64-hex>`, plain `<64-hex>`, `0x<64-hex>`, and `0x1220<64-hex>`. The response returns the canonical `sha256:<64-lowercase-hex>` asset hash and all matched receipt rows.
+
+### Scoped groups
+
+Scoped groups let the Trace frontend or a partner reviewer create a public snapshot over a review set. For provider review workflows, labs should use the provider's `source_record_id` values, not Story-generated `data_id`s or content hashes. Trace computes the deterministic `data_id`, verifies every submitted record exists, and only creates the group if the full set is valid.
+
+Create from source record IDs:
+
+```http
+POST /api/v1/data-audit/scoped-groups
+Content-Type: application/json
+Idempotency-Key: kled-review-000001
+```
+
+```json
+{
+  "title": "Kled review set",
+  "description": "Kled source record IDs supplied to a lab",
+  "provider": "kled",
+  "source_record_ids": ["kmf_1", "kmf_2"]
+}
+```
+
+Create from pasted source record IDs:
+
+```json
+{
+  "title": "Kled pasted review set",
+  "provider": "kled",
+  "source_record_ids_text": "kmf_1\nkmf_2\nkmf_3"
+}
+```
+
+Source-record groups are all-or-nothing. Duplicate `provider + source_record_id` values return `400`, missing records return `404`, profile/source mismatches return `409`, and records that were registered without an asset projection return `422`.
+
+For larger source-record CSV/TXT inputs, request a presigned upload URL first:
+
+```http
+POST /api/v1/data-audit/scoped-groups/uploads
+Content-Type: application/json
+```
+
+```json
+{ "format": "csv" }
+```
+
+Supported upload formats are `csv` and `txt`.
+
+One-column CSV uses `source_record_id` and requires `provider` in the create request:
+
+```csv
+source_record_id
+kmf_1
+kmf_2
+```
+
+Mixed-provider CSV includes both columns and does not require top-level `provider`:
+
+```csv
+provider,source_record_id
+kled,kmf_1
+oto,oto_1
+```
+
+TXT upload is newline-delimited source record IDs and requires `provider` in the create request:
+
+```text
+kmf_1
+kmf_2
+```
+
+Upload the file bytes to the returned `upload_url` with the returned `Content-Type` header, then create the group with:
+
+```json
+{
+  "title": "Kled uploaded review set",
+  "description": "CSV uploaded through presigned S3",
+  "provider": "kled",
+  "upload_id": "up_<uuid>.csv"
+}
+```
+
+Omit `provider` only when the uploaded CSV has a `provider` column.
+
+Read scoped group:
+
+```http
+GET /api/v1/data-audit/scoped-groups/{group_id}
+GET /api/v1/data-audit/scoped-groups/{group_id}/items?limit=100
+GET /api/v1/data-audit/scoped-groups/{group_id}/items?limit=100&cursor=<next_cursor>
+GET /api/v1/data-audit/scoped-groups/{group_id}/export.csv
+```
+
+`GET /scoped-groups/{group_id}` returns the group status and, once complete, aggregate metrics in `summary`:
+
+```json
+{
+  "profile": {
+    "group_id": "sg_...",
+    "title": "Kled review set",
+    "description": "Kled source record IDs supplied to a lab",
+    "manifest_kind": "source_record",
+    "status": "complete",
+    "submitted_items": 2,
+    "unique_items": 2,
+    "computed_at": "2026-06-04T15:30:00Z"
+  },
+  "summary": {
+    "records_in_set": 2,
+    "submitted_items": 2,
+    "unique_items": 2,
+    "matched_items": 2,
+    "missing_items": 0,
+    "matched_receipts": 2,
+    "kyc_verified_percent": 50,
+    "distinct_media_categories": ["image", "video"],
+    "distinct_tos_versions": ["2026-05"],
+    "total_size_bytes": 7340032,
+    "average_size_bytes": 3670016,
+    "source_distribution": { "kled": 2 },
+    "media_category_coverage": { "image": 1, "video": 1 },
+    "mime_distribution": { "image/jpeg": 1, "video/mp4": 1 },
+    "tos_versions": { "2026-05": 2 },
+    "privacy_policy_versions": { "2026-05": 2 },
+    "kyc_status": { "verified": 1, "unverified": 1 },
+    "geo_distribution": { "us": 2 },
+    "lifecycle_status": { "registered": 2 },
+    "metadata_presence": { "custom.camera": 1, "tos_acknowledgment": 2 }
+  }
+}
+```
+
+If the group is still queued or processing, `profile.status` is `pending` or `processing` and `summary` is omitted.
+
+`/items` returns one row per submitted `source_record_id` with the resolved `data_id`, `asset_hash`, and receipt summary. It is cursor-paginated and returns `next_cursor` when more rows exist. CSV export starts with `input_type,provider,source_record_id,data_id,asset_hash,status,...`.
+
+## Limits and Retry Behavior
+
+Current staging limits:
+
+```text
+Max request body: 25 MiB
+Max serialized record: 350 KiB
+Max metadata updates per data_id: 100
+Max inline scoped-group body: 5 MiB
+Max inline scoped-group hashes: 10,000
+Max inline scoped-group source records: 10,000
+Max source_record_id length: 512 bytes
+```
+
+Retry guidance:
+
+- Retry `502`, `503`, `504`, network timeouts, and `429` with exponential backoff and jitter.
+- Do not retry validation/auth `4xx` until the request is fixed.
+- Keep `data_id`, request body, and `X-Batch-Id` stable across retries.
+- The write path is idempotent for the same `data_id`, event key, and event hash.
+- If the same `data_id` and event key are retried with different metadata, the record is treated as a conflict and rejected.
