@@ -91,9 +91,9 @@ Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`.
 
 A provider does not need to send a transaction hash in write payloads. Story owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until Story fills it after broadcast.
 
-Initial registrations must include one canonical content hash. Accepted fields
-are `asset.hash`, `content_hash`, `file.content_sha256`, or
-`file.hashes.sha256`; all normalize to `sha256:<64-lowercase-hex>`. If more
+Initial registrations and metadata updates must include one canonical content
+hash. Accepted fields are `asset.hash`, `content_hash`, `file.content_sha256`,
+or `file.hashes.sha256`; all normalize to `sha256:<64-lowercase-hex>`. If more
 than one alias is present, they must represent the same hash.
 
 Recommended top-level shape:
@@ -403,7 +403,7 @@ That endpoint requires `data_id` on every record and is not the recommended vend
 
 Use this endpoint for later corrections or mutable metadata changes. `seq` must be between `1` and `100` for the same `data_id`.
 
-`metadata_json` should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets Story rebuild the latest state without provider-specific merge rules.
+`metadata_json` must include a canonical content hash and should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets Story rebuild the latest state without provider-specific merge rules.
 
 ```http
 POST /webhook/v1/data-audit/metadata-updates:batch
@@ -425,6 +425,9 @@ Request body is a JSON array:
     "metadata_root": "sha256:<new-canonical-trace-schema-v1-json>",
     "metadata_json": {
       "schema_version": "trace-v1.0",
+      "asset": {
+        "hash": "sha256:<64-hex>"
+      },
       "contributor": {
         "anon_id": "kup_123",
         "kyc_status": "unverified",
@@ -488,7 +491,7 @@ Metadata update CSV columns:
 data_id,seq,prev_metadata_root,metadata_root,metadata_json,occurred_at
 ```
 
-`initial_metadata_json` and `metadata_json` must be valid JSON in a quoted CSV field when present.
+`initial_metadata_json` and `metadata_json` must be valid JSON in a quoted CSV field and include one canonical content hash.
 
 TXT requires `Content-Type: text/plain` and accepts line-delimited JSON, a JSON array, or header-delimited comma/tab text using the same CSV columns.
 
