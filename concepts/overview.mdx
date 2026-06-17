@@ -4,7 +4,13 @@ description: A broad overview of Story's "Proof-of-Creativity" protocol.
 icon: magnifying-glass
 ---
 
-A piece of Intellectual Property is represented as an [🧩 IP Asset](/concepts/ip-asset) and its associated [⚙️ IP Account](/concepts/ip-asset/ip-account), a smart contract designed to serve as the core identity for each IP. We also have various [🧱 Modules](/concepts/modules) to add functionality to IP Assets, like creating derivatives of them, disputing IP, and automating revenue flow between them.
+A piece of Intellectual Property is represented as an [🧩 IP Asset](/concepts/ip-asset) and its associated [⚙️ IP Account](/concepts/ip-asset/ip-account), a smart contract designed to serve as the core identity for each IP. We also have various [🧱 Modules](/concepts/modules) to add functionality to IP Assets, like attaching license terms that govern how the IP can be used.
+
+<Note>
+  IP and licensing are the **rights layer** for data on Story. The license
+  terms you define here are what [Confidential Data Rails
+  (CDR)](/developers/cdr-sdk/overview) uses to gate access to confidential data.
+</Note>
 
 <Frame>
   <img src="/images/concepts/story-architecture.png" />
@@ -16,7 +22,7 @@ Let's briefly introduce the layers mentioned in the above diagram:
 
 When you want to bring an IP on-chain, you mint an ERC-721 NFT. This NFT represents **ownership** over your IP.
 
-Then, you **register** the NFT in our protocol through the [IP Asset Registry](/concepts/registry/ip-asset-registry). This deploys an [⚙️ IP Account](/concepts/ip-asset/ip-account), effectively creating an "IP Asset". The address of that contract is the identifier for the IP Asset (the `ipId`).
+Then, you **register** the NFT in our protocol through the IP Asset Registry. This deploys an [⚙️ IP Account](/concepts/ip-asset/ip-account), effectively creating an "IP Asset". The address of that contract is the identifier for the IP Asset (the `ipId`).
 
 The underlying NFT can be traded/sold like any other NFT, and the new owner will own the IP Asset and all revenue associated with it.
 
@@ -33,17 +39,13 @@ The address of the IP Account is the IP Asset's identifier (the `ipId`).
 
 Modules are customizable smart contracts that define and extend the functionality of IP Accounts. Modules empower developers to create functions and interactions for each IP to make IPs truly programmable.
 
-We already have a few core modules:
+The core module is the:
 
-1. [📜 Licensing Module](/concepts/licensing-module): create parent\<->child relationships between IPs, enabling derivatives of IPs that are restricted by the agreements in the license terms (must give attribution, share 10% revenue, etc)
-2. [💸 Royalty Module](/concepts/royalty-module): automate revenue flow between IPs, abiding by the negotiated revenue sharing in license terms
-3. [❌ Dispute Module](/concepts/dispute-module): facilitates the disputing and flagging of IP
-4. [👥 Grouping Module](/concepts/grouping-module): allows for IPs to be grouped together
-5. [👀 Metadata Module](/concepts/metadata-module): manage and view metadata for IP Assets
+1. [📜 Licensing Module](/concepts/licensing-module): attach license terms to an IP Asset and mint **License Tokens** from it. These terms — and the tokens minted under them — are what define who can use an IP and, via [CDR](/developers/cdr-sdk/overview), who can decrypt data gated behind it.
 
-## [🗂️ Registry](/concepts/registry)
+## Registry
 
-The various registries on our protocol function as a primary directory/storage for the global states of the protocol. Unlike IP Accounts, which manage the state of specific IPs, a registry oversees the broader states of the protocol.
+The protocol's registries function as a primary directory/storage for the global states of the protocol. Unlike IP Accounts, which manage the state of specific IPs, a registry oversees the broader states of the protocol — for example, the IP Asset Registry tracks every registered IP Asset.
 
 ## [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
 

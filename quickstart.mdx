@@ -75,19 +75,19 @@ Enable Story's mainnet or testnet for your wallet.
 
 ## Story Network Infra
 
-See [Network Info](/network/network-info/overview) for all RPC, explorer, and faucet info.
+See [Network Info](/network/overview) for all RPC, explorer, and faucet info.
 
 ## Use our SDKs
 
-Check out the entire [SDK Reference](/sdk-reference) to see an explanation + example for every function in our 🛠️ **TypeScript SDK** (can use this in React as well) and 🐍 **Python SDK**.
+For confidential data, the [🔒 CDR SDK](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`) is the primary way to encrypt, store, and gate access to data on Story. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview).
 
-We have also built a [🛠️ TypeScript SDK Guide](/developers/typescript-sdk), which is more of a step-by-step walkthrough, with its own in-depth tutorials for popular functions and use cases.
+For IP and licensing, check out the entire [SDK Reference](/sdk-reference) to see an explanation + example for every function in our 🛠️ **TypeScript SDK** (can use this in React as well) and 🐍 **Python SDK**. We have also built a [🛠️ TypeScript SDK Guide](/developers/typescript-sdk), a step-by-step walkthrough for registering IP and attaching licenses.
 
 ## Deployed Smart Contracts
 
 Check out the addresses for the deployed smart contracts [here](/developers/deployed-smart-contracts). Note that there are two different kinds of contracts:
 
-- [Story Protocol Core](https://github.com/storyprotocol/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the [IP Asset Registry](/concepts/registry/ip-asset-registry)), a set of [🧱 Modules](/concepts/modules) defining logic around [📜 Licensing](/concepts/licensing-module), [💸 Royalty](/concepts/royalty-module), [❌ Dispute](/concepts/dispute-module), metadata, and a module manager for administering module and user access control.
+- [Story Protocol Core](https://github.com/storyprotocol/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the IP Asset Registry), a set of [🧱 Modules](/concepts/modules) defining logic around [📜 Licensing](/concepts/licensing-module), and a module manager for administering module and user access control.
 - [Story Protocol Periphery](https://github.com/storyprotocol/protocol-periphery-v1)- Whereas the core contracts deal with the underlying protocol logic, the periphery contracts deal with protocol extensions that greatly increase UX and simplify IPA management. This is mostly handled through the [📦 SPG](/concepts/spg).
 
 ## Use our API
@@ -102,8 +102,9 @@ To register IP on Story, you'll first need an NFT. If your IP is an ERC-721 NFT 
 
 Next you'd register that NFT on Story, ultimately creating an [🧩 IP Asset](/concepts/ip-asset). An "IP Asset" is your IP registered on Story, empowered by:
 
-- all of Story's [🧱 Modules](/concepts/modules) like transparent licensing, automatic royalty payments, and disputing of wrongfully registered IP
+- Story's [🧱 Modules](/concepts/modules), like transparent on-chain [licensing](/concepts/licensing-module)
 - IP protection through the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
+- the ability to gate [confidential data (CDR)](/developers/cdr-sdk/overview) on the licenses minted from it
 
 Follow the below tutorials to register IP on Story:
 
@@ -163,67 +164,36 @@ For more information on licensing and the terminology behind it, check out the [
 
 </Note>
 
-## Royalties / Revenue Sharing
+## Gate the License Token to Confidential Data
 
-Now you may be wondering, _"How do I set up automatic royalty sharing between my IP Asset and someone else's? How do I then collect that payment?"_
-
-When you attach [License Terms](/concepts/licensing-module/license-terms) to your [🧩 IP Asset](/concepts/ip-asset), you can specify certain commercial terms such as `commercialRevShare`, which is the amount of revenue (from any source, original & derivative) that must be shared by derivative works with the original IP. See the above section for licensing questions.
-
-If someone then creates a derivative of my IP Asset - which has a `commercialRevShare` of let's say 10% in its license terms - and earns revenue on it, Story enforces the share of this revenue through the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license) (otherwise resulting in an on-chain dispute using the [❌ Dispute Module](/concepts/dispute-module) or traditional legal arbitration) and then handles the upstream revenue share at the protocol level. If the derivative work earns 100 \$WIP, my original IP Asset could claim 10 \$WIP.
-
-Our tutorials will show you exactly how to claim revenue:
+The License Token you minted above is the key primitive CDR uses for **IP-gated content**: you can encrypt data with [Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) and require a wallet to hold a License Token for a given IP Asset before it can decrypt. This ties confidential data directly to the on-chain licensing terms you defined.
 
 <CardGroup cols={2}>
   <Card
-    title="Using the SDK"
-    icon="thumbs-up"
-    href="/developers/typescript-sdk/claim-revenue"
+    title="IP-gated data with CDR"
+    icon="lock"
+    href="/developers/cdr-sdk/ip-asset-vaults"
   >
-    Learn how to claim revenue on Story using the TypeScript SDK.
+    Encrypt data and gate decryption on holding a License Token.
   </Card>
   <Card
-    title="Using the Smart Contracts"
-    icon="thumbs-up"
-    href="/developers/smart-contracts-guide/claim-revenue"
+    title="CDR SDK Setup"
+    icon="screwdriver-wrench"
+    href="/developers/cdr-sdk/setup"
   >
-    Learn how to claim revenue on Story using the Smart Contracts.
+    Install the CDR SDK and run your first encrypt/decrypt flow.
   </Card>
 </CardGroup>
 
-<Note>
+## Prove Data Provenance with Trace
 
-For more information on royalty and how it functions, check out the [Royalty Module](/concepts/royalty-module).
+If you're a data provider, [Trace](/trace/overview) gives you verifiable, provider-normalized provenance for the data you handle — content hashes, contributor consent, and KYC signals, with public audit views — through a simple REST integration.
 
-</Note>
-
-## Disputing
-
-Now you may be wondering, _"How can I actually dispute someone else's IP if they steal mine, or don't pay me proper revenue for using it?"_
-
-There are two main philosophies/ways to take down "bad" IP.
-
-The first is the [🕵️ Story Attestation Service](/concepts/story-attestation-service). This compromises of a bunch of infringement detection providers that, upon IP registration, automatically review the IP - using their own methods, whether it's AI, manual checking, etc - and flag it if the IP is infringing (ex. registering a picture of Pikachu). Then, any IP discovery platform like the [IP Portal](https://portal.story.foundation) can surface the reviews and let users decide if they want to use an IP or not.
-
-_For example, an IP that has hundreds of flags from different infringement providers probably isn't a legitimate IP._
-
-The second is using the [❌ Dispute Module](/concepts/dispute-module) to officially tag & block IP at the protocol level. Anyone can flag an IP and it will be sent off to arbitration partners like [UMA](https://uma.xyz) who will decide its fate. If officially tagged, an IP can no longer earn revenue or create derivatives via the protocol.
-
-_For example, if someone doesn't make a proper payment for using an IP commercially, or uses it in a disallowed territory, or contains NSFW content._
-
-Our tutorials will show you exactly how to raise a dispute on-chain:
-
-<CardGroup cols={1}>
-  <Card
-    title="Using the SDK"
-    icon="thumbs-up"
-    href="/developers/typescript-sdk/raise-dispute"
-  >
-    Learn how to dispute IP on Story using the TypeScript SDK.
+<CardGroup cols={2}>
+  <Card title="Trace Overview" icon="fingerprint" href="/trace/overview">
+    Understand how Trace records and audits data provenance.
+  </Card>
+  <Card title="Trace Integration Guide" icon="plug" href="/trace/integration">
+    The full write, read, and search API for providers.
   </Card>
 </CardGroup>
-
-<Note>
-
-For more information on filing a dispute on-chain, check out the [❌ Dispute Module](/concepts/dispute-module).
-
-</Note>

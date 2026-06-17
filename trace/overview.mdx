@@ -1,0 +1,100 @@
+---
+title: "Trace Overview"
+description: "Verifiable, provider-normalized provenance for data registered on Story."
+icon: "fingerprint"
+---
+
+<Note>
+  Trace is currently available on staging. Build and test integrations against
+  the staging API; treat schemas and endpoints as stable-but-evolving until the
+  production release.
+</Note>
+
+## What is Trace?
+
+**Trace** is Story's data provenance and audit layer. Data providers send
+normalized metadata about the content they handle — content hashes, perceptual
+hashes, contributor consent, KYC signals, and capture/upload behavior — to
+Story, which assigns each record a global `data_id`, stores an append-only
+metadata history, and exposes public audit views over the whole dataset.
+
+The result is a portable, queryable, verifiable record of **where data came
+from and under what terms it was contributed** — across every provider that
+integrates, not just one.
+
+```text
+Provider client
+  -> story-api webhook batch endpoint   (write: register + metadata updates)
+  -> asynchronous Story processing       (assigns data_id, hashes events)
+  -> story-api read/search/stats         (public audit views)
+```
+
+## Where Trace fits
+
+<CardGroup cols={3}>
+  <Card title="Trace — provenance" icon="fingerprint">
+    Proves the origin, consent, and lineage of data with a provider-normalized
+    schema and public audit views.
+  </Card>
+  <Card title="CDR — confidentiality" icon="lock" href="/developers/cdr-sdk/overview">
+    Keeps the underlying data encrypted, with threshold decryption gated by
+    on-chain access control.
+  </Card>
+  <Card title="IP & Licensing — rights" icon="scroll" href="/concepts/ip-asset/overview">
+    Defines who owns the data and the terms under which it can be used.
+  </Card>
+</CardGroup>
+
+Together they let a provider register data that is **provable** (Trace),
+**confidential** (CDR), and **governed by clear usage rights** (IP & Licensing).
+
+## The Trace Schema
+
+Every provider maps its own payload onto a single shared shape — the **Trace
+Schema** (`schema_version: trace-v1.0`) — and includes its full original
+payload under `provider_payload` so no provider-specific detail is lost. The
+normalized fields are the portable contract that the Trace frontend, audit
+flows, and other providers all rely on.
+
+The schema covers:
+
+- **`file`** — content hash (`content_sha256`), MIME type, media category,
+  perceptual hashes (`phash64`, `dhash64`, `ahash64`, keyframe hashes), and
+  non-PII capture/upload behavior signals.
+- **`user` / `contributor`** — KYC status and country, tax status, account
+  verification status, and the exact Terms of Service / Privacy Policy versions,
+  hashes, and URIs the contributor accepted.
+- **`app`** — platform name and legal entity behind the integration.
+- **`timestamps`** — when the content was captured, uploaded, and occurred.
+- **`attestation`** — payload hash and an optional provider signature for
+  independent verification.
+- **`provider_payload`** — the provider's full original public payload.
+
+## How providers integrate
+
+Integration is a REST flow keyed by an API key and provider scope — no SDK
+required.
+
+<CardGroup cols={2}>
+  <Card title="Integration Guide" icon="plug" href="/trace/integration">
+    The complete write, read, search, and scoped-group API, the Trace Schema,
+    and limits/retry behavior.
+  </Card>
+  <Card title="Become a provider" icon="discord" href="https://discord.gg/storybuilders">
+    Reach out to get a provider scope and staging API key.
+  </Card>
+</CardGroup>
+
+A provider:
+
+1. Receives a provider scope (e.g. `X-Provider: kled`) and an API key.
+2. Registers records in batches via the webhook endpoint, sending normalized
+   Trace fields plus its full original payload.
+3. Submits metadata updates over time as KYC, consent, or other mutable fields
+   change — each update is the full latest state, independently verifiable.
+4. Sets its active Terms of Service and Privacy Policy through the provider
+   policy endpoint.
+
+Reads, search, stats, feeds, and scoped-group summaries are **public audit
+views** keyed by the global `data_id`, with `provider` available as an optional
+filter.

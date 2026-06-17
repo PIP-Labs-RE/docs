@@ -49,7 +49,7 @@ Most of what we need to do is already covered in [Register an IP Asset](/develop
 The only difference is how you set your metadata. Here is an example:
 
 - `image.*` is used to display a cover image when your song is registered
-- `media.*` is used for the audio file. Also note that the fields passed into `media.*` are checked for infringement by the [Story Attestation Service](/concepts/story-attestation-service).
+- `media.*` is used for the audio file. Note that the fields passed into `media.*` may be used for infringement checking.
 
 ```typescript main.ts
 const ipMetadata = {

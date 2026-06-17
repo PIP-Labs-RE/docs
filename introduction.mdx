@@ -21,9 +21,28 @@ You can register your IP on-chain and add usage terms to it in seconds, massivel
 
 By making IP programmable on the blockchain, it becomes this transparent & decentralized global IP repository where AI agents (or any other software) and humans alike can transact on & monetize IP with a simple API call.
 
+## What you build on Story
+
+Story is the home for **data**: proving where it came from, keeping it confidential, and defining the rights over it.
+
+<CardGroup cols={3}>
+  <Card title="Trace — provenance" icon="fingerprint" href="/trace/overview">
+    Verifiable, provider-normalized provenance for data: content hashes,
+    contributor consent, and KYC signals with public audit views.
+  </Card>
+  <Card title="CDR — confidentiality" icon="lock" href="/developers/cdr-sdk/overview">
+    Confidential Data Rails: threshold-encrypt data and gate decryption with
+    on-chain access control.
+  </Card>
+  <Card title="IP & Licensing — rights" icon="scroll" href="/concepts/ip-asset/overview">
+    Register IP and attach on-chain license terms that define how data can be
+    used — the rights layer underpinning CDR.
+  </Card>
+</CardGroup>
+
 <CardGroup cols={2}>
-  <Card title="Explain Like I'm 5" icon="house" href="/explain-like-im-five">
-    Read a 1 minute summary.
+  <Card title="CDR SDK" icon="screwdriver-wrench" href="/developers/cdr-sdk/overview">
+    Encrypt, store, and gate access to confidential data.
   </Card>
   <Card
     title="Read the Whitepaper"
@@ -115,7 +134,7 @@ Story Network is a purpose-built layer 1 blockchain achieving the best of EVM an
 
 Our "Proof-of-Creativity" Protocol, made up of smart contracts written in Solidity, are natively deployed on Story Network and allow anyone to onramp IP to Story. Most of our documentation focuses on the protocol.
 
-Creators register their IP as [🧩 IP Assets](/concepts/ip-asset) on Story. You use [🧱 Modules](/concepts/modules) to interact with IP Assets. For example, enforcing proper usage of your IP via the [Licensing Module](/concepts/licensing-module), paying & claiming revenue via the [Royalty Module](/concepts/royalty-module), and disputing infringing IP via the [Dispute Module](/concepts/dispute-module).
+Creators register their IP as [🧩 IP Assets](/concepts/ip-asset) on Story. You use [🧱 Modules](/concepts/modules) to interact with IP Assets — for example, enforcing proper usage of your IP via the [Licensing Module](/concepts/licensing-module). These licenses are what [Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) uses to gate access to confidential data.
 
 Each IP Asset has an associated ERC721 NFT, which represents _ownership_ over the IP. This means IP ownership can be bought & sold. Additionally, the licenses minted from an IP are also ERC721 NFTs, meaning you can buy & sell the rights to use an IP under certain terms. Together, this unlocks a new realm of **IPFi**.
 

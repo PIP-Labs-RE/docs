@@ -27,8 +27,8 @@ This is the JSON metadata that is associated with an IP Asset, and gets stored i
 Below are the important attributes you should provide in your IP metadata. Under the **Required For** column is what the specific field is required for:
 
 - 🔍 Story Explorer - this field will help display your IP on the Story Explorer
-- 🕵️ [Commercial Infringement Check](/concepts/story-attestation-service) - this field is required if your IP is **commercial** (that is, has `commercialUse = true` license terms attached). We will use these fields to run an infringement check on your IP.
-  - See [current limitations](/concepts/story-attestation-service#current-limitations).
+- 🕵️ Commercial Infringement Check - this field is required if your IP is **commercial** (that is, has `commercialUse = true` license terms attached). We will use these fields to run an infringement check on your IP.
+  - This applies when a `commercialUse = true` license term is attached.
 - 🤖 AI Agents - used for displaying metadata associated with AI Agents
 
 | Property Name | Type          | Description                                                                                                                                                                                     | Required For                                                            |
@@ -39,9 +39,9 @@ Below are the important attributes you should provide in your IP metadata. Under
 | `image`       | `string`      | An image for your IP. **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**                                                                        | 🔍 Story Explorer                                                       |
 | `imageHash`   | `string`      | Hash of your `image` using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                        | 🔍 Story Explorer                                                       |
 | `creators`    | `IpCreator[]` | An array of information about the creators. [See the type defined below](#type-definitions)                                                                                                     | 🔍 Story Explorer                                                       |
-| `mediaUrl`    | `string`      | Used for infringement checking, points to the actual media (ex. image or audio). **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**             | 🕵️ [Commercial Infringement Check](/concepts/story-attestation-service) |
-| `mediaHash`   | `string`      | Hashed string of the media using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                  | 🕵️ [Commercial Infringement Check](/concepts/story-attestation-service) |
-| `mediaType`   | `string`      | Type of media (audio, video, image), based on [mimeType](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types). See the allowed media types [here](#media-types).          | 🕵️ [Commercial Infringement Check](/concepts/story-attestation-service) |
+| `mediaUrl`    | `string`      | Used for infringement checking, points to the actual media (ex. image or audio). **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**             | 🕵️ Commercial Infringement Check |
+| `mediaHash`   | `string`      | Hashed string of the media using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                  | 🕵️ Commercial Infringement Check |
+| `mediaType`   | `string`      | Type of media (audio, video, image), based on [mimeType](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types). See the allowed media types [here](#media-types).          | 🕵️ Commercial Infringement Check |
 | `aiMetadata`  | `AIMetadata`  | Used for registering & displaying AI Agent Metadata. [See the type defined below](#type-definitions)                                                                                            | 🤖 AI Agents                                                            |
 | N/A           | N/A           | You can include other values as well.                                                                                                                                                           | N/A                                                                     |
 
