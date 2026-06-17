@@ -39,6 +39,8 @@ X-Batch-Id: <stable batch id>
 
 Use the provided staging API key for write testing. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
 
+For backlog ingestion, add `X-Ingestion-Source: backlog`. For normal live ingestion, omit the header; explicit `live` is not accepted.
+
 Read APIs are keyed by global Story `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
 
 ## Current Provider / Trace Alignment
@@ -261,7 +263,10 @@ Content-Type: application/json
 X-API-Key: <provider staging key>
 X-Provider: kled
 X-Batch-Id: kled-records-000001
+X-Ingestion-Source: backlog
 ```
+
+Only use `X-Ingestion-Source: backlog` for backlog batches. Live batches do not need an ingestion-source header.
 
 Request body is a JSON array:
 
@@ -406,6 +411,7 @@ Content-Type: application/json
 X-API-Key: <provider staging key>
 X-Provider: kled
 X-Batch-Id: kled-metadata-000001
+X-Ingestion-Source: backlog
 ```
 
 Request body is a JSON array:
@@ -790,5 +796,6 @@ Retry guidance:
 - Retry `502`, `503`, `504`, network timeouts, and `429` with exponential backoff and jitter.
 - Do not retry validation/auth `4xx` until the request is fixed.
 - Keep `data_id`, request body, and `X-Batch-Id` stable across retries.
+- Use `X-Ingestion-Source: backlog` only for backlog work; omit it for live work.
 - The write path is idempotent for the same `data_id`, event key, and event hash.
 - If the same `data_id` and event key are retried with different metadata, the record is treated as a conflict and rejected.
