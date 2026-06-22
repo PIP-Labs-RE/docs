@@ -357,7 +357,7 @@ Request body is a JSON array:
 ]
 ```
 
-`initial_metadata_root` should be the provider's deterministic hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
+`initial_metadata_root` should be the provider's deterministic non-zero hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
 
 Successful response:
 
@@ -453,7 +453,7 @@ Request body is a JSON array:
 ]
 ```
 
-`metadata_root` should be the provider's deterministic hash of the canonical full updated Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `metadata_json` is not enforced yet.
+`metadata_root` should be the provider's deterministic non-zero hash of the canonical full updated Trace Schema v1.0 metadata JSON. `prev_metadata_root` must also be a non-zero root. In the current staging API, Story stores these values as submitted; hash verification against `metadata_json` is not enforced yet.
 
 ### Optional backlog file endpoints
 
