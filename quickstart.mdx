@@ -79,7 +79,7 @@ See [Network Info](/network/overview) for all RPC, explorer, and faucet info.
 
 ## Use our SDKs
 
-For confidential data, the [🔒 CDR SDK](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`) is the primary way to encrypt, store, and gate access to data on Story. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview).
+For confidential data, [🔒 Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) is the primary way to encrypt, store, and gate access to data on Story. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`).
 
 For IP and licensing, check out the entire [SDK Reference](/sdk-reference) to see an explanation + example for every function in our 🛠️ **TypeScript SDK** (can use this in React as well) and 🐍 **Python SDK**. We have also built a [🛠️ TypeScript SDK Guide](/developers/typescript-sdk), a step-by-step walkthrough for registering IP and attaching licenses.
 
@@ -87,7 +87,7 @@ For IP and licensing, check out the entire [SDK Reference](/sdk-reference) to se
 
 Check out the addresses for the deployed smart contracts [here](/developers/deployed-smart-contracts). Note that there are two different kinds of contracts:
 
-- [Story Protocol Core](https://github.com/storyprotocol/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the IP Asset Registry), a set of [🧱 Modules](/concepts/modules) defining logic around [📜 Licensing](/concepts/licensing-module), and a module manager for administering module and user access control.
+- [Story Protocol Core](https://github.com/storyprotocol/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the IP Asset Registry), a set of modules defining logic around [📜 Licensing](/concepts/licensing-module), and a module manager for administering module and user access control.
 - [Story Protocol Periphery](https://github.com/storyprotocol/protocol-periphery-v1)- Whereas the core contracts deal with the underlying protocol logic, the periphery contracts deal with protocol extensions that greatly increase UX and simplify IPA management. This is mostly handled through the [📦 SPG](/concepts/spg).
 
 ## Use our API
@@ -102,7 +102,7 @@ To register IP on Story, you'll first need an NFT. If your IP is an ERC-721 NFT 
 
 Next you'd register that NFT on Story, ultimately creating an [🧩 IP Asset](/concepts/ip-asset). An "IP Asset" is your IP registered on Story, empowered by:
 
-- Story's [🧱 Modules](/concepts/modules), like transparent on-chain [licensing](/concepts/licensing-module)
+- Story's [📜 Licensing Module](/concepts/licensing-module), enabling transparent on-chain licensing
 - IP protection through the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
 - the ability to gate [confidential data (CDR)](/developers/cdr-sdk/overview) on the licenses minted from it
 

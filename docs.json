@@ -3,15 +3,15 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Story Documentation",
   "colors": {
-    "primary": "#09ACFF",
-    "light": "#A1D1FF",
-    "dark": "#066DA1"
+    "primary": "#1A1A1A",
+    "light": "#F8F8F6",
+    "dark": "#1A1A1A"
   },
   "logo": {
-    "light": "/logo/light.png",
-    "dark": "/logo/dark.png"
+    "light": "/logo/df-logo-light.svg",
+    "dark": "/logo/df-logo-dark.svg"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/logo/df-favicon.svg",
   "appearance": {
     "default": "light"
   },
@@ -64,57 +64,62 @@
                 ]
               },
               {
-                "group": "Confidential Data Rails (CDR)",
+                "group": "The Data Stack",
                 "pages": [
-                  "developers/cdr-sdk/overview",
-                  "developers/cdr-sdk/setup",
-                  "developers/cdr-sdk/encrypt-and-decrypt",
-                  "developers/cdr-sdk/ip-asset-vaults",
-                  "developers/cdr-sdk/advanced-configuration"
-                ]
-              },
-              {
-                "group": "Data Rights (IP & Licensing)",
-                "pages": [
-                  "concepts/overview",
                   {
-                    "group": "IP Asset",
-                    "icon": "puzzle",
-                    "pages": [
-                      "concepts/ip-asset/overview",
-                      "concepts/ip-asset/ip-account",
-                      "concepts/ip-asset/ipa-modifications",
-                      "concepts/ip-asset/ipa-metadata-standard"
-                    ]
+                    "group": "Provenance (Trace)",
+                    "icon": "fingerprint",
+                    "pages": ["trace/overview"]
                   },
                   {
-                    "group": "Licensing",
+                    "group": "Confidentiality (CDR)",
+                    "icon": "lock",
+                    "pages": ["developers/cdr-sdk/overview"]
+                  },
+                  {
+                    "group": "Rights (IP & Licensing)",
                     "icon": "scroll",
                     "pages": [
-                      "concepts/modules/overview",
-                      "concepts/licensing-module/overview",
-                      "concepts/licensing-module/license-template",
-                      "concepts/licensing-module/license-terms",
-                      "concepts/licensing-module/license-token",
-                      "concepts/licensing-module/license-config"
-                    ]
-                  },
-                  {
-                    "group": "Programmable IP License",
-                    "icon": "file-certificate",
-                    "pages": [
-                      "concepts/programmable-ip-license/overview",
-                      "concepts/programmable-ip-license/pil-terms",
-                      "concepts/programmable-ip-license/pil-flavors"
-                    ]
-                  },
-                  "concepts/hooks",
-                  {
-                    "group": "SPG (Periphery)",
-                    "icon": "box-open",
-                    "pages": [
-                      "concepts/spg/overview",
-                      "concepts/spg/batch-spg-function-calls"
+                      "concepts/overview",
+                      {
+                        "group": "IP Asset",
+                        "icon": "puzzle",
+                        "pages": [
+                          "concepts/ip-asset/overview",
+                          "concepts/ip-asset/ip-account",
+                          "concepts/ip-asset/ipa-modifications",
+                          "concepts/ip-asset/ipa-metadata-standard"
+                        ]
+                      },
+                      {
+                        "group": "Licensing",
+                        "icon": "scroll",
+                        "pages": [
+                          "concepts/licensing-module/overview",
+                          "concepts/licensing-module/license-template",
+                          "concepts/licensing-module/license-terms",
+                          "concepts/licensing-module/license-token",
+                          "concepts/licensing-module/license-config"
+                        ]
+                      },
+                      {
+                        "group": "Programmable IP License",
+                        "icon": "file-certificate",
+                        "pages": [
+                          "concepts/programmable-ip-license/overview",
+                          "concepts/programmable-ip-license/pil-terms",
+                          "concepts/programmable-ip-license/pil-flavors"
+                        ]
+                      },
+                      "concepts/hooks",
+                      {
+                        "group": "SPG (Periphery)",
+                        "icon": "box-open",
+                        "pages": [
+                          "concepts/spg/overview",
+                          "concepts/spg/batch-spg-function-calls"
+                        ]
+                      }
                     ]
                   }
                 ]
@@ -201,19 +206,6 @@
             ]
           },
           {
-            "tab": "Trace",
-            "hidden": true,
-            "groups": [
-              {
-                "group": "Trace",
-                "pages": [
-                  "trace/overview",
-                  "trace/integration"
-                ]
-              }
-            ]
-          },
-          {
             "tab": "Developers",
             "groups": [
               {
@@ -233,10 +225,15 @@
                     "pages": [
                       "developers/cdr-sdk/overview",
                       "developers/cdr-sdk/setup",
-                      "developers/cdr-sdk/advanced-configuration",
                       "developers/cdr-sdk/encrypt-and-decrypt",
-                      "developers/cdr-sdk/ip-asset-vaults"
+                      "developers/cdr-sdk/ip-asset-vaults",
+                      "developers/cdr-sdk/advanced-configuration"
                     ]
+                  },
+                  {
+                    "group": "Trace",
+                    "icon": "fingerprint",
+                    "pages": ["trace/integration"]
                   },
                   {
                     "group": "TypeScript SDK",
@@ -552,11 +549,19 @@
     },
     {
       "source": "/story-modules",
-      "destination": "/concepts/modules"
+      "destination": "/concepts/licensing-module"
     },
     {
       "source": "/base-module",
-      "destination": "/concepts/modules"
+      "destination": "/concepts/licensing-module"
+    },
+    {
+      "source": "/concepts/modules",
+      "destination": "/concepts/licensing-module"
+    },
+    {
+      "source": "/concepts/modules/overview",
+      "destination": "/concepts/licensing-module/overview"
     },
     {
       "source": "/hooks",
