@@ -91,7 +91,7 @@ console.log(`Write tx: ${writeTx}`);
 ```
 
 <Note>
-  Any EOA address works as a write or read condition — only that EOA can
+  Any EOA address works as a write or read condition; only that EOA can
   perform the matching action. To gate just one side, set your wallet address
   on that side and a condition contract (such as `LicenseReadCondition`) on the
   other. The high-level `uploadCDR()` helper expects deployed condition
@@ -415,7 +415,7 @@ const [allocateFee, writeFee, readFee] = await Promise.all([
   client.observer.getReadFee(),
 ]);
 console.log(
-  `Fees — allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
+  `Fees: allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
 );
 
 // Query a specific vault

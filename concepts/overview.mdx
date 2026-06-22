@@ -1,13 +1,13 @@
 ---
 title: Overview
-description: A broad overview of Story's "Proof-of-Creativity" protocol.
+description: A broad overview of the Data Foundation's "Proof-of-Creativity" protocol.
 icon: magnifying-glass
 ---
 
 A piece of Intellectual Property is represented as an [🧩 IP Asset](/concepts/ip-asset) and its associated [⚙️ IP Account](/concepts/ip-asset/ip-account), a smart contract designed to serve as the core identity for each IP. We also have the [📜 Licensing Module](/concepts/licensing-module) to add functionality to IP Assets, like attaching license terms that govern how the IP can be used.
 
 <Note>
-  IP and licensing are the **rights layer** for data on Story. The license
+  IP and licensing are the **rights layer** for data on the Data Foundation. The license
   terms you define here are what [Confidential Data Rails
   (CDR)](/developers/cdr-sdk/overview) uses to gate access to confidential data.
 </Note>
@@ -37,11 +37,11 @@ The address of the IP Account is the IP Asset's identifier (the `ipId`).
 
 ## [📜 Licensing Module](/concepts/licensing-module)
 
-The Licensing Module is the core module that extends the functionality of IP Accounts. It lets you attach license terms to an IP Asset and mint **License Tokens** from it. These terms — and the tokens minted under them — are what define who can use an IP and, via [CDR](/developers/cdr-sdk/overview), who can decrypt data gated behind it.
+The Licensing Module is the core module that extends the functionality of IP Accounts. It lets you attach license terms to an IP Asset and mint **License Tokens** from it. These terms, and the tokens minted under them, are what define who can use an IP and, via [CDR](/developers/cdr-sdk/overview), who can decrypt data gated behind it.
 
 ## Registry
 
-The protocol's registries function as a primary directory/storage for the global states of the protocol. Unlike IP Accounts, which manage the state of specific IPs, a registry oversees the broader states of the protocol — for example, the IP Asset Registry tracks every registered IP Asset.
+The protocol's registries function as a primary directory/storage for the global states of the protocol. Unlike IP Accounts, which manage the state of specific IPs, a registry oversees the broader states of the protocol, for example, the IP Asset Registry tracks every registered IP Asset.
 
 ## [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
 

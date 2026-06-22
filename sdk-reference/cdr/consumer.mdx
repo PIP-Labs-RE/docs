@@ -49,7 +49,7 @@ Parameters:
 - `params.recipientPrivKey` *(optional)*: `Uint8Array` - 32-byte secp256k1 private key (for ECIES decryption of partials). If omitted, the SDK generates an ephemeral keypair and zeroes it after use.
 - `params.globalPubKey` *(optional)*: `Uint8Array` - DKG global public key (from `observer.getGlobalPubKey()`). If omitted, the SDK queries it for you.
 - `params.timeoutMs` *(optional)*: `number` - Timeout for collecting partials. `120_000` is a good starting point.
-- `params.feeOverride` *(optional)*: `bigint` - Explicit read fee. Skips the `readFee()` auto-query (strict-equality semantics — not a way to pay a different amount).
+- `params.feeOverride` *(optional)*: `bigint` - Explicit read fee. Skips the `readFee()` auto-query (strict-equality semantics, not a way to pay a different amount).
 - `params.onInvalidPartial` *(optional)*: `(event, error) => void` - Called when a validator's partial is excluded because its attestation failed the `attestationConfig` checks.
 - `params.attestationConfig` *(optional)*: `AttestationConfig` - Verifies each validator's SGX enclave before accepting their partials.
 
@@ -121,7 +121,7 @@ console.log("Saved ./example.decrypted.pdf");
 ```
 
 <Note>
-  For Story license-gated reads, `accessAuxData` should encode the caller's
+  For Data Foundation license-gated reads, `accessAuxData` should encode the caller's
   license token IDs as `abi.encode(uint256[] licenseTokenIds)`.
 </Note>
 
@@ -223,7 +223,7 @@ interface PartialDecryptionEvent {
 
 <Note>
   Every event returned from a successful `collectPartials` call shares the same
-  `round` and `ciphertext` — the result is filtered to the bucket matching the
+  `round` and `ciphertext`: the result is filtered to the bucket matching the
   vault's current ciphertext.
 </Note>
 
@@ -245,7 +245,7 @@ Parameters:
 - `params.globalPubKey`: `Uint8Array` - DKG global public key
 - `params.label`: `Uint8Array` - 32-byte label (from `uuidToLabel(uuid)`)
 
-The TDH2 combine threshold is taken implicitly as `partials.length` —
+The TDH2 combine threshold is taken implicitly as `partials.length`,
 `collectPartials` already returns exactly the threshold count needed for
 reconstruction. Pass exactly the partials you want combined.
 
@@ -284,6 +284,6 @@ example, right after wallet connection) can call this in the background.
 | `prefetchRegistry` | `() => Promise<void>` |
 
 ```typescript Example
-// Best-effort warm-up — safe to call repeatedly
+// Best-effort warm-up, safe to call repeatedly
 client.consumer.prefetchRegistry().catch(() => {});
 ```

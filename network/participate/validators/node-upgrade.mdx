@@ -1,6 +1,6 @@
 ---
 title: Node Upgrade
-description: Guide to upgrading your Story node clients
+description: Guide to upgrading your Data Foundation node clients
 ---
 
 There are three types of upgrades
@@ -9,7 +9,7 @@ There are three types of upgrades
 2. Upgrade the story client manually
 3. Schedule the upgrade with Cosmovisor
 
-### Upgrade the story geth client
+### Upgrade the Story Geth Client
 
 ```bash
 # Stop the services
@@ -28,7 +28,7 @@ sudo systemctl start story-geth
 sudo systemctl start story
 ```
 
-### Upgrade the story client manually
+### Upgrade the Story Client Manually
 
 ```bash
 # Stop the service
@@ -44,7 +44,7 @@ sudo mv ./story $HOME/go/bin/story
 sudo systemctl start story
 ```
 
-### Schedule the upgrade with Cosmovisor
+### Schedule the Upgrade With Cosmovisor
 
 The following steps outline how to schedule an upgrade using Cosmovisor:
 
@@ -87,7 +87,7 @@ journalctl -u story -f -o cat
 
 Note: Cosmovisor will automatically handle the binary switch once the specified block height is reached. Before the upgrade, confirm that your node is fully synced and has enough disk space available.
 
-### Use Cosmovisor While running Story Node
+### Use Cosmovisor While Running Data Foundation Node
 
 This guide is for people who are running story without using cosmovisor, but still want to use cosmovisor to schedule the upgrade.
 

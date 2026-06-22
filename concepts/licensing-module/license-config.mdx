@@ -70,7 +70,7 @@ The hook itself is described in a different section. You can see it contains inf
 
 You can set the License Config by calling the `setLicenseConfig` function in the [LicensingModule.sol contract](https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/modules/licensing/LicensingModule.sol).
 
-### Logic that is Possible with License Config
+### Logic That Is Possible With License Config
 
 1. **Max Number of Licenses**: The `licensingHook` (described in the next section) is where you can define logic for the max number of licenses that can be minted. For example, reverting the transaction if the max number of licenses has already been minted.
 2. **Disallowing Derivatives**: If you register a derivative of an IP Asset, that derivative cannot change its License Terms as described [here](/concepts/licensing-module/license-terms#inherited-license-terms). You can be wondering: "What if I, as a derivative, want to disallow derivatives of myself, but my License Terms allow derivatives and I cannot change this?" To solve this, you can simply set `disabled` to true.

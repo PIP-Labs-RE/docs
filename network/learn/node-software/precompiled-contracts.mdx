@@ -1,6 +1,6 @@
 ---
 title: Precompiles
-description: Specialized smart contracts implemented in Story Protocol's execution layer
+description: Specialized smart contracts implemented in the Data Foundation's execution layer
 icon: gear
 ---
 
@@ -8,12 +8,12 @@ icon: gear
 
 Precompiled contracts are specialized smart contracts implemented directly in the execution layer of a blockchain. Unlike user-deployed smart contracts that execute EVM bytecode, precompiled contracts offer optimized native implementations for complex cryptographic and computational operations. This significantly improves efficiency and reduces gas costs. Precompiled contracts exist at fixed addresses within the execution client and each precompile has a predefined gas cost based on its computational complexity, ensuring predictable execution fees.
 
-Story Protocol introduces two precompiled contracts:
+The Data Foundation introduces two precompiled contracts:
 
 - `p256Verify` precompile to support signature verifications in the secp256r1 elliptic curve.
 - `ipgraph` precompile to enhance on-chain intellectual property management.
 
-In addition, Story Protocol’s execution layer supports all standard EVM precompiled contracts, ensuring full compatibility with Ethereum-based tooling and applications.
+In addition, the Data Foundation’s execution layer supports all standard EVM precompiled contracts, ensuring full compatibility with Ethereum-based tooling and applications.
 
 ## Precompiled Contracts
 
@@ -32,17 +32,17 @@ In addition, Story Protocol’s execution layer supports all standard EVM precom
 | byte0   | `p256Verify` - Secp256r1 signature verification               |
 | byte1   | `ipgraph` - Intellectual property management                  |
 
-## p256Verify precompile
+## p256Verify Precompile
 
 Refer to [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md) for more information.
 
-## IPgraph precompile
+## IPgraph Precompile
 
 The `ipgraph` precompile enables efficient querying and modification of IP relationships and royalty structures while minimizing gas costs.
 
 This contract is deployed at `0x0000000000000000000000000000000000000101` and access is controlled through this contract `0x1640A22a8A086747cD377b73954545e2Dfcc9Cad`.
 
-This precompile provides multiple functions based on the function selector—the first 4 bytes of the input.
+This precompile provides multiple functions based on the function selector: the first 4 bytes of the input.
 
 | Function Selector        | Description                                                     | Gas computation formula                               | Gas Cost                           |
 | :----------------------- | :-------------------------------------------------------------- | :---------------------------------------------------- | :--------------------------------- |

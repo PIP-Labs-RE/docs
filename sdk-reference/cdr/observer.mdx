@@ -158,7 +158,7 @@ console.log(`Threshold: ${Number(threshold) / 10}%`); // e.g. "66.7%"
 ### getActiveRound
 
 Returns the currently active DKG round number. Always hits the Story-API REST
-endpoint — the active round can transition at any time, so it is never served
+endpoint, since the active round can transition at any time, so it is never served
 from cache.
 
 | Method | Type |
@@ -206,7 +206,7 @@ console.log(`Participating validators: ${count}`);
 
 ### getThreshold
 
-Returns the absolute threshold for the currently active DKG round — the minimum
+Returns the absolute threshold for the currently active DKG round: the minimum
 number of partial decryptions needed to combine. If `minThresholdRatio` is set
 on the client, the effective value is
 `max(network.threshold, ceil(participants * minThresholdRatio))`.
@@ -222,7 +222,7 @@ console.log(`Need ${threshold} partials to decrypt`);
 
 <Note>
   Use this for UI / status display. Do **not** use it to validate a specific
-  partial-decryption bucket from `collectPartials` — a bucket carries its own
+  partial-decryption bucket from `collectPartials`, since a bucket carries its own
   round, which can differ from the active round during DKG rollover. Use
   `getThresholdAt` for that.
 </Note>

@@ -14,8 +14,8 @@ The SDK reads state from two backends:
 
 | Backend             | Configured by  | What it reads                                                                      |
 | ------------------- | -------------- | ---------------------------------------------------------------------------------- |
-| **EVM**             | `publicClient` | CDR contract state — vaults, fees, `maxEncryptedDataSize`, operational threshold    |
-| **Story-API REST**  | `apiUrl`       | DKG state — active round, global public key, threshold, validators, attestations   |
+| **EVM**             | `publicClient` | CDR contract state: vaults, fees, `maxEncryptedDataSize`, operational threshold    |
+| **Story-API REST**  | `apiUrl`       | DKG state: active round, global public key, threshold, validators, attestations   |
 
 The `apiUrl` is a **required** `CDRClient` parameter. It is the base URL of a
 Story-API REST endpoint, and the `observer` uses it for every DKG read.

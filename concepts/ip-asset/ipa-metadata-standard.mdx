@@ -26,19 +26,19 @@ This is the JSON metadata that is associated with an IP Asset, and gets stored i
 
 Below are the important attributes you should provide in your IP metadata. Under the **Required For** column is what the specific field is required for:
 
-- 🔍 Story Explorer - this field will help display your IP on the Story Explorer
+- 🔍 Data Foundation Explorer - this field will help display your IP on the Data Foundation Explorer
 - 🕵️ Commercial Infringement Check - this field is required if your IP is **commercial** (that is, has `commercialUse = true` license terms attached). We will use these fields to run an infringement check on your IP.
   - This applies when a `commercialUse = true` license term is attached.
 - 🤖 AI Agents - used for displaying metadata associated with AI Agents
 
 | Property Name | Type          | Description                                                                                                                                                                                     | Required For                                                            |
 | ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `title`       | `string`      | Title of the IP                                                                                                                                                                                 | 🔍 Story Explorer                                                       |
-| `description` | `string`      | Description of the IP                                                                                                                                                                           | 🔍 Story Explorer                                                       |
-| `createdAt`   | `string`      | Date/Time that the IP was created (either ISO8601 or unix format). This field can be used to specify historical dates that aren't on-chain. For example, Harry Potter was published on June 26. | 🔍 Story Explorer                                                       |
-| `image`       | `string`      | An image for your IP. **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**                                                                        | 🔍 Story Explorer                                                       |
-| `imageHash`   | `string`      | Hash of your `image` using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                        | 🔍 Story Explorer                                                       |
-| `creators`    | `IpCreator[]` | An array of information about the creators. [See the type defined below](#type-definitions)                                                                                                     | 🔍 Story Explorer                                                       |
+| `title`       | `string`      | Title of the IP                                                                                                                                                                                 | 🔍 Data Foundation Explorer                                             |
+| `description` | `string`      | Description of the IP                                                                                                                                                                           | 🔍 Data Foundation Explorer                                             |
+| `createdAt`   | `string`      | Date/Time that the IP was created (either ISO8601 or unix format). This field can be used to specify historical dates that aren't on-chain. For example, Harry Potter was published on June 26. | 🔍 Data Foundation Explorer                                             |
+| `image`       | `string`      | An image for your IP. **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**                                                                        | 🔍 Data Foundation Explorer                                             |
+| `imageHash`   | `string`      | Hash of your `image` using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                        | 🔍 Data Foundation Explorer                                             |
+| `creators`    | `IpCreator[]` | An array of information about the creators. [See the type defined below](#type-definitions)                                                                                                     | 🔍 Data Foundation Explorer                                             |
 | `mediaUrl`    | `string`      | Used for infringement checking, points to the actual media (ex. image or audio). **For audio assets, the recommended thumbnail aspect ratio is 1:1. For video assets, it is 16:9.**             | 🕵️ Commercial Infringement Check |
 | `mediaHash`   | `string`      | Hashed string of the media using SHA-256 hashing algorithm. See [here](#hashing-content) for how that is done.                                                                                  | 🕵️ Commercial Infringement Check |
 | `mediaType`   | `string`      | Type of media (audio, video, image), based on [mimeType](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types). See the allowed media types [here](#media-types).          | 🕵️ Commercial Infringement Check |
@@ -146,7 +146,7 @@ This is the official Ippy mascot that is registered on mainnet. You can view it 
 ```json
 {
   "title": "Ippy",
-  "description": "Official mascot of Story.",
+  "description": "Official mascot of the Data Foundation.",
   "createdAt": "1728401700",
   "image": "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
   "imageHash": "0x21937ba9d821cb0306c7f1a1a2cc5a257509f228ea6abccc9af1a67dd754af6e",
@@ -155,7 +155,7 @@ This is the official Ippy mascot that is registered on mainnet. You can view it 
   "mediaType": "image/png",
   "creators": [
     {
-      "name": "Story Foundation",
+      "name": "The Data Foundation",
       "address": "0x67ee74EE04A0E6d14Ca6C27428B27F3EFd5CD084",
       "description": "The World's IP Blockchain",
       "contributionPercent": 100,
@@ -183,7 +183,7 @@ This is the official Ippy mascot that is registered on mainnet. You can view it 
       ]
     }
   ],
-  "tags": ["Ippy", "Story", "Story Mascot", "Mascot", "Official"], // experimental field
+  "tags": ["Ippy", "Data Foundation", "Data Foundation Mascot", "Mascot", "Official"], // experimental field
   "ipType": "Character" // experimental field
 }
 ```
@@ -222,8 +222,8 @@ View the below example [on our protocol explorer](https://aeneid.explorer.story.
 
 ```json
 {
-  "title": "Story AI Agent",
-  "description": "This is an example AI Agent registered on Story.",
+  "title": "Data Foundation AI Agent",
+  "description": "This is an example AI Agent registered on the Data Foundation.",
   "createdAt": "1740005219",
   "creators": [
     {
@@ -263,7 +263,7 @@ The following properties are optional but can provide additional context about y
 | `relationships`  | `IpRelationship[]` | The detailed relationship info with the IPA's direct parent asset, such as `APPEARS_IN`, `FINETUNED_FROM`, etc. See more examples [here](#relationship-types). |
 | `watermarkImage` | `string`           | A separate image with your watermark already applied. This way apps choosing to use it can render this version of the image (with watermark applied).          |
 | `media`          | `IpMedia[]`        | An array of supporting media. Media type defined below                                                                                                         |
-| `app`            | `StoryApp`         | This is assigned to verified application from Story directly (on a request basis so far). We will map each App ID to a name                                    |
+| `app`            | `StoryApp`         | This is assigned to verified application from the Data Foundation directly (on a request basis so far). We will map each App ID to a name                                    |
 | `tags`           | `string[]`         | Any tags that can help surface this IPA                                                                                                                        |
 | `robotTerms`     | `IPRobotTerms`     | Allows you to set Do Not Train for a specific agent                                                                                                            |
 | N/A              | N/A                | You can include other values as well.                                                                                                                          |

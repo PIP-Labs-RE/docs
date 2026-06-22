@@ -1,10 +1,10 @@
 ---
 title: "Quickstart"
-description: "Start building on Story quickly."
+description: "Start building on the Data Foundation quickly."
 icon: flag-checkered
 ---
 
-You want to start building on Story quickly... so let's get started!
+You want to start building on the Data Foundation quickly... so let's get started!
 
 <Frame
   caption={
@@ -16,7 +16,7 @@ You want to start building on Story quickly... so let's get started!
 >
   <img
     src="https://files.readme.io/49a6d447c37d25ec4566db511dead5b70a641fab57088e1cbd24d8236e3bef19-image.png"
-    alt="Story"
+    alt="The Data Foundation"
   />
 </Frame>
 
@@ -73,13 +73,13 @@ Enable Story's mainnet or testnet for your wallet.
   </Card>
 </CardGroup>
 
-## Story Network Infra
+## Data Foundation Network Infra
 
 See [Network Info](/network/overview) for all RPC, explorer, and faucet info.
 
-## Use our SDKs
+## Use Our SDKs
 
-For confidential data, [🔒 Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) is the primary way to encrypt, store, and gate access to data on Story. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`).
+For confidential data, [🔒 Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) is the primary way to encrypt, store, and gate access to data on the Data Foundation. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`).
 
 For IP and licensing, check out the entire [SDK Reference](/sdk-reference) to see an explanation + example for every function in our 🛠️ **TypeScript SDK** (can use this in React as well) and 🐍 **Python SDK**. We have also built a [🛠️ TypeScript SDK Guide](/developers/typescript-sdk), a step-by-step walkthrough for registering IP and attaching licenses.
 
@@ -90,23 +90,23 @@ Check out the addresses for the deployed smart contracts [here](/developers/depl
 - [Story Protocol Core](https://github.com/storyprotocol/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the IP Asset Registry), a set of modules defining logic around [📜 Licensing](/concepts/licensing-module), and a module manager for administering module and user access control.
 - [Story Protocol Periphery](https://github.com/storyprotocol/protocol-periphery-v1)- Whereas the core contracts deal with the underlying protocol logic, the periphery contracts deal with protocol extensions that greatly increase UX and simplify IPA management. This is mostly handled through the [📦 SPG](/concepts/spg).
 
-## Use our API
+## Use Our API
 
 Check out the entire [API Reference](/api-reference) for learning how to use our API. For common things like fetching gas price, average block time, market cap, token price, and more, check out the [Blockscout API](/api-reference/blockscout-api).
 
-## Register IP on Story
+## Register IP on the Data Foundation
 
-Let's start with the most basic question: _"What does it take to register IP on Story in my app? How do I do this?"_
+Let's start with the most basic question: _"What does it take to register IP on the Data Foundation in my app? How do I do this?"_
 
-To register IP on Story, you'll first need an NFT. If your IP is an ERC-721 NFT (ex. an Azuki or Pudgy Penguin on Story), you're already set. If not, you must mint an NFT to represent your off-chain IP. And don't worry, we'll help you do this in the following tutorials.
+To register IP on the Data Foundation, you'll first need an NFT. If your IP is an ERC-721 NFT (ex. an Azuki or Pudgy Penguin on the Data Foundation), you're already set. If not, you must mint an NFT to represent your off-chain IP. And don't worry, we'll help you do this in the following tutorials.
 
-Next you'd register that NFT on Story, ultimately creating an [🧩 IP Asset](/concepts/ip-asset). An "IP Asset" is your IP registered on Story, empowered by:
+Next you'd register that NFT on the Data Foundation, ultimately creating an [🧩 IP Asset](/concepts/ip-asset). An "IP Asset" is your IP registered on the Data Foundation, empowered by:
 
-- Story's [📜 Licensing Module](/concepts/licensing-module), enabling transparent on-chain licensing
+- the Data Foundation's [📜 Licensing Module](/concepts/licensing-module), enabling transparent on-chain licensing
 - IP protection through the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
 - the ability to gate [confidential data (CDR)](/developers/cdr-sdk/overview) on the licenses minted from it
 
-Follow the below tutorials to register IP on Story:
+Follow the below tutorials to register IP on the Data Foundation:
 
 <CardGroup cols={2}>
   <Card
@@ -114,28 +114,28 @@ Follow the below tutorials to register IP on Story:
     icon="thumbs-up"
     href="/developers/typescript-sdk/register-ip-asset"
   >
-    Learn how to register IP on Story using the TypeScript SDK.
+    Learn how to register IP on the Data Foundation using the TypeScript SDK.
   </Card>
   <Card
     title="Using the Smart Contracts"
     icon="thumbs-up"
     href="/developers/smart-contracts-guide/register-ip-asset"
   >
-    Learn how to register IP on Story using the Smart Contracts.
+    Learn how to register IP on the Data Foundation using the Smart Contracts.
   </Card>
 </CardGroup>
 
 ### Difference Between IP Metadata vs. NFT Metadata
 
-A common question we get from developers while registering their IP on Story is: _"What metadata should be/is expected to be attached to the NFT, and then separately, the IP Asset?"_
+A common question we get from developers while registering their IP on the Data Foundation is: _"What metadata should be/is expected to be attached to the NFT, and then separately, the IP Asset?"_
 
 To answer that question, please see [NFT vs. IP Metadata](/concepts/ip-asset/overview#nft-vs-ip-metadata).
 
 ## Licensing Your IP
 
-You may be wondering, _"How do I take advantage of Story's on-chain licensing? How do I make sure my registered IP has a license ready to go?"_
+You may be wondering, _"How do I take advantage of the Data Foundation's on-chain licensing? How do I make sure my registered IP has a license ready to go?"_
 
-Before you attach any sort of licenses or license terms to your [🧩 IP Asset](/concepts/ip-asset), it would be best to first understand what the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license) actually is. This "PIL" is what defines the available [License Terms](/concepts/licensing-module/license-terms) on Story, which in turn - when attached to an IP Asset - is what defines how others can use (commercially, create derivatives, etc) that IP Asset.
+Before you attach any sort of licenses or license terms to your [🧩 IP Asset](/concepts/ip-asset), it would be best to first understand what the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license) actually is. This "PIL" is what defines the available [License Terms](/concepts/licensing-module/license-terms) on the Data Foundation, which in turn - when attached to an IP Asset - is what defines how others can use (commercially, create derivatives, etc) that IP Asset.
 
 Our tutorials will show you exactly how to attach license terms to your IP Asset:
 
@@ -145,7 +145,7 @@ Our tutorials will show you exactly how to attach license terms to your IP Asset
     icon="thumbs-up"
     href="/developers/typescript-sdk/attach-terms"
   >
-    Learn how to attach license terms to your IP on Story using the TypeScript
+    Learn how to attach license terms to your IP on the Data Foundation using the TypeScript
     SDK.
   </Card>
   <Card
@@ -153,7 +153,7 @@ Our tutorials will show you exactly how to attach license terms to your IP Asset
     icon="thumbs-up"
     href="/developers/smart-contracts-guide/attach-terms"
   >
-    Learn how to attach license terms to your IP on Story using the Smart
+    Learn how to attach license terms to your IP on the Data Foundation using the Smart
     Contracts.
   </Card>
 </CardGroup>
@@ -185,9 +185,9 @@ The License Token you minted above is the key primitive CDR uses for **IP-gated 
   </Card>
 </CardGroup>
 
-## Prove Data Provenance with Trace
+## Prove Data Provenance With Trace
 
-If you're a data provider, [Trace](/trace/overview) gives you verifiable, provider-normalized provenance for the data you handle — content hashes, contributor consent, and KYC signals, with public audit views — through a simple REST integration.
+If you're a data provider, [Trace](/trace/overview) gives you verifiable, provider-normalized provenance for the data you handle (content hashes, contributor consent, and KYC signals, with public audit views) through a simple REST integration.
 
 <CardGroup cols={2}>
   <Card title="Trace Overview" icon="fingerprint" href="/trace/overview">

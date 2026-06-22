@@ -1,6 +1,6 @@
 ---
 title: "FAQ"
-description: "Get answers to the most common questions about Story as a whole."
+description: "Get answers to the most common questions about the Data Foundation as a whole."
 icon: question
 ---
 
@@ -54,7 +54,7 @@ Use [Stargate](https://stargate.finance/bridge), [deBridge](https://app.debridge
 </Accordion>
 
 <Accordion title="Is on-chain IP real?">
-Story isn't replacing the legal system, it's providing on-chain rails to make the legal system more efficient for creative IP.
+The Data Foundation isn't replacing the legal system, it's providing on-chain rails to make the legal system more efficient for creative IP.
 
 We have worked with world class legal teams to craft a real, off-chain legal contract called the [Programmable IP License (PIL💊)](/concepts/programmable-ip-license) that has simple terms allowing creators to state who can remix, monetize, and create derivatives of their IP and at what cost.
 
@@ -62,9 +62,9 @@ We've then built business logic on-chain (in the form of smart contracts) to aut
 
 </Accordion>
 
-<Accordion title="My asset is off-chain. How do I register it as IP on Story?">
+<Accordion title="My asset is off-chain. How do I register it as IP on the Data Foundation?">
   You would mint an NFT that represents your off-chain asset, and register that
-  NFT on Story.
+  NFT on the Data Foundation.
 </Accordion>
 
 <Accordion title="I am selling an off-chain asset (eg. merch). How do I make sure that automatic royalty flow is enforced?">
@@ -75,9 +75,9 @@ Furthermore, one of the terms of the [Programmable IP License (PIL💊)](/concep
 </Accordion>
 
 <Accordion title="What is a simple example?">
-Imagine you're an artist who creates digital paintings, or a musician who makes original songs. You want to share your work online, but you want to ensure that if others use or change your work, they give you credit and—if they make money from it—you get a share. That’s where Story comes in. It's a platform that uses technology to give IP owners like you control over how your work is used, tracked, and shared, so it’s both protected and fairly rewarded.
+Imagine you're an artist who creates digital paintings, or a musician who makes original songs. You want to share your work online, but you want to ensure that if others use or change your work, they give you credit and, if they make money from it, you get a share. That’s where the Data Foundation comes in. It's a platform that uses technology to give IP owners like you control over how your work is used, tracked, and shared, so it’s both protected and fairly rewarded.
 
-Think of it like this: Suppose you upload a song to Story. Now, anyone can see that you’re the original creator, and if someone wants to remix it, they can do so through Story. The system then automatically tracks the remix as a "derivative" of your song and notes you as the original artist. This way, if the remix becomes popular and earns money, Story can help you earn a portion of those earnings, just like the remixer.
+Think of it like this: Suppose you upload a song to the Data Foundation. Now, anyone can see that you’re the original creator, and if someone wants to remix it, they can do so through the Data Foundation. The system then automatically tracks the remix as a "derivative" of your song and notes you as the original artist. This way, if the remix becomes popular and earns money, the Data Foundation can help you earn a portion of those earnings, just like the remixer.
 
 </Accordion>
 
@@ -88,14 +88,14 @@ First, its underestimated the extent to which people want to follow the law. Thi
 
 Thus, we provide a way for anyone to flag violating content on-chain. If a dispute is successful, that IP will be flagged and no longer able to monetize or generate licenses.
 
-The worst case scenario on Story is the best case scenario anywhere else: legal arbitration. Creators using us can always use the traditional legal system as a backstop. This is a situation we want to avoid, but one that's necessary for creators to have trust in the system.
+The worst case scenario on the Data Foundation is the best case scenario anywhere else: legal arbitration. Creators using us can always use the traditional legal system as a backstop. This is a situation we want to avoid, but one that's necessary for creators to have trust in the system.
 
 </Accordion>
 
 <Accordion title="Why not be a protocol on every existing chain?">
-We started as a protocol, supporting projects on Polygon, Ethereum, and more. But this siloed IP to the chain that it lived on, and did not connect IP between chains. This does not realize the vision of Story as a global IP repo.
+We started as a protocol, supporting projects on Polygon, Ethereum, and more. But this siloed IP to the chain that it lived on, and did not connect IP between chains. This does not realize the vision of the Data Foundation as a global IP repo.
 
-We want to be the IP settlement layer, or in other words, bring composability across chains. We need a single hub blockchain for all registered IP. This IP can be on Story, on other chains, or off-chain, but we need a hub such that all the licenses, royalties, and IP metadata live in a single unified execution environment.
+We want to be the IP settlement layer, or in other words, bring composability across chains. We need a single hub blockchain for all registered IP. This IP can be on the Data Foundation, on other chains, or off-chain, but we need a hub such that all the licenses, royalties, and IP metadata live in a single unified execution environment.
 
 </Accordion>
 
@@ -119,12 +119,12 @@ For example, we eventually want to allow Netflix, TikTok, etc to run validators 
 
 </Accordion>
 
-<Accordion title="Why is Story making improvements at the validator level?">
+<Accordion title="Why is the Data Foundation making improvements at the validator level?">
 The alternative is running an adjacent system outside the L1 to provide these features, which will strictly be less decentralized than the L1 itself. By making these features native to L1 (validators), we can have sufficient decentralization, guaranteed execution, and less system to maintain.
 
 Namely, if the adjacent system goes down (so disputes and oracles stop) but the L1 works fine, it'd be a huge problem. This can be remedied with re-staking like AVS but the tech is not battle-tested and there's no precedence of success using re-staking (EIGEN token is still in work).
 
-One big incentive alignment Story can have: IP companies running validators & providing custom off-chain IP data to the network natively via validator-enshrined features.
+One big incentive alignment the Data Foundation can have: IP companies running validators & providing custom off-chain IP data to the network natively via validator-enshrined features.
 
 Or a law firm automating disputes and broadcasting them to other validators. After an agreement of disputes, validators can immediately block transactions that include disputed IPs, which is not possible with an adjacent system providing (unless we have preconf, which is a debated topic in the Ethereum land).
 
@@ -137,12 +137,12 @@ Similarly, the dispute module can check if an IP has been flagged due to its anc
 
 </Accordion>
 
-<Accordion title="How will Story prevent users from registering off-chain IP that isn't theirs?">
+<Accordion title="How will the Data Foundation prevent users from registering off-chain IP that isn't theirs?">
 We will support a few ways to deter IP infringement. For example if someone were to register someone else's IP, it could be disputed on-chain. And in the worst case, it would be brought to court just as it works in the traditional legal system today.
 
 A more nuanced answer to this (one that we're constantly exploring/improving upon) is there may be additional ways to deter IP infringement. For example, a staking validation mechanism where users could stake tokens on a piece of IP being valid, and if it were to be disputed and marked as copyright, the tokens get slashed and distributed to the creator who was harmed. Additionally we've thought of introducing external IP infringement detection services directly into our L1 at the lowest level that could flag or automatically mark IP as potential infringement the moment its registered.
 
-Ultimately Story is not a system built to prevent bad actors, rather it is meant to help facilitate honest actors to more easily register their IP, remix from others, and set proper terms for their work. The protocol is permissionless and stopping bad actors entirely would be near impossible, but we can try to disincentivize them as best we can. Much like how the pirating of media plummeted when Apple Music, Spotify, and Netflix made such media more accessible by creating a "path of least resistance", we see a similar future with Story & IP.
+Ultimately the Data Foundation is not a system built to prevent bad actors, rather it is meant to help facilitate honest actors to more easily register their IP, remix from others, and set proper terms for their work. The protocol is permissionless and stopping bad actors entirely would be near impossible, but we can try to disincentivize them as best we can. Much like how the pirating of media plummeted when Apple Music, Spotify, and Netflix made such media more accessible by creating a "path of least resistance", we see a similar future with the Data Foundation & IP.
 
 </Accordion>
 

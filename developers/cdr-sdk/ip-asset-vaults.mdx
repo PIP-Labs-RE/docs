@@ -3,10 +3,10 @@ title: IP Asset Vaults
 description: Learn how to create CDR vaults backed by IP Assets that require license tokens to decrypt.
 ---
 
-CDR vaults can be gated behind Story Protocol license tokens so that only
+CDR vaults can be gated behind the Data Foundation's license tokens so that only
 license holders can decrypt the vault contents. In the current Aeneid release,
 this is a manual integration: you encode the CDR condition data yourself and
-mint Story license tokens separately.
+mint Data Foundation license tokens separately.
 
 ### Prerequisites
 
@@ -89,7 +89,7 @@ approval steps so the reader can wrap IP, approve the RoyaltyModule, and mint
 in three short calls.
 
 **WIP** is **Wrapped IP**, the ERC-20 wrapped form of the native `IP` token.
-Story's royalty / license flows use WIP, so the reader first wraps IP, then
+the Data Foundation's royalty / license flows use WIP, so the reader first wraps IP, then
 approves the RoyaltyModule to spend it.
 
 ```typescript
@@ -115,7 +115,7 @@ await storyClient.wipClient.approve({
   amount: parseEther("1"),
 });
 
-// 3. Mint the Story license token.
+// 3. Mint the Data Foundation license token.
 const mintResult = await storyClient.license.mintLicenseTokens({
   licensorIpId: ipId,
   licenseTermsId: BigInt(2054),
@@ -136,7 +136,7 @@ const licenseTokenId = mintResult.licenseTokenIds![0];
   later `accessCDR()` call adds one more on-chain read request.
 </Note>
 
-## Read with a License Token
+## Read With a License Token
 
 At read time, pass the caller's license token ID through `accessAuxData`.
 

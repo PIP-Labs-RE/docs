@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
 sidebarTitle: "Introduction"
-description: "Story is the data foundation — prove where data came from, keep it confidential, and define the rights over it."
+description: "The Data Foundation: prove where data came from, keep it confidential, and define the rights over it."
 icon: hand-wave
 ---
 
@@ -18,46 +18,46 @@ icon: hand-wave
   />
 </Frame>
 
-## The data foundation
+## The Data Foundation
 
-Story is a purpose-built layer 1 blockchain and **the data foundation**: the place where data is given an origin, a level of confidentiality, and a clear set of rights — all programmable through a simple API.
+The Data Foundation is the home for data, built on a purpose-built layer 1 blockchain. It's where data is given an origin, a level of confidentiality, and a clear set of rights, all programmable through a simple API.
 
-Every piece of data on Story can be:
+Every piece of data on the Data Foundation can be:
 
-- **Proven** — a verifiable, portable record of where it came from and under what terms it was contributed
-- **Confidential** — encrypted so only the parties you authorize can ever decrypt it
-- **Governed** — owned, licensed, and monetized under transparent on-chain terms
+- **Proven**: a verifiable, portable record of where it came from and under what terms it was contributed
+- **Confidential**: encrypted so only the parties you authorize can ever decrypt it
+- **Governed**: owned, licensed, and monetized under transparent on-chain terms
 
 <Note>
   Data could be an image, a song, a dataset, an RWA, AI training data, or
   anything in-between.
 </Note>
 
-## The three layers
+## The Three Layers
 
 <CardGroup cols={3}>
-  <Card title="Trace — provenance" icon="fingerprint" href="/trace/overview">
+  <Card title="Trace: provenance" icon="fingerprint" href="/trace/overview">
     Verifiable, provider-normalized provenance: content hashes, contributor
     consent, and KYC signals, with public audit views over the whole dataset.
   </Card>
   <Card
-    title="CDR — confidentiality"
+    title="CDR: confidentiality"
     icon="lock"
     href="/developers/cdr-sdk/overview"
   >
     Confidential Data Rails: threshold-encrypt data and gate decryption with
-    on-chain access control — no single party ever holds the full key.
+    on-chain access control: no single party ever holds the full key.
   </Card>
-  <Card title="IP & Licensing — rights" icon="scroll" href="/concepts/overview">
+  <Card title="IP & Licensing: rights" icon="scroll" href="/concepts/overview">
     Register data as IP and attach on-chain license terms that define who can
-    use it and how — the rights layer the other two build on.
+    use it and how, the rights layer the other two build on.
   </Card>
 </CardGroup>
 
-Together they let you put data on Story that is **provable** (Trace),
+Together they let you put data on the Data Foundation that is **provable** (Trace),
 **confidential** (CDR), and **governed by clear usage rights** (IP & Licensing).
 
-## Start building
+## Start Building
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="flag-checkered" href="/quickstart">
@@ -72,27 +72,27 @@ Together they let you put data on Story that is **provable** (Trace),
     `@piplabs/cdr-sdk`.
   </Card>
   <Card title="Trace Integration" icon="plug" href="/trace/integration">
-    Register data provenance over a simple REST API — no SDK required.
+    Register data provenance over a simple REST API, no SDK required.
   </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference">
     Every function in the CDR, Protocol, and Python SDKs, with working examples.
   </Card>
 </CardGroup>
 
-## How it fits together
+## How It Fits Together
 
-Story Network is a purpose-built layer 1 that combines the best of the EVM and the Cosmos SDK. It is 100% EVM-compatible, with execution-layer optimizations for traversing complex data structures (like IP graphs) in seconds at marginal cost, and a CometBFT-based consensus layer for fast finality and cheap transactions.
+The Data Foundation Network is a purpose-built layer 1 that combines the best of the EVM and the Cosmos SDK. It is 100% EVM-compatible, with execution-layer optimizations for traversing complex data structures (like IP graphs) in seconds at marginal cost, and a CometBFT-based consensus layer for fast finality and cheap transactions.
 
 On top of the network, the three layers compose:
 
 - **Trace** records where data came from and the terms it was contributed under.
-- **CDR** keeps that data encrypted and gates decryption on-chain — often on the very licenses defined below.
+- **CDR** keeps that data encrypted and gates decryption on-chain, often on the very licenses defined below.
 - **IP & Licensing** registers data as an [🧩 IP Asset](/concepts/ip-asset) and attaches transparent terms through the [📜 Licensing Module](/concepts/licensing-module). Although enforced on-chain, these terms map to an off-chain legal contract, the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license).
 
 <Accordion title="Why a data foundation?" icon="face-thinking">
 Data is the most valuable asset of the AI era, yet the systems we use to share it weren't built for it. Creators lose control and credit the moment their work goes online; AI is trained on copyrighted and unconsented data; and there's no portable, verifiable record of where any of it came from.
 
-Story fixes this at the foundation. Data registered on Story carries its provenance with it (Trace), can stay confidential until access is earned (CDR), and is governed by transparent, programmable rights (IP & Licensing) — so contributors are credited and fairly rewarded when their data is used, including by AI.
+The Data Foundation fixes this. Data registered on it carries its provenance with it (Trace), can stay confidential until access is earned (CDR), and is governed by transparent, programmable rights (IP & Licensing), so contributors are credited and fairly rewarded when their data is used, including by AI.
 
 </Accordion>
 

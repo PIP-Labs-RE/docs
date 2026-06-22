@@ -42,7 +42,7 @@ yarn add @piplabs/cdr-sdk viem
 </Note>
 
 <Note>
-  If you plan to mint Story license tokens in an IP-gated flow, also install
+  If you plan to mint Data Foundation license tokens in an IP-gated flow, also install
   `@story-protocol/core-sdk`.
 </Note>
 
@@ -84,7 +84,7 @@ export const runtime = "nodejs";
 
 ## Story-API REST Endpoint
 
-Every `CDRClient` requires an `apiUrl` — the base URL of a Story-API REST
+Every `CDRClient` requires an `apiUrl`: the base URL of a Story-API REST
 endpoint. The SDK reads all DKG state (active round, global public key,
 threshold, participant count, registered validators, and validator
 attestations) over this REST API. Contract state such as vaults and fees is
@@ -117,7 +117,7 @@ import { useMemo } from "react";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { CDRClient } from "@piplabs/cdr-sdk";
 
-// Example using Privy — adapt for your wallet connector
+// Example using Privy, adapt for your wallet connector
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 export function useCDRClient() {
@@ -125,7 +125,7 @@ export function useCDRClient() {
   const { wallets } = useWallets();
   const wallet = wallets[0];
 
-  // Read-only client — always available
+  // Read-only client, always available
   const publicClient = useMemo(
     () =>
       createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
@@ -139,7 +139,7 @@ export function useCDRClient() {
     [publicClient, apiUrl],
   );
 
-  // Write client — created on demand from the wallet's provider
+  // Write client, created on demand from the wallet's provider
   const getWriteClient = async () => {
     if (!wallet) throw new Error("No wallet connected");
     const provider = await wallet.getEthereumProvider();
@@ -167,7 +167,7 @@ const { client, getWriteClient } = useCDRClient();
 // Read-only operations work immediately
 const vault = await client.observer.getVault(42);
 
-// Write operations — get a write client first
+// Write operations: get a write client first
 const writeClient = await getWriteClient();
 await writeClient.uploader.write({ uuid, accessAuxData: "0x", encryptedData });
 ```
@@ -244,7 +244,7 @@ const client = new CDRClient({
 
 You can point the SDK to any Aeneid-compatible RPC endpoint by changing the
 `http()` transport URL. This is useful for third-party RPC providers with
-higher rate limits. The `apiUrl` is configured independently — point it at the
+higher rate limits. The `apiUrl` is configured independently; point it at the
 shared Story-API endpoint or your own Story node's REST gateway.
 
 ```typescript
@@ -380,7 +380,7 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 </Note>
 
 <Note>
-  Any EOA address works as a write or read condition — only that EOA can
+  Any EOA address works as a write or read condition; only that EOA can
   perform the matching action. The high-level `uploadCDR()` / `uploadFile()`
   helpers validate that condition addresses point at deployed contracts, so
   EOA conditions go through the low-level `allocate()` call with

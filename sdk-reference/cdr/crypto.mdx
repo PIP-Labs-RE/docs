@@ -143,7 +143,7 @@ const plaintext = await tdh2Combine({
 
 ```typescript DecryptedPartial
 interface DecryptedPartial {
-  name: string;         // validator name — key in the access structure
+  name: string;         // validator name: key in the access structure
   pubShare: Uint8Array; // 34 bytes (Ed25519 with 0x043f prefix)
   partial: Uint8Array;  // raw decrypted partial bytes
 }

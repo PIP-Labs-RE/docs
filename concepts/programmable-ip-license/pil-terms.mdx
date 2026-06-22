@@ -37,7 +37,7 @@ icon: file-contract
 
 </CardGroup>
 
-# On-chain terms
+# On-Chain Terms
 
 Most PIL terms are on-chain. They are implemented in the `IPILicenseTemplate.sol` contract as a `PILTerms` struct [here](https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/IPILicenseTemplate.sol).
 
@@ -84,10 +84,10 @@ struct PILTerms {
 | `derivativesApproval`       | True/False      | If true, the licensor must approve derivatives of the work.                                                                                                                                                                                                                                                                                                                                            |
 | `derivativesReciprocal`     | True/False      | If false, you cannot create a derivative of a derivative. Set this to true to allow indefinite remixing.                                                                                                                                                                                                                                                                                               |
 | `derivativeRevCeiling`      | #               | If `commercialUse` is set to true, this value determines the maximum revenue you can earn from derivative works.                                                                                                                                                                                                                                                                                       |
-| `currency`                  | Address         | The ERC20 token to be used to pay the minting fee. The token must be registered on Story.                                                                                                                                                                                                                                                                                                              |
+| `currency`                  | Address         | The ERC20 token to be used to pay the minting fee. The token must be registered on the Data Foundation.                                                                                                                                                                                                                                                                                                              |
 | `uri`                       | String          | The URI of the license terms, which can be used to fetch [off-chain license terms](/concepts/programmable-ip-license/pil-terms#off-chain-terms-to-be-included-in-uri-field).                                                                                                                                                                                                                           |
 
-# Off-chain terms to be included in `uri` field
+# Off-Chain Terms to Be Included in `uri` Field
 
 Some PIL terms must be stored off-chain and passed in the `uri` field above. This is because these terms are often more lengthy and/or descriptive, so it would not make sense to store them on-chain.
 
