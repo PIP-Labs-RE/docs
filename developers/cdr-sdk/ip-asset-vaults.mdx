@@ -22,10 +22,10 @@ mint Data Foundation license tokens separately.
 | LicenseReadCondition | `0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3` |
 | LicenseToken | `0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC` |
 
-## How the Story License Read Pattern Works
+## How the Data Foundation License Read Pattern Works
 
 Every CDR vault has a `writeConditionAddr` and `readConditionAddr`. For a
-Story license-gated vault on Aeneid:
+Data Foundation license-gated vault on Aeneid:
 
 - `writeConditionAddr` usually points at `OwnerWriteCondition`, with
   `writeConditionData = abi.encode(ownerAddress)`
@@ -35,7 +35,7 @@ Story license-gated vault on Aeneid:
   `abi.encode(uint256[] licenseTokenIds)`
 
 The CDR SDK does not register the IP Asset or mint the license token for you.
-Create the IP and obtain its `ipId` with Story tooling first, then configure
+Create the IP and obtain its `ipId` with Data Foundation tooling first, then configure
 the vault.
 
 If you have not registered the asset yet, start with
@@ -83,8 +83,8 @@ await client.uploader.uploadCDR({
 
 ## Mint a License Token Before Reading
 
-Before a user can read a Story license-gated vault, they still need to mint a
-license token. The Story core SDK's `wipClient` handles the WIP wrap and
+Before a user can read a Data Foundation license-gated vault, they still need to mint a
+license token. The Data Foundation core SDK's `wipClient` handles the WIP wrap and
 approval steps so the reader can wrap IP, approve the RoyaltyModule, and mint
 in three short calls.
 

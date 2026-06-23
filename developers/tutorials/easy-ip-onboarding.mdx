@@ -1,6 +1,6 @@
 ---
-title: Easy $IP Onboarding
-description: An example of how to integrate purchasing $IP with Apple Pay, Venmo, Debit Card, Bank, and more with Halliday.
+title: Easy $DATA Onboarding
+description: An example of how to integrate purchasing $DATA with Apple Pay, Venmo, Debit Card, Bank, and more with Halliday.
 "og:image": "https://orange-managing-gamefowl-150.mypinata.cloud/ipfs/bafybeig6ouvnydvxzdhrhgeieivz3k5psmlcooun6ugrgq2haayia6vr6m"
 ---
 
@@ -14,7 +14,7 @@ description: An example of how to integrate purchasing $IP with Apple Pay, Venmo
   </Card>
 </CardGroup>
 
-This tutorial will show you how to integrate purchasing $IP with Apple Pay, Venmo, Debit Card, Bank, and more into your DApp with Halliday.
+This tutorial will show you how to integrate purchasing $DATA with Apple Pay, Venmo, Debit Card, Bank, and more into your DApp with Halliday.
 
 <Note>
 
@@ -87,9 +87,9 @@ export default function Home() {
   useEffect(() => {
     openHallidayPayments({
       apiKey: process.env.NEXT_PUBLIC_HALLIDAY_PUBLIC_API_KEY as string,
-      // $IP on Story
+      // $DATA on Data Foundation
       outputs: ["story:0x"],
-      // $USDC.e on Story
+      // $USDC.e on Data Foundation
       // outputs: ["story:0xf1815bd50389c46847f0bda824ec8da914045d14"],
       sandbox: false,
       windowType: "EMBED",
@@ -109,7 +109,7 @@ export default function Home() {
   </Step>
 </Steps>
 
-That's it! You can now use Halliday to purchase $IP on Story.
+That's it! You can now use Halliday to purchase $DATA on Data Foundation.
 
 <CardGroup cols={1}>
   <Card

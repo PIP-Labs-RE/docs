@@ -136,7 +136,7 @@ async function main() {
   const response = await client.license.registerPILTerms(
     PILFlavor.commercialRemix({
       commercialRevShare: 5,
-      defaultMintingFee: parseEther("1"), // 1 $IP
+      defaultMintingFee: parseEther("1"), // 1 $DATA
       currency: WIP_TOKEN_ADDRESS,
     })
   );

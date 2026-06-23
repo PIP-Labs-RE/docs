@@ -33,17 +33,17 @@ These configurations ensure external applications can interact with the Geth nod
 
 ---
 
-## **3. Monitoring Geth and Story Protocol**
+## **3. Monitoring Geth and Data Foundation**
 ### **Geth Monitoring Configuration**
 - `--metrics`: Enables Prometheus-compatible metrics for Geth.
 - `--metrics.addr=0.0.0.0`: Binds the metrics server to all interfaces.
 - `--metrics.port=6060`: Exposes metrics on port `6060`.
 
-### **Story Protocol Monitoring**
+### **Data Foundation Monitoring**
 - Modify `config.toml` and set:
   ```toml
   prometheus = true
   ```
-- The default Prometheus metrics port for Story Protocol is `26660`.
+- The default Prometheus metrics port for Data Foundation is `26660`.
 
-With these settings, both Geth and Story Protocol expose monitoring metrics that can be collected using Prometheus and visualized with Grafana.
+With these settings, both Geth and Data Foundation expose monitoring metrics that can be collected using Prometheus and visualized with Grafana.

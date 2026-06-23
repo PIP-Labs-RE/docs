@@ -198,7 +198,7 @@ console.log(
 const response = await client.license.registerPILTerms(
   PILFlavor.commercialRemix({
     commercialRevShare: 5,
-    defaultMintingFee: parseEther("1"), // 1 $IP
+    defaultMintingFee: parseEther("1"), // 1 $DATA
     currency: WIP_TOKEN_ADDRESS,
   })
 );
@@ -225,7 +225,7 @@ export type RegisterPILTermsRequest = Omit<
 export type LicenseTerms = {
   /*Indicates whether the license is transferable or not.*/
   transferable: boolean;
-  /*The address of the royalty policy contract which required to StoryProtocol in advance.*/
+  /*The address of the royalty policy contract which required to Data Foundation in advance.*/
   royaltyPolicy: Address;
   /*The default minting fee to be paid when minting a license.*/
   defaultMintingFee: bigint;
@@ -298,7 +298,7 @@ const response = await client.license.registerPilTermsAndAttach({
     {
       terms: PILFlavor.commercialRemix({
         commercialRevShare: 5,
-        defaultMintingFee: parseEther("1"), // 1 $IP
+        defaultMintingFee: parseEther("1"), // 1 $DATA
         currency: WIP_TOKEN_ADDRESS,
       }),
     },

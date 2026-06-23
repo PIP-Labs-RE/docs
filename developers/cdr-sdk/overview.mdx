@@ -20,7 +20,7 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
 
 ## What is CDR?
 
-**Confidential Data Rails (CDR)** is the Data Foundation's application layer for threshold-encrypted data on Story L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
+**Confidential Data Rails (CDR)** is the Data Foundation's application layer for threshold-encrypted data on Data Foundation L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
 
 CDR enables powerful use cases like:
 
@@ -154,7 +154,7 @@ uploader can write, while readers must present valid Data Foundation license tok
 `accessAuxData`.
 
 Technical walkthrough:
-[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
+[How the Data Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ### Custom Condition Contracts
 
@@ -185,8 +185,8 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
   `conditions.storyLicense()` is not available yet.
 </Note>
 
-For the deployed Story license-gated pattern, see
-[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
+For the deployed Data Foundation license-gated pattern, see
+[How the Data Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ## Next Steps
 

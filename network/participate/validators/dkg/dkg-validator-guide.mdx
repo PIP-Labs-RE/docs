@@ -222,7 +222,7 @@ enc-type = 1
 ```bash
 sudo tee /etc/systemd/system/story-kernel.service > /dev/null <<EOF
 [Unit]
-Description=Story DKG TEE Service
+Description=Data Foundation DKG TEE Service
 After=network.target
 
 [Service]
@@ -243,7 +243,7 @@ sudo systemctl start story-kernel
 
 SGX enclave loading takes **1-3 minutes**. The process may appear stuck at "Parsing TOML manifest file"; this is normal.
 
-#### Restart Story
+#### Restart Data Foundation
 
 ```bash
 sudo systemctl restart story
@@ -259,7 +259,7 @@ journalctl -u story-kernel --no-pager -n 20
 # Look for: "gRPC server is started: :50051"
 ```
 
-#### Story Connected to Kernel
+#### Data Foundation Connected to Kernel
 
 ```bash
 journalctl -u story --no-pager -n 100 | grep "Connected to kernel"
