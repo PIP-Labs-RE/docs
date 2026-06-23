@@ -166,7 +166,7 @@ This is the official Ippy mascot that is registered on mainnet. You can view it 
         },
         {
           "platform": "Telegram",
-          "url": "https://t.me/StoryAnnouncements"
+          "url": "https://t.me/yourproject"
         },
         {
           "platform": "Website",
@@ -263,7 +263,7 @@ The following properties are optional but can provide additional context about y
 | `relationships`  | `IpRelationship[]` | The detailed relationship info with the IPA's direct parent asset, such as `APPEARS_IN`, `FINETUNED_FROM`, etc. See more examples [here](#relationship-types). |
 | `watermarkImage` | `string`           | A separate image with your watermark already applied. This way apps choosing to use it can render this version of the image (with watermark applied).          |
 | `media`          | `IpMedia[]`        | An array of supporting media. Media type defined below                                                                                                         |
-| `app`            | `StoryApp`         | This is assigned to verified application from the Data Foundation directly (on a request basis so far). We will map each App ID to a name                                    |
+| `app`            | `DataApp`         | This is assigned to verified application from the Data Foundation directly (on a request basis so far). We will map each App ID to a name                                    |
 | `tags`           | `string[]`         | Any tags that can help surface this IPA                                                                                                                        |
 | `robotTerms`     | `IPRobotTerms`     | Allows you to set Do Not Train for a specific agent                                                                                                            |
 | N/A              | N/A                | You can include other values as well.                                                                                                                          |
@@ -286,8 +286,8 @@ type IpMedia = {
 };
 ```
 
-```typescript StoryApp
-type StoryApp = {
+```typescript DataApp
+type DataApp = {
   id: string;
   name: string;
   website: string;

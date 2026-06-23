@@ -1,6 +1,6 @@
 ---
 title: Runtime Configuration
-description: Story-API endpoint, DKG state, threshold tuning, system addresses, and Aeneid runtime notes for the CDR SDK.
+description: Data Foundation API endpoint, DKG state, threshold tuning, system addresses, and Aeneid runtime notes for the CDR SDK.
 ---
 
 <Note>
@@ -8,17 +8,17 @@ description: Story-API endpoint, DKG state, threshold tuning, system addresses, 
   basic setup. Start with [Setup CDR Client](/developers/cdr-sdk/setup) first.
 </Note>
 
-## DKG State and the Story-API Endpoint
+## DKG State and the Data Foundation API Endpoint
 
 The SDK reads state from two backends:
 
 | Backend             | Configured by  | What it reads                                                                      |
 | ------------------- | -------------- | ---------------------------------------------------------------------------------- |
 | **EVM**             | `publicClient` | CDR contract state: vaults, fees, `maxEncryptedDataSize`, operational threshold    |
-| **Story-API REST**  | `apiUrl`       | DKG state: active round, global public key, threshold, validators, attestations   |
+| **Data Foundation API REST**  | `apiUrl`       | DKG state: active round, global public key, threshold, validators, attestations   |
 
 The `apiUrl` is a **required** `CDRClient` parameter. It is the base URL of a
-Story-API REST endpoint, and the `observer` uses it for every DKG read.
+Data Foundation API REST endpoint, and the `observer` uses it for every DKG read.
 
 ```typescript
 const client = new CDRClient({
@@ -31,7 +31,7 @@ const client = new CDRClient({
 
 For production deployments, point `apiUrl` at your own Story node's REST
 gateway rather than the shared endpoint. See
-[Story-API REST Endpoint](/developers/cdr-sdk/setup#story-api-rest-endpoint)
+[Data Foundation API REST Endpoint](/developers/cdr-sdk/setup#data-foundation-api-rest-endpoint)
 for the per-network values.
 
 <Note>
@@ -85,7 +85,7 @@ contracts, see
   assumptions described in the CDR overview.
 - Availability depends on enough validators responding before timeout. If reads
   fail to reach threshold, retry or increase `timeoutMs`.
-- DKG reads depend on the `apiUrl` Story-API endpoint being correct and
+- DKG reads depend on the `apiUrl` Data Foundation API endpoint being correct and
   reachable. Point it at a node you trust for production use.
 
 ## Current Release Notes

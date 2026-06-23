@@ -31,7 +31,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient, // viem PublicClient
   walletClient, // optional viem WalletClient
-  apiUrl: "http://172.192.41.96:1317", // Story-API REST endpoint
+  apiUrl: "http://172.192.41.96:1317", // Data Foundation API REST endpoint
   // minThresholdRatio: 0.67, // optional threshold override, in [0, 1]
 });
 
@@ -64,10 +64,10 @@ The client reads from two backends:
 | Backend | Configured by | Purpose |
 | ------- | ------------- | ------- |
 | EVM | `publicClient` | CDR contract state: vaults, fees, `maxEncryptedDataSize`, operational threshold |
-| Story-API REST | `apiUrl` | DKG state: active round, global public key, threshold, validators, attestations |
+| Data Foundation API REST | `apiUrl` | DKG state: active round, global public key, threshold, validators, attestations |
 
 The `apiUrl` is a required parameter. See
-[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-story-api-endpoint)
+[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-data-foundation-api-endpoint)
 for operational guidance and the optional `minThresholdRatio` override.
 
 ## Attestation Utilities

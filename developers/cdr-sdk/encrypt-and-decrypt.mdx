@@ -16,7 +16,7 @@ This guide walks through the two main CDR flows:
 
 | Operation                    | Sends transaction?           | What happens                                                               |
 | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| `observer.getGlobalPubKey()` | No                           | Pure read of DKG state over the Story-API REST endpoint                    |
+| `observer.getGlobalPubKey()` | No                           | Pure read of DKG state over the Data Foundation API REST endpoint                    |
 | `uploadCDR()`                | Yes, 2 txs                   | Local TDH2 encryption plus `allocate()` and `write()`                      |
 | `uploadFile()`               | Yes, 2 txs + storage upload  | Local AES encryption, storage upload, then `allocate()` and `write()`      |
 | `accessCDR()`                | Yes, 1 tx                    | `read()` on-chain, then off-chain partial collection and local combination |
@@ -364,7 +364,7 @@ const { txHash: readTx } = await consumer.read({
   requesterPubKey,
 });
 
-// Off-chain: poll the Story-API endpoint for validator partial decryptions.
+// Off-chain: poll the Data Foundation API endpoint for validator partial decryptions.
 // The required threshold is derived from the bucket's own DKG round.
 const partials = await consumer.collectPartials({
   uuid,

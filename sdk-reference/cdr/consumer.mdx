@@ -16,7 +16,7 @@ const consumer = client.consumer;
   `readFileVault` as an alias for `downloadFile`.
 </Note>
 
-Partial decryptions are collected from the Story-API REST endpoint
+Partial decryptions are collected from the Data Foundation API REST endpoint
 (`/dkg/cdr_partials`), keyed by `(uuid, requesterPubKey)`. The keeper verifies
 each validator's signature on ingress, so the SDK does not re-verify signatures
 locally. For defense-in-depth, pass an `attestationConfig` to verify each
@@ -170,7 +170,7 @@ interface ReadResponse {
 
 ### collectPartials
 
-Polls the Story-API REST endpoint (`/dkg/cdr_partials`) until at least a
+Polls the Data Foundation API REST endpoint (`/dkg/cdr_partials`) until at least a
 threshold's worth of partial-decryption submissions have been surfaced for the
 given `(uuid, requesterPubKey)`.
 

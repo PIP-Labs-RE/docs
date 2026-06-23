@@ -14,7 +14,7 @@ const observer = client.observer;
 The Observer reads from two backends: CDR contract state (vaults, fees,
 `maxEncryptedDataSize`, operational threshold) over the EVM `publicClient`, and
 DKG state (active round, global public key, threshold, validators,
-attestations) over the Story-API REST endpoint configured by `apiUrl`.
+attestations) over the Data Foundation API REST endpoint configured by `apiUrl`.
 
 <Note>
   Round-keyed DKG snapshots are cached for the lifetime of the Observer for
@@ -157,7 +157,7 @@ console.log(`Threshold: ${Number(threshold) / 10}%`); // e.g. "66.7%"
 
 ### getActiveRound
 
-Returns the currently active DKG round number. Always hits the Story-API REST
+Returns the currently active DKG round number. Always hits the Data Foundation API REST
 endpoint, since the active round can transition at any time, so it is never served
 from cache.
 
