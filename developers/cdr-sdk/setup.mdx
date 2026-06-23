@@ -132,7 +132,7 @@ export function useCDRClient() {
     [],
   );
 
-  const apiUrl = process.env.NEXT_PUBLIC_STORY_API_URL!;
+  const apiUrl = process.env.NEXT_PUBLIC_DATAFDN_API_URL!;
 
   const client = useMemo(
     () => new CDRClient({ network: "testnet", publicClient, apiUrl }),
@@ -196,7 +196,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  apiUrl: process.env.STORY_API_URL!,
+  apiUrl: process.env.DATAFDN_API_URL!,
 });
 ```
 
@@ -208,7 +208,7 @@ If you only need to query vault data or DKG state, you can omit the `walletClien
 const client = new CDRClient({
   network: "testnet",
   publicClient,
-  apiUrl: process.env.STORY_API_URL!,
+  apiUrl: process.env.DATAFDN_API_URL!,
 });
 
 // observer methods work without a wallet
@@ -271,26 +271,26 @@ A common pattern is to configure the network via environment variables:
 
 ```typescript config.ts
 const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
-const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
 const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
 
 const publicClient = createPublicClient({ transport: http(RPC_URL) });
 const client = new CDRClient({
   network: NETWORK,
   publicClient,
-  apiUrl: STORY_API_URL,
+  apiUrl: DATAFDN_API_URL,
 });
 ```
 
 ```bash .env
 # Testnet (default)
 RPC_URL=https://aeneid.datarpc.io
-STORY_API_URL=http://172.192.41.96:1317
+DATAFDN_API_URL=http://172.192.41.96:1317
 NETWORK=testnet
 
 # Alternate Aeneid RPC
 RPC_URL=https://your-aeneid-rpc.example.com
-STORY_API_URL=http://your-story-node:1317
+DATAFDN_API_URL=http://your-data-node:1317
 NETWORK=testnet
 ```
 
@@ -311,7 +311,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 
 const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
-const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 
 if (!PRIVATE_KEY) {
@@ -331,7 +331,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  apiUrl: STORY_API_URL,
+  apiUrl: DATAFDN_API_URL,
 });
 
 // Use the wallet (EOA) address as both write and read condition. Only this

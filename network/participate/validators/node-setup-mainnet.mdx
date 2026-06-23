@@ -301,9 +301,9 @@ sudo xattr -rd com.apple.quarantine ./story
 
 To override your own node settings, you can do the following:
 
-- `${STORY_DATA_ROOT}/config/config.toml` can be modified to change network and consensus settings
-- `${STORY_DATA_ROOT}/config/story.toml` to update various client configs
-- `${STORY_DATA_ROOT}/priv_validator_key.json` is a sensitive file containing your validator key, but may be replaced with your own
+- `${DATAFDN_DATA_ROOT}/config/config.toml` can be modified to change network and consensus settings
+- `${DATAFDN_DATA_ROOT}/config/story.toml` to update various client configs
+- `${DATAFDN_DATA_ROOT}/priv_validator_key.json` is a sensitive file containing your validator key, but may be replaced with your own
 
 #### Custom Automation
 
@@ -479,7 +479,7 @@ If you ever run into issues and would like to try joining the network from a cle
 <Tabs>
   <Tab title="Mainnet">
     ```bash
-    rm -rf ${STORY_DATA_ROOT} && ./story init --network story && ./story run
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network story && ./story run
     ```
 
     Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network story && ./story run`
@@ -490,7 +490,7 @@ If you ever run into issues and would like to try joining the network from a cle
 
   <Tab title="Aeneid Testnet">
     ```bash
-    rm -rf ${STORY_DATA_ROOT} && ./story init --network aeneid && ./story run
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network aeneid && ./story run
     ```
 
     Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network aeneid && ./story run`

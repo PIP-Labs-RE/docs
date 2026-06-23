@@ -504,7 +504,7 @@ Delegators may add operators to unstake or redelegate on their behalf. To add an
   --operator ${OPERATOR_EVM_ADDRESS} \
   --rpc \
   --chain-id \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
@@ -528,7 +528,7 @@ To remove an operator, run the following command:
   --operator ${OPERATOR_EVM_ADDRESS} \
   --rpc \
   --chain-id \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 ### Example Remove Operator Command Use
@@ -548,7 +548,7 @@ To change the address that your delegator receives staking and withdrawal reward
 ```bash
 ./story validator set-rewards-address \
   --rewards-address ${OPERATOR_EVM_ADDRESS} \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
@@ -568,7 +568,7 @@ To change the address that your delegator receives staking and withdrawal reward
 ```bash
 ./story validator set-withdrawal-address \
   --withdrawal-address ${OPERATOR_EVM_ADDRESS} \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
@@ -605,7 +605,7 @@ Prerequisites:
 
 Steps to enable:
 
-1. Navigate to `${STORY_DATA_ROOT}/config/story.toml`
+1. Navigate to `${DATAFDN_DATA_ROOT}/config/story.toml`
 2. Set `enable = true` under the `[api]` section
 3. Restart the node
 

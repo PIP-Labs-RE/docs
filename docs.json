@@ -296,8 +296,8 @@
                     "group": "Registration",
                     "icon": "file-certificate",
                     "pages": [
-                      "developers/tutorials/how-to-register-ip-on-story",
-                      "developers/tutorials/how-to-register-music-on-story"
+                      "developers/tutorials/how-to-register-ip",
+                      "developers/tutorials/how-to-register-music"
                     ]
                   },
                   {
@@ -613,23 +613,31 @@
     },
     {
       "source": "/tutorials",
-      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+      "destination": "/developers/tutorials/how-to-register-ip"
     },
     {
       "source": "/developers/tutorials",
-      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+      "destination": "/developers/tutorials/how-to-register-ip"
     },
     {
       "source": "/developers/tutorials/overview",
-      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+      "destination": "/developers/tutorials/how-to-register-ip"
     },
     {
       "source": "/how-to-register-ip-on-story",
-      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+      "destination": "/developers/tutorials/how-to-register-ip"
     },
     {
       "source": "/how-to-register-music-on-story",
-      "destination": "/developers/tutorials/how-to-register-music-on-story"
+      "destination": "/developers/tutorials/how-to-register-music"
+    },
+    {
+      "source": "/developers/tutorials/how-to-register-ip-on-story",
+      "destination": "/developers/tutorials/how-to-register-ip"
+    },
+    {
+      "source": "/developers/tutorials/how-to-register-music-on-story",
+      "destination": "/developers/tutorials/how-to-register-music"
     },
     {
       "source": "/privy-tutorial",

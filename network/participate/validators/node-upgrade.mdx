@@ -17,7 +17,7 @@ sudo systemctl stop story
 sudo systemctl stop story-geth
 
 # Download the new binary
-wget ${STORY_GETH_BINARY_URL}
+wget ${DATAFDN_GETH_BINARY_URL}
 sudo mv ./geth-linux-amd64 story-geth
 sudo chmod +x story-geth
 sudo mv ./story-geth $HOME/go/bin/story-geth
@@ -35,7 +35,7 @@ sudo systemctl start story
 sudo systemctl stop story
 
 # Download the new binary
-wget ${STORY_BINARY_URL}
+wget ${DATAFDN_BINARY_URL}
 sudo mv story-linux-amd64 story
 sudo chmod +x story
 sudo mv ./story $HOME/go/bin/story
@@ -52,7 +52,7 @@ The following steps outline how to schedule an upgrade using Cosmovisor:
 
 ```bash
 # Download the new binary
-wget ${STORY_BINARY_URL}
+wget ${DATAFDN_BINARY_URL}
 
 # Schedule the upgrade
 source $HOME/.bash_profile
@@ -209,7 +209,7 @@ Git Timestamp 2025-04-11T04:24:27Z
 
 ```bash
 # Download the new binary
-wget ${STORY_BINARY_URL}
+wget ${DATAFDN_BINARY_URL}
 
 # Schedule the upgrade
 source $HOME/.bash_profile
