@@ -11,7 +11,7 @@
     "light": "/logo/df-logo-light.svg",
     "dark": "/logo/df-logo-dark.svg"
   },
-  "favicon": "/logo/df-favicon.svg",
+  "favicon": "/logo/df-favicon.png",
   "appearance": {
     "default": "light"
   },
