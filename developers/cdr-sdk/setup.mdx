@@ -227,11 +227,11 @@ const allocateFee = await client.observer.getAllocateFee();
 
 | Network | `network` param | Default RPC URL              | Story-API REST URL          | Description               |
 | ------- | --------------- | ---------------------------- | --------------------------- | ------------------------- |
-| Aeneid  | `"testnet"`     | `https://aeneid.storyrpc.io` | `http://172.192.41.96:1317` | Current supported release |
+| Aeneid  | `"testnet"`     | `https://aeneid.datarpc.io` | `http://172.192.41.96:1317` | Current supported release |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
-  transport: http("https://aeneid.storyrpc.io"),
+  transport: http("https://aeneid.datarpc.io"),
 });
 const client = new CDRClient({
   network: "testnet",
@@ -270,7 +270,7 @@ const client = new CDRClient({
 A common pattern is to configure the network via environment variables:
 
 ```typescript config.ts
-const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
 const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
 const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
 
@@ -284,7 +284,7 @@ const client = new CDRClient({
 
 ```bash .env
 # Testnet (default)
-RPC_URL=https://aeneid.storyrpc.io
+RPC_URL=https://aeneid.datarpc.io
 STORY_API_URL=http://172.192.41.96:1317
 NETWORK=testnet
 
@@ -310,7 +310,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
 const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 

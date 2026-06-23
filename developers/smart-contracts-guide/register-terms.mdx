@@ -45,11 +45,11 @@ import { IPILicenseTemplate } from "@storyprotocol/core/interfaces/modules/licen
 import { PILTerms } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/1_LicenseTerms.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/1_LicenseTerms.t.sol
 contract LicenseTermsTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - PILicenseTemplate
     IPILicenseTemplate internal PIL_TEMPLATE = IPILicenseTemplate(0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316);
     // Protocol Core - RoyaltyPolicyLAP
@@ -150,7 +150,7 @@ Run `forge build`. If everything is successful, the command should successfully 
 Now run the test by executing the following command:
 
 ```bash
-forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/1_LicenseTerms.t.sol
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/1_LicenseTerms.t.sol
 ```
 
 ## Attach Terms to Your IP

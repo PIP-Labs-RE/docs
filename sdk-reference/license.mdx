@@ -167,7 +167,7 @@ import { zeroAddress, parseEther } from "viem";
 
 const licenseTerms: LicenseTerms = {
   transferable: false,
-  royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   defaultMintingFee: 0n,
   expiration: 0n,
   commercialUse: false,
@@ -181,7 +181,7 @@ const licenseTerms: LicenseTerms = {
   derivativesApproval: false,
   derivativesReciprocal: false,
   derivativeRevCeiling: 0n,
-  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   uri: "",
 };
 
@@ -388,9 +388,9 @@ Parameters:
 import { parseEther } from "viem";
 
 const commercialUseParams = {
-  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   defaultMintingFee: parseEther("1"), // 1 $WIP
-  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
 };
 
 const response = await client.license.registerCommercialUsePIL({
@@ -441,9 +441,9 @@ Parameters:
 import { parseEther } from "viem";
 
 const commercialRemixParams = {
-  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   defaultMintingFee: parseEther("1"), // 1 $WIP
-  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   commercialRevShare: 10, // 10%
 };
 
@@ -492,8 +492,8 @@ Parameters:
 
 ```typescript TypeScript
 const response = await client.license.registerCreativeCommonsAttributionPIL({
-  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
-  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency: "0x1514000000000000000000000000000000000000", // $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  royaltyPolicyAddress: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
 });
 
 console.log(
@@ -634,7 +634,7 @@ export type GetLicensingConfigRequest = {
   licenseTermsId: number | bigint;
   /**
    * The address of the license template.
-   * Defaults to {@link https://docs.story.foundation/docs/programmable-ip-license | PIL} address if not provided.
+   * Defaults to {@link https://docs.datafdn.org/docs/programmable-ip-license | PIL} address if not provided.
    */
   licenseTemplate?: Address;
 };
@@ -648,7 +648,7 @@ export type LicensingConfigInput = {
    * The licensingHook is an address to a smart contract that implements the `ILicensingHook` interface.
    * This contract's `beforeMintLicenseTokens` function is executed before a user mints a License Token,
    * allowing for custom validation or business logic to be enforced during the minting process.
-   * For detailed documentation on licensing hook, visit {@link https://docs.story.foundation/concepts/hooks#licensing-hooks}
+   * For detailed documentation on licensing hook, visit {@link https://docs.datafdn.org/concepts/hooks#licensing-hooks}
    */
   licensingHook: Address;
   /**
@@ -708,7 +708,7 @@ export type GetLicensingConfigRequest = {
   licenseTermsId: number | bigint;
   /**
    * The address of the license template.
-   * Defaults to {@link https://docs.story.foundation/docs/programmable-ip-license | PIL} address if not provided.
+   * Defaults to {@link https://docs.datafdn.org/docs/programmable-ip-license | PIL} address if not provided.
    */
   licenseTemplate?: Address;
 };
@@ -724,7 +724,7 @@ export type LicensingConfig = {
    * The licensingHook is an address to a smart contract that implements the `ILicensingHook` interface.
    * This contract's `beforeMintLicenseTokens` function is executed before a user mints a License Token,
    * allowing for custom validation or business logic to be enforced during the minting process.
-   * For detailed documentation on licensing hook, visit {@link https://docs.story.foundation/concepts/hooks#licensing-hooks}
+   * For detailed documentation on licensing hook, visit {@link https://docs.datafdn.org/concepts/hooks#licensing-hooks}
    */
   licensingHook: Address;
   /**
@@ -787,7 +787,7 @@ export type GetLicensingConfigRequest = {
   licenseTermsId: number | bigint;
   /**
    * The address of the license template.
-   * Defaults to {@link https://docs.story.foundation/docs/programmable-ip-license | PIL} address if not provided.
+   * Defaults to {@link https://docs.datafdn.org/docs/programmable-ip-license | PIL} address if not provided.
    */
   licenseTemplate?: Address;
 };

@@ -50,11 +50,11 @@ import { PILTerms } from "@storyprotocol/core/interfaces/modules/licensing/IPILi
 import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/2_AttachTerms.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/2_AttachTerms.t.sol
 contract AttachTermsTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - IPAssetRegistry
     IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
     // Protocol Core - LicenseRegistry
@@ -121,7 +121,7 @@ Run `forge build`. If everything is successful, the command should successfully 
 Now run the test by executing the following command:
 
 ```bash
-forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/2_AttachTerms.t.sol
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/2_AttachTerms.t.sol
 ```
 
 ## Mint a License

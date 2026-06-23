@@ -65,7 +65,7 @@ const response = await client.ipAsset.registerIpAsset({
     {
       terms: PILFlavor.creativeCommonsAttribution({
         currency: WIP_TOKEN_ADDRESS,
-        // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+        // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
         royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E",
       }),
     },
@@ -74,7 +74,7 @@ const response = await client.ipAsset.registerIpAsset({
         defaultMintingFee: 10000n,
         commercialRevShare: 20, // 20%
         currency: WIP_TOKEN_ADDRESS,
-        // RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+        // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
         royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E",
       }),
       maxLicenseTokens: 100,
@@ -342,7 +342,7 @@ export type DerivativeDataInput = {
   maxRevenueShare?: number;
   /**
    * The address of the license template.
-   * @default Defaults to https://docs.story.foundation/developers/deployed-smart-contracts
+   * @default Defaults to https://docs.datafdn.org/developers/deployed-smart-contracts
    * PILicenseTemplate address if not provided.
    */
   licenseTemplate?: Address;
@@ -421,7 +421,7 @@ Parameters:
       maxRevenueShare?: number;
       /**
       * The address of the license template.
-      * Defaults to {@link https://docs.story.foundation/docs/programmable-ip-license | License Template} address if not provided.
+      * Defaults to {@link https://docs.datafdn.org/docs/programmable-ip-license | License Template} address if not provided.
       */
       licenseTemplate?: Address;
     };

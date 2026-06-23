@@ -25,7 +25,7 @@
     "primary": {
       "type": "button",
       "label": "Quickstart",
-      "href": "https://docs.story.foundation/quickstart"
+      "href": "https://docs.datafdn.org/quickstart"
     }
   },
   "navigation": {
@@ -39,12 +39,12 @@
         {
           "anchor": "Network Status",
           "icon": "signal-bars",
-          "href": "https://status.story.foundation"
+          "href": "https://status.datafdn.org"
         },
         {
           "anchor": "Explorer",
           "icon": "magnifying-glass",
-          "href": "https://www.storyscan.io/"
+          "href": "https://www.datanetscan.io/"
         }
       ]
     },
@@ -74,7 +74,7 @@
                   {
                     "group": "Confidentiality (CDR)",
                     "icon": "lock",
-                    "pages": ["developers/cdr-sdk/overview"]
+                    "pages": ["cdr/overview"]
                   },
                   {
                     "group": "Rights (IP & Licensing)",
@@ -236,50 +236,51 @@
                     "pages": ["trace/integration"]
                   },
                   {
-                    "group": "TypeScript SDK",
-                    "icon": "screwdriver-wrench",
-                    "pages": [
-                      "developers/typescript-sdk/overview",
-                      "developers/typescript-sdk/setup",
-                      "developers/typescript-sdk/register-ip-asset",
-                      "developers/typescript-sdk/attach-terms",
-                      "developers/typescript-sdk/mint-license"
-                    ]
-                  },
-                  {
-                    "group": "React / Next.js",
-                    "icon": "atom",
-                    "pages": [
-                      "developers/react-guide/overview",
-                      {
-                        "group": "Setup",
-                        "pages": [
-                          "developers/react-guide/setup/overview",
-                          "developers/react-guide/setup/dynamic-setup",
-                          "developers/react-guide/setup/rainbowkit-setup",
-                          "developers/react-guide/setup/reown-setup",
-                          "developers/react-guide/setup/tomo-setup"
-                        ]
-                      },
-                      "developers/react-guide/using-the-sdk-in-react"
-                    ]
-                  },
-                  {
-                    "group": "Python",
-                    "icon": "snake",
-                    "pages": []
-                  },
-                  {
-                    "group": "Smart Contracts",
+                    "group": "IP & Licensing",
                     "icon": "scroll",
                     "pages": [
-                      "developers/smart-contracts-guide/overview",
-                      "developers/smart-contracts-guide/setup",
-                      "developers/smart-contracts-guide/register-ip-asset",
-                      "developers/smart-contracts-guide/register-terms",
-                      "developers/smart-contracts-guide/attach-terms",
-                      "developers/smart-contracts-guide/mint-license",
-                      "developers/smart-contracts-guide/example"
+                      {
+                        "group": "TypeScript SDK",
+                        "icon": "screwdriver-wrench",
+                        "pages": [
+                          "developers/typescript-sdk/overview",
+                          "developers/typescript-sdk/setup",
+                          "developers/typescript-sdk/register-ip-asset",
+                          "developers/typescript-sdk/attach-terms",
+                          "developers/typescript-sdk/mint-license"
+                        ]
+                      },
+                      {
+                        "group": "React / Next.js",
+                        "icon": "atom",
+                        "pages": [
+                          "developers/react-guide/overview",
+                          {
+                            "group": "Setup",
+                            "pages": [
+                              "developers/react-guide/setup/overview",
+                              "developers/react-guide/setup/dynamic-setup",
+                              "developers/react-guide/setup/rainbowkit-setup",
+                              "developers/react-guide/setup/reown-setup",
+                              "developers/react-guide/setup/tomo-setup"
+                            ]
+                          },
+                          "developers/react-guide/using-the-sdk-in-react"
+                        ]
+                      },
+                      {
+                        "group": "Smart Contracts",
+                        "icon": "file-contract",
+                        "pages": [
+                          "developers/smart-contracts-guide/overview",
+                          "developers/smart-contracts-guide/setup",
+                          "developers/smart-contracts-guide/register-ip-asset",
+                          "developers/smart-contracts-guide/register-terms",
+                          "developers/smart-contracts-guide/attach-terms",
+                          "developers/smart-contracts-guide/mint-license",
+                          "developers/smart-contracts-guide/example"
+                        ]
+                      }
                     ]
                   }
                 ]
@@ -291,7 +292,6 @@
               {
                 "group": "Tutorials",
                 "pages": [
-                  "developers/tutorials/overview",
                   {
                     "group": "Registration",
                     "icon": "file-certificate",
@@ -334,7 +334,7 @@
                     ]
                   },
                   {
-                    "group": "Protocol SDK",
+                    "group": "Protocol SDK (IP & Licensing)",
                     "pages": [
                       "sdk-reference/ipasset",
                       "sdk-reference/ipaccount",
@@ -355,7 +355,7 @@
                     "pages": ["sdk-reference/python/overview"]
                   },
                   {
-                    "group": "SDK Reference",
+                    "group": "Protocol SDK (IP & Licensing)",
                     "pages": [
                       "sdk-reference/python/ipasset",
                       "sdk-reference/python/ipaccount",
@@ -373,7 +373,7 @@
             "tab": "API Reference",
             "dropdowns": [
               {
-                "dropdown": "Protocol API",
+                "dropdown": "Protocol API (IP & Licensing)",
                 "icon": "link",
                 "groups": [
                   {
@@ -385,7 +385,7 @@
                   },
                   {
                     "group": "Endpoints",
-                    "openapi": "https://api.storyapis.com/api/v4/openapi.json",
+                    "openapi": "https://api.dataapis.io/api/v4/openapi.json",
                     "pages": [
                       "POST /assets",
                       "POST /assets/edges",
@@ -435,7 +435,7 @@
     "socials": {
       "x": "https://x.com/StoryProtocol",
       "github": "https://github.com/storyprotocol",
-      "website": "https://story.foundation"
+      "website": "https://datafdn.org"
     }
   },
   "redirects": [
@@ -613,7 +613,15 @@
     },
     {
       "source": "/tutorials",
-      "destination": "/developers/tutorials"
+      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+    },
+    {
+      "source": "/developers/tutorials",
+      "destination": "/developers/tutorials/how-to-register-ip-on-story"
+    },
+    {
+      "source": "/developers/tutorials/overview",
+      "destination": "/developers/tutorials/how-to-register-ip-on-story"
     },
     {
       "source": "/how-to-register-ip-on-story",

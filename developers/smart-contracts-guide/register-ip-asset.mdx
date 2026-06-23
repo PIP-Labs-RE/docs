@@ -66,11 +66,11 @@ import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPA
 import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 contract IPARegistrarTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - IPAssetRegistry
     IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
 
@@ -130,11 +130,11 @@ import { IRegistrationWorkflows } from "@storyprotocol/periphery/interfaces/work
 import { WorkflowStructs } from "@storyprotocol/periphery/lib/WorkflowStructs.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 contract IPARegistrarTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - IPAssetRegistry
     IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
     // Protocol Periphery - RegistrationWorkflows
@@ -211,7 +211,7 @@ contract IPARegistrarTest is Test {
 3. Now run the test by executing the following command:
 
 ```bash
-forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 ```
 
 ## Add License Terms to IP

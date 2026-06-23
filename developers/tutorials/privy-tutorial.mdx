@@ -47,7 +47,7 @@ NEXT_PUBLIC_PRIVY_APP_ID=
 4. Once you enable Smart wallets, right underneath make sure to put a "Custom chain" with the following values:
    1. Name: `Story Aeneid Testnet`
    2. ID number: `1315`
-   3. RPC URL: `https://aeneid.storyrpc.io`
+   3. RPC URL: `https://aeneid.datarpc.io`
    4. For the Bundler URL and Paymaster URL, go to [Pimlico's Dashboard](https://dashboard.pimlico.io) and create a new app. Then click on "API Keys", create a new API Key, click "RPC URLs" as shown below, and then select "Story Aeneid Testnet" as the network:
 
 <Warning>
@@ -275,7 +275,7 @@ export default function Home() {
       transactionRequest,
       { uiOptions }
     );
-    console.log(`View Tx: https://aeneid.storyscan.io/tx/${txHash}`);
+    console.log(`View Tx: https://aeneid.datanetscan.io/tx/${txHash}`);
   }
 
   return (
@@ -422,7 +422,7 @@ export default function Home() {
   async function setupStoryClient() {
     const config: StoryConfig = {
       account: smartWalletClient!.account,
-      transport: http("https://aeneid.storyrpc.io"),
+      transport: http("https://aeneid.datarpc.io"),
       chainId: "aeneid",
     };
     const client = StoryClient.newClient(config);
@@ -449,7 +449,7 @@ export default function Home() {
       response.encodedTxData as EncodedTxData,
       { uiOptions }
     );
-    console.log(`View Tx: https://aeneid.storyscan.io/tx/${txHash}`);
+    console.log(`View Tx: https://aeneid.datanetscan.io/tx/${txHash}`);
   }
 
   return (
@@ -472,7 +472,7 @@ export default function Home() {
   >
     View the completed code for this tutorial.
   </Card>
-  <Card title="Learn More" href="/developers/tutorials" icon="book-open">
+  <Card title="Learn More" href="/developers/tutorials/how-to-register-ip-on-story" icon="book-open">
     Explore more tutorials in our documentation
   </Card>
 </CardGroup>
