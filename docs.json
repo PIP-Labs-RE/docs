@@ -19,7 +19,7 @@
     "links": [
       {
         "label": "Support",
-        "href": "https://discord.gg/storybuilders"
+        "href": "https://discord.gg/databuilders"
       }
     ],
     "primary": {
@@ -34,7 +34,7 @@
         {
           "anchor": "Help & Support",
           "icon": "discord",
-          "href": "https://discord.gg/storybuilders"
+          "href": "https://discord.gg/databuilders"
         },
         {
           "anchor": "Network Status",
