@@ -4,9 +4,9 @@ The API and Trace Schema described here are provider-agnostic: every provider in
 
 ## Getting Access
 
-Write access is gated. Before integrating, a provider must contact the Data Foundation team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
+Write access is gated. Before integrating, a provider must contact the DATA Foundation team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
 
-To request access, reach out to the Data Foundation team to start the onboarding process.
+To request access, reach out to the DATA Foundation team to start the onboarding process.
 
 Base URL:
 
@@ -19,7 +19,7 @@ https://staging-api.storyprotocol.net
 ```text
 Provider client
   -> story-api webhook batch endpoint
-  -> asynchronous Data Foundation processing
+  -> asynchronous DATA Foundation processing
   -> story-api read/search endpoints
 ```
 
@@ -37,7 +37,7 @@ X-Batch-Id: <stable batch id>
 
 Use the provided staging API key for write testing. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
 
-Read APIs are keyed by global Data Foundation `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
+Read APIs are keyed by global DATA Foundation `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
 
 ## Current Provider / Trace Alignment
 
@@ -79,13 +79,13 @@ Current staging behavior:
 
 ## Trace Schema v1.0
 
-The Data Foundation stores a provider-normalized trace metadata object instead of treating the provider's raw payload as the top-level Data Foundation contract. The provider's full original public payload should be preserved under `provider_payload`.
+The DATA Foundation stores a provider-normalized trace metadata object instead of treating the provider's raw payload as the top-level DATA Foundation contract. The provider's full original public payload should be preserved under `provider_payload`.
 
-The provider should populate the standardized Trace Schema fields directly. The Data Foundation also preserves the provider's full original public payload under `provider_payload`, but the normalized fields are the portable Trace contract that other providers and the frontend should use.
+The provider should populate the standardized Trace Schema fields directly. The DATA Foundation also preserves the provider's full original public payload under `provider_payload`, but the normalized fields are the portable Trace contract that other providers and the frontend should use.
 
-Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`. The Data Foundation canonicalizes metadata JSON before computing internal event hashes, so object key order does not affect idempotency or conflict detection.
+Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`. The DATA Foundation canonicalizes metadata JSON before computing internal event hashes, so object key order does not affect idempotency or conflict detection.
 
-A provider does not need to send a transaction hash in write payloads. The Data Foundation owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until the Data Foundation fills it after broadcast.
+A provider does not need to send a transaction hash in write payloads. The DATA Foundation owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until the DATA Foundation fills it after broadcast.
 
 Recommended top-level shape:
 
@@ -244,7 +244,7 @@ GET /api/v1/data-audit/providers/kled/policies/privacy_policy/sha256:<64-hex-pol
 
 ### Register records
 
-Use this endpoint for initial backlog and live registration batches. The provider sends its stable `source_record_id`; the Data Foundation generates the `data_id` and returns the mapping.
+Use this endpoint for initial backlog and live registration batches. The provider sends its stable `source_record_id`; the DATA Foundation generates the `data_id` and returns the mapping.
 
 ```http
 POST /webhook/v1/data-audit/records:batch
@@ -349,7 +349,7 @@ Request body is a JSON array:
 ]
 ```
 
-`initial_metadata_root` should be the provider's deterministic hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, the Data Foundation stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
+`initial_metadata_root` should be the provider's deterministic hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, the DATA Foundation stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
 
 Successful response:
 
@@ -379,11 +379,11 @@ Successful response:
 }
 ```
 
-The returned `data_id` is the Data Foundation ID for future metadata updates and reads. Re-sending the same `X-Provider` + `source_record_id` generates the same `data_id`.
+The returned `data_id` is the DATA Foundation ID for future metadata updates and reads. Re-sending the same `X-Provider` + `source_record_id` generates the same `data_id`.
 
 If a record was already persisted with the exact same initial registration payload, the item returns `status: "duplicate"` and is not re-enqueued. If the same `source_record_id` was already persisted with different initial metadata, the item returns `status: "conflict"` and is not enqueued. An overlapping retry while the first request is still queued may return `accepted`; downstream ingestion remains idempotent. Other valid items in the same batch can still return `accepted`.
 
-If a caller already has Data Foundation-assigned UUIDs, the lower-level endpoint is:
+If a caller already has DATA Foundation-assigned UUIDs, the lower-level endpoint is:
 
 ```http
 POST /webhook/v1/data-audit/data-ids:batch
@@ -395,7 +395,7 @@ That endpoint requires `data_id` on every record and is not the recommended vend
 
 Use this endpoint for later corrections or mutable metadata changes. `seq` must be between `1` and `100` for the same `data_id`.
 
-`metadata_json` should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets the Data Foundation rebuild the latest state without provider-specific merge rules.
+`metadata_json` should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets the DATA Foundation rebuild the latest state without provider-specific merge rules.
 
 ```http
 POST /webhook/v1/data-audit/metadata-updates:batch
@@ -445,7 +445,7 @@ Request body is a JSON array:
 ]
 ```
 
-`metadata_root` should be the provider's deterministic hash of the canonical full updated Trace Schema v1.0 metadata JSON. In the current staging API, the Data Foundation stores this value as submitted; hash verification against `metadata_json` is not enforced yet.
+`metadata_root` should be the provider's deterministic hash of the canonical full updated Trace Schema v1.0 metadata JSON. In the current staging API, the DATA Foundation stores this value as submitted; hash verification against `metadata_json` is not enforced yet.
 
 ### Optional backlog file endpoints
 
@@ -495,9 +495,9 @@ Read model:
 
 - `GET /data-ids/{data_id}` returns the registration profile plus the latest raw metadata event. The latest metadata event is not guaranteed to be a diff; it is the exact update payload submitted for the highest sequence currently stored.
 - `GET /data-ids/{data_id}/metadatas` returns the full append-only metadata history, including registration at `seq: 0` and later metadata updates.
-- Search, asset receipt lookup, and scoped-group summaries use the Data Foundation's normalized latest-state projection derived from those events. This projection is what powers fields such as MIME type, media category, KYC status, TOS/privacy versions, lifecycle status, and `tx_hash`.
+- Search, asset receipt lookup, and scoped-group summaries use the DATA Foundation's normalized latest-state projection derived from those events. This projection is what powers fields such as MIME type, media category, KYC status, TOS/privacy versions, lifecycle status, and `tx_hash`.
 
-### Get trace by Data Foundation data ID
+### Get trace by DATA Foundation data ID
 
 ```http
 GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
@@ -639,7 +639,7 @@ Accepted hash forms are `sha256:<64-hex>`, plain `<64-hex>`, `0x<64-hex>`, and `
 
 ### Scoped groups
 
-Scoped groups let the Trace frontend or a partner reviewer create a public snapshot over a review set. For provider review workflows, labs should use the provider's `source_record_id` values, not Data Foundation-generated `data_id`s or content hashes. Trace computes the deterministic `data_id`, verifies every submitted record exists, and only creates the group if the full set is valid.
+Scoped groups let the Trace frontend or a partner reviewer create a public snapshot over a review set. For provider review workflows, labs should use the provider's `source_record_id` values, not DATA Foundation-generated `data_id`s or content hashes. Trace computes the deterministic `data_id`, verifies every submitted record exists, and only creates the group if the full set is valid.
 
 Create from source record IDs:
 

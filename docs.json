@@ -1,7 +1,7 @@
 {
   "theme": "mint",
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Data Foundation Docs",
+  "name": "DATA Foundation Docs",
   "colors": {
     "primary": "#1A1A1A",
     "light": "#F8F8F6",
@@ -125,7 +125,7 @@
                 ]
               },
               {
-                "group": "Data Foundation Network",
+                "group": "DATA Network",
                 "pages": [
                   "network/overview",
                   {

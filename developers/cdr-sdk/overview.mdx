@@ -30,7 +30,7 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
 
 ## What is CDR?
 
-**Confidential Data Rails (CDR)** is the Data Foundation's application layer for threshold-encrypted data on Data Foundation L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
+**Confidential Data Rails (CDR)** is the DATA Foundation's application layer for threshold-encrypted data on DATA Foundation L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
 
 CDR enables powerful use cases like:
 
@@ -65,7 +65,7 @@ The current SDK surface is centered around two workflows:
 The Aeneid release also includes:
 
 - `observer`, `uploader`, and `consumer` sub-clients
-- DKG state reads over the Data Foundation API REST endpoint (`apiUrl`)
+- DKG state reads over the DATA Foundation API REST endpoint (`apiUrl`)
 - Storage providers for Helia, gateway-backed IPFS, Storacha, and Synapse
 - Validator registration, attestation queries, and SGX attestation verification utilities
 
@@ -160,11 +160,11 @@ For an end-to-end example, see
 Use the deployed `LicenseReadCondition` contract on Aeneid and encode
 `abi.encode(licenseTokenAddress, ipId)` as `readConditionData`. The vault
 writer typically uses the deployed `OwnerWriteCondition` contract so only the
-uploader can write, while readers must present valid Data Foundation license token IDs in
+uploader can write, while readers must present valid DATA Foundation license token IDs in
 `accessAuxData`.
 
 Technical walkthrough:
-[How the Data Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
+[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ### Custom Condition Contracts
 
@@ -195,8 +195,8 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
   `conditions.storyLicense()` is not available yet.
 </Note>
 
-For the deployed Data Foundation license-gated pattern, see
-[How the Data Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
+For the deployed DATA Foundation license-gated pattern, see
+[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ## Next Steps
 
@@ -223,7 +223,7 @@ For the deployed Data Foundation license-gated pattern, see
     icon="certificate"
     href="/developers/cdr-sdk/ip-asset-vaults"
   >
-    Configure license-gated reads with Data Foundation license tokens on Aeneid.
+    Configure license-gated reads with DATA Foundation license tokens on Aeneid.
   </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
     Full API reference for every CDR SDK method.

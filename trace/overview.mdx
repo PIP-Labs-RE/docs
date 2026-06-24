@@ -1,6 +1,6 @@
 ---
 title: "Trace Overview"
-description: "Verifiable, provider-normalized provenance for data registered on the Data Foundation."
+description: "Verifiable, provider-normalized provenance for data registered on the DATA Foundation."
 icon: "fingerprint"
 ---
 
@@ -12,10 +12,10 @@ icon: "fingerprint"
 
 ## What is Trace?
 
-**Trace** is the Data Foundation's data provenance and audit layer. Data providers send
+**Trace** is the DATA Foundation's data provenance and audit layer. Data providers send
 normalized metadata about the content they handle (content hashes, perceptual
 hashes, contributor consent, KYC signals, and capture/upload behavior) to
-the Data Foundation, which assigns each record a global `data_id`, stores an append-only
+the DATA Foundation, which assigns each record a global `data_id`, stores an append-only
 metadata history, and exposes public audit views over the whole dataset.
 
 The result is a portable, queryable, verifiable record of **where data came
@@ -25,7 +25,7 @@ integrates, not just one.
 ```text
 Provider client
   -> story-api webhook batch endpoint   (write: register + metadata updates)
-  -> asynchronous Data Foundation processing       (assigns data_id, hashes events)
+  -> asynchronous DATA Foundation processing       (assigns data_id, hashes events)
   -> story-api read/search/stats         (public audit views)
 ```
 

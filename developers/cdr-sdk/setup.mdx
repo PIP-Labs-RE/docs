@@ -42,7 +42,7 @@ yarn add @piplabs/cdr-sdk viem
 </Note>
 
 <Note>
-  If you plan to mint Data Foundation license tokens in an IP-gated flow, also install
+  If you plan to mint DATA Foundation license tokens in an IP-gated flow, also install
   `@story-protocol/core-sdk`.
 </Note>
 
@@ -82,15 +82,15 @@ await initWasm();
 export const runtime = "nodejs";
 ```
 
-## Data Foundation API REST Endpoint
+## DATA Foundation API REST Endpoint
 
-Every `CDRClient` requires an `apiUrl`: the base URL of a Data Foundation API REST
+Every `CDRClient` requires an `apiUrl`: the base URL of a DATA Foundation API REST
 endpoint. The SDK reads all DKG state (active round, global public key,
 threshold, participant count, registered validators, and validator
 attestations) over this REST API. Contract state such as vaults and fees is
 still read over the EVM `publicClient`.
 
-| Network | Data Foundation API REST URL          | Notes                                       |
+| Network | DATA Foundation API REST URL          | Notes                                       |
 | ------- | --------------------------- | ------------------------------------------- |
 | Aeneid  | `http://172.192.41.96:1317` | Plain HTTP. May change between deployments. |
 
@@ -225,7 +225,7 @@ const allocateFee = await client.observer.getAllocateFee();
 
 ### Supported Network
 
-| Network | `network` param | Default RPC URL              | Data Foundation API REST URL          | Description               |
+| Network | `network` param | Default RPC URL              | DATA Foundation API REST URL          | Description               |
 | ------- | --------------- | ---------------------------- | --------------------------- | ------------------------- |
 | Aeneid  | `"testnet"`     | `https://aeneid.datarpc.io` | `http://172.192.41.96:1317` | Current supported release |
 
@@ -245,7 +245,7 @@ const client = new CDRClient({
 You can point the SDK to any Aeneid-compatible RPC endpoint by changing the
 `http()` transport URL. This is useful for third-party RPC providers with
 higher rate limits. The `apiUrl` is configured independently; point it at the
-shared Data Foundation API endpoint or your own Story node's REST gateway.
+shared DATA Foundation API endpoint or your own Story node's REST gateway.
 
 ```typescript
 const publicClient = createPublicClient({
@@ -375,7 +375,7 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 <Note>
   This example sends three transactions total: `allocate()`, `write()`, and
   `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`
-  with deployed condition contracts (such as the Data Foundation license-gated pattern
+  with deployed condition contracts (such as the DATA Foundation license-gated pattern
   in [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)).
 </Note>
 

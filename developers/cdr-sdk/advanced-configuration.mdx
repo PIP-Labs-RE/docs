@@ -1,6 +1,6 @@
 ---
 title: Runtime Configuration
-description: Data Foundation API endpoint, DKG state, threshold tuning, system addresses, and Aeneid runtime notes for the CDR SDK.
+description: DATA Foundation API endpoint, DKG state, threshold tuning, system addresses, and Aeneid runtime notes for the CDR SDK.
 ---
 
 <Note>
@@ -8,17 +8,17 @@ description: Data Foundation API endpoint, DKG state, threshold tuning, system a
   basic setup. Start with [Setup CDR Client](/developers/cdr-sdk/setup) first.
 </Note>
 
-## DKG State and the Data Foundation API Endpoint
+## DKG State and the DATA Foundation API Endpoint
 
 The SDK reads state from two backends:
 
 | Backend             | Configured by  | What it reads                                                                      |
 | ------------------- | -------------- | ---------------------------------------------------------------------------------- |
 | **EVM**             | `publicClient` | CDR contract state: vaults, fees, `maxEncryptedDataSize`, operational threshold    |
-| **Data Foundation API REST**  | `apiUrl`       | DKG state: active round, global public key, threshold, validators, attestations   |
+| **DATA Foundation API REST**  | `apiUrl`       | DKG state: active round, global public key, threshold, validators, attestations   |
 
 The `apiUrl` is a **required** `CDRClient` parameter. It is the base URL of a
-Data Foundation API REST endpoint, and the `observer` uses it for every DKG read.
+DATA Foundation API REST endpoint, and the `observer` uses it for every DKG read.
 
 ```typescript
 const client = new CDRClient({
@@ -31,7 +31,7 @@ const client = new CDRClient({
 
 For production deployments, point `apiUrl` at your own Story node's REST
 gateway rather than the shared endpoint. See
-[Data Foundation API REST Endpoint](/developers/cdr-sdk/setup#data-foundation-api-rest-endpoint)
+[DATA Foundation API REST Endpoint](/developers/cdr-sdk/setup#data-foundation-api-rest-endpoint)
 for the per-network values.
 
 <Note>
@@ -74,9 +74,9 @@ The current Aeneid release uses the following core system addresses:
 | DKG      | `0xCcCcCC0000000000000000000000000000000004` |
 | CDR      | `0xCcCcCC0000000000000000000000000000000005` |
 
-The SDK already knows these addresses. For Data Foundation license-gated condition
+The SDK already knows these addresses. For DATA Foundation license-gated condition
 contracts, see
-[How the Data Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
+[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ## Release Posture and Availability
 
@@ -85,12 +85,12 @@ contracts, see
   assumptions described in the CDR overview.
 - Availability depends on enough validators responding before timeout. If reads
   fail to reach threshold, retry or increase `timeoutMs`.
-- DKG reads depend on the `apiUrl` Data Foundation API endpoint being correct and
+- DKG reads depend on the `apiUrl` DATA Foundation API endpoint being correct and
   reachable. Point it at a node you trust for production use.
 
 ## Current Release Notes
 
-- Data Foundation license-gated vaults still require manual condition encoding.
+- DATA Foundation license-gated vaults still require manual condition encoding.
 - The CDR SDK does not auto-wrap IP to WIP or auto-approve WIP for license
   minting.
 - `accessCDR()` can auto-generate the ephemeral keypair and query `threshold`

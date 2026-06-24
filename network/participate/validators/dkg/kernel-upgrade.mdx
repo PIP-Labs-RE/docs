@@ -33,7 +33,7 @@ Verify all validators produce the **same** `NEW_MRENCLAVE` value before proceedi
 
 ## Phase 2: Start Dual Kernels
 
-The new kernel runs alongside the old kernel on a separate port. Data Foundation CL identifies each kernel by its `code_commitment` (MRENCLAVE).
+The new kernel runs alongside the old kernel on a separate port. DATA Foundation CL identifies each kernel by its `code_commitment` (MRENCLAVE).
 
 ```bash
 # Old kernel: already running on :50051
@@ -50,7 +50,7 @@ The new kernel needs its own:
 - Gramine manifest with different `listen_addr` (`:50052`)
 </Warning>
 
-## Phase 3: Update Data Foundation Config + Restart
+## Phase 3: Update DATA Foundation Config + Restart
 
 Add the new kernel endpoint to `story.toml`:
 
@@ -155,6 +155,6 @@ journalctl -u story --since '1 minute ago' | grep "Connected to kernel"
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | `connected_clients=1` after restart | New kernel not running or port mismatch | Verify `lsof -i :50052`, check Gramine manifest |
-| "no new kernel client found for upgrade" | Data Foundation not connected to new kernel | Ensure `kernel-endpoints` has both ports, restart story |
+| "no new kernel client found for upgrade" | DATA Foundation not connected to new kernel | Ensure `kernel-endpoints` has both ports, restart story |
 | Upgrade round doesn't start at activation height | Not in Active stage when scheduled | Reschedule during next Active stage |
 | Finalization fails | Insufficient committee members upgraded | Ensure all validators have dual kernels running |

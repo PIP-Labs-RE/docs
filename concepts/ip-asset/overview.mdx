@@ -1,7 +1,7 @@
 ---
 title: 🧩 IP Asset
 sidebarTitle: Overview
-description: The foundational programmable IP metadata on the Data Foundation
+description: The foundational programmable IP metadata on the DATA Foundation
 ---
 
 <Note>
@@ -11,24 +11,24 @@ Get a quick 1-minute overview of IP Assets [here](https://twitter.com/jacobmtuck
 
 </Note>
 
-IP Assets are the foundational programmable IP metadata on the Data Foundation. Each IP Asset is an on-chain ERC-721 NFT (representing an IP). If your IP is off-chain, you would simply mint an ERC-721 NFT to represent that IP first, and then register it as an IP Asset.
+IP Assets are the foundational programmable IP metadata on the DATA Foundation. Each IP Asset is an on-chain ERC-721 NFT (representing an IP). If your IP is off-chain, you would simply mint an ERC-721 NFT to represent that IP first, and then register it as an IP Asset.
 
-When an IP Asset is created, an associated [⚙️ IP Account](/concepts/ip-asset/ip-account) is deployed, which is a modified ERC-6551 (Token Bound Account) implementation. It is a separate contract bound to the IP Asset for controlling permissions around interactions with the Data Foundation's modules or storing the IP's associated data.
+When an IP Asset is created, an associated [⚙️ IP Account](/concepts/ip-asset/ip-account) is deployed, which is a modified ERC-6551 (Token Bound Account) implementation. It is a separate contract bound to the IP Asset for controlling permissions around interactions with the DATA Foundation's modules or storing the IP's associated data.
 
 ## Registering an IP Asset
 
-An IP Asset is created by registering an ERC-721 NFT into the Data Foundation's global IP Asset Registry.
+An IP Asset is created by registering an ERC-721 NFT into the DATA Foundation's global IP Asset Registry.
 
-If you'd like to jump into code examples/tutorials, please see [How to Register IP on the Data Foundation](/developers/tutorials/how-to-register-ip).
+If you'd like to jump into code examples/tutorials, please see [How to Register IP on the DATA Foundation](/developers/tutorials/how-to-register-ip).
 
 ## NFT vs. IP Metadata
 
-On the Data Foundation, your IP is an NFT that gets registered on the protocol as an IP Asset. However, both NFTs and IP Assets have their own metadata you can set, so what's the difference?
+On the DATA Foundation, your IP is an NFT that gets registered on the protocol as an IP Asset. However, both NFTs and IP Assets have their own metadata you can set, so what's the difference?
 
 |         | Standard                                                                   | What is it?                                                                                                                                |
 | :------ | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 | **NFT** | [Opensea ERC721 Standard](https://docs.opensea.io/docs/metadata-standards) | Things like `name`, `description`, `image`, `attributes`, `animation_url`, etc                                                             |
-| **IP**  | [📝 IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard)       | More specific to the Data Foundation, this includes necessary information about the underlying content for infringement checks, authors of the work, etc |
+| **IP**  | [📝 IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard)       | More specific to the DATA Foundation, this includes necessary information about the underlying content for infringement checks, authors of the work, etc |
 
 All other metadata, such as the ownership, legal, and economic details of an IP Asset are handled by our protocol directly. For example, the protocol stores data associated with parent-child relationships through the [📜 Licensing Module](/concepts/licensing-module/overview), and the legal constraints/permissions of an IP Asset with the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license/overview).
 

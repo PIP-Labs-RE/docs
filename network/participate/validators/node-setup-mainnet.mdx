@@ -1,11 +1,11 @@
 ---
 title: Full Node
-description: Guide to setting up a Data Foundation node for mainnet
+description: Guide to setting up a DATA Foundation node for mainnet
 ---
 
-This section will guide you through how to setup a Data Foundation node for mainnet. The Data Foundation draws inspiration from ETH PoS in decoupling execution and consensus clients. The execution client `story-geth` relays EVM blocks into the `story` consensus client via Engine API, using an ABCI++ adapter to make EVM state compatible with that of CometBFT. With this architecture, consensus efficiency is no longer bottlenecked by execution transaction throughput.
+This section will guide you through how to setup a DATA Foundation node for mainnet. The DATA Foundation draws inspiration from ETH PoS in decoupling execution and consensus clients. The execution client `story-geth` relays EVM blocks into the `story` consensus client via Engine API, using an ABCI++ adapter to make EVM state compatible with that of CometBFT. With this architecture, consensus efficiency is no longer bottlenecked by execution transaction throughput.
 
-The `story` and `geth` binaries, which make up the clients required for running Data Foundation nodes, are available from our latest `release` pages:
+The `story` and `geth` binaries, which make up the clients required for running DATA Foundation nodes, are available from our latest `release` pages:
 
 | Network | story-geth        | story            |
 | ------- | ----------------- | ---------------- |
@@ -26,7 +26,7 @@ The `story` and `geth` binaries, which make up the clients required for running 
   - Latest Stable Binary (v1.4.2): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.4.2)
 
 
-# Data Foundation Node Installation Guide
+# DATA Foundation Node Installation Guide
 
 ## Pre-Installation Checklist
 
@@ -39,7 +39,7 @@ The `story` and `geth` binaries, which make up the clients required for running 
 ## Quick Reference
 
 - Installation time: \~30 minutes
-- Network: Data Foundation Mainnet or Data Foundation Aeneid Testnet
+- Network: DATA Foundation Mainnet or DATA Foundation Aeneid Testnet
 - Required versions:
   - Check Latest Release
 
@@ -130,7 +130,7 @@ source ~/.bash_profile
 go version
 ```
 
-## 2. Data Foundation Node Installation
+## 2. DATA Foundation Node Installation
 
 ### 2.1 Install Story-Geth
 
@@ -225,7 +225,7 @@ sudo xattr -rd com.apple.quarantine ./geth
   </Tab>
 </Tabs>
 
-### 2.2 Install Data Foundation Consensus Client
+### 2.2 Install DATA Foundation Consensus Client
 
 #### Cosmovisor Installation
 
@@ -277,7 +277,7 @@ story version
 sudo xattr -rd com.apple.quarantine ./story
 ```
 
-#### Init Data Foundation With Cosmovisor
+#### Init DATA Foundation With Cosmovisor
 
 <Tabs>
   <Tab title="Mainnet">
@@ -309,7 +309,7 @@ To override your own node settings, you can do the following:
 
 Below we list a sample `Systemd` configuration you may use on Linux
 
-<Note>The Data Foundation API endpoint (`--api-address`) can be modified as needed depending on your environment or use case.</Note>
+<Note>The DATA Foundation API endpoint (`--api-address`) can be modified as needed depending on your environment or use case.</Note>
 
 ```bash
 # story
@@ -474,7 +474,7 @@ If you ever run into issues and would like to try joining the network from a cle
   </Tab>
 </Tabs>
 
-### Data Foundation
+### DATA Foundation
 
 <Tabs>
   <Tab title="Mainnet">

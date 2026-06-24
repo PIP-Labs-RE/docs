@@ -56,7 +56,7 @@ Parameters:
 ```typescript Example
 import { encodeAbiParameters } from "viem";
 
-// Data Foundation license-gated pattern: only the uploader can write, and only callers
+// DATA Foundation license-gated pattern: only the uploader can write, and only callers
 // holding a license token for `ipId` can read. See
 // /developers/cdr-sdk/ip-asset-vaults for the full setup.
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
@@ -155,7 +155,7 @@ const storage = new HeliaProvider({
   CID: (s) => CID.parse(s),
 });
 
-// Data Foundation license-gated pattern: see /developers/cdr-sdk/ip-asset-vaults for
+// DATA Foundation license-gated pattern: see /developers/cdr-sdk/ip-asset-vaults for
 // the full license setup. For an owner-only file flow, use the low-level
 // `allocate()` path with your wallet (EOA) address as both conditions.
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";

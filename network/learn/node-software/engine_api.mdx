@@ -2,7 +2,7 @@
 title: Engine API
 icon: arrows-left-right
 ---
-The Engine API is a collection of JSON-RPC methods that facilitate communication between the execution layer (EL) and the consensus layer (CL) of an EVM node. The Data Foundation's execution layer, which offers full EVM compatibility, supports all standard JSON-RPC methods defined by the [Ethereum Engine API](https://github.com/ethereum/execution-apis/blob/main/src/engine/common.md). Meanwhile, the Data Foundation's consensus layer, built on Cosmos modules, utilizes the Engine API to coordinate with the execution layer.
+The Engine API is a collection of JSON-RPC methods that facilitate communication between the execution layer (EL) and the consensus layer (CL) of an EVM node. The DATA Foundation's execution layer, which offers full EVM compatibility, supports all standard JSON-RPC methods defined by the [Ethereum Engine API](https://github.com/ethereum/execution-apis/blob/main/src/engine/common.md). Meanwhile, the DATA Foundation's consensus layer, built on Cosmos modules, utilizes the Engine API to coordinate with the execution layer.
 
 ## Functionalities
 
@@ -15,7 +15,7 @@ The Engine API facilitates seamless interaction between the EL and the CL by pro
 
 ## Execution Layer Implementation
 
-The EL in the Data Foundation Network implements the following standard Engine API methods to support these functionalities:
+The EL in the DATA Network implements the following standard Engine API methods to support these functionalities:
 
 * `engine_exchangeCapabilities`: Exchanges supported methods.
 * `engine_getClientVersion`: Exchanges client version data.
@@ -25,7 +25,7 @@ The EL in the Data Foundation Network implements the following standard Engine A
 
 ## Consensus Layer Interaction
 
-How does the Data Foundation's Consensus Layer (CL) interact with these methods? The answer lies in CometBFT ABCI++.
+How does the DATA Foundation's Consensus Layer (CL) interact with these methods? The answer lies in CometBFT ABCI++.
 
 CometBFT is a state machine replication engine which provides consensus and security for Cosmos modules. ABCI++, also known as ABCI 2.0, is the interface between CometBFT and the actual state machine being replicated(i.e. EL's state machine).
 
@@ -49,4 +49,4 @@ ABCI++ comprises of a set of methods that interact with the Engine API, as outli
 * Since CometBFT provides instant finality, the CL calls `engine_forkchoiceUpdate` to finalize the block.
 * Finally, the CL calls `engine_forkchoiceUpdate` again, with extra attributes,  to start an optimistic build of the next block if enabled, and if the validator is the next proposer.
 
-This interaction ensures smooth coordination between the EL and the CL, maintaining the integrity and efficiency of the Data Foundation Network.
+This interaction ensures smooth coordination between the EL and the CL, maintaining the integrity and efficiency of the DATA Network.
