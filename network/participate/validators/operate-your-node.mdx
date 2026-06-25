@@ -1,6 +1,6 @@
 ---
 title: Operating Your Node
-description: Guide to operating and maintaining your Story node
+description: Guide to operating and maintaining your DATA Foundation node
 ---
 ## **1. Setting Up a Geth Archive Node**
 To run a Geth archive node, use `--gcmode=archive` instead of `--gcmode=full`. This ensures that Geth retains all historical blockchain state data, making it ideal for indexing services and blockchain analytics.
@@ -33,17 +33,17 @@ These configurations ensure external applications can interact with the Geth nod
 
 ---
 
-## **3. Monitoring Geth and Story Protocol**
+## **3. Monitoring Geth and DATA Foundation**
 ### **Geth Monitoring Configuration**
 - `--metrics`: Enables Prometheus-compatible metrics for Geth.
 - `--metrics.addr=0.0.0.0`: Binds the metrics server to all interfaces.
 - `--metrics.port=6060`: Exposes metrics on port `6060`.
 
-### **Story Protocol Monitoring**
+### **DATA Foundation Monitoring**
 - Modify `config.toml` and set:
   ```toml
   prometheus = true
   ```
-- The default Prometheus metrics port for Story Protocol is `26660`.
+- The default Prometheus metrics port for DATA Foundation is `26660`.
 
-With these settings, both Geth and Story Protocol expose monitoring metrics that can be collected using Prometheus and visualized with Grafana.
+With these settings, both Geth and DATA Foundation expose monitoring metrics that can be collected using Prometheus and visualized with Grafana.

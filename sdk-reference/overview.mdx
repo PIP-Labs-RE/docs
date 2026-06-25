@@ -1,9 +1,9 @@
 ---
 title: "SDK Reference Overview"
-description: "Overview of all available Story TypeScript SDKs"
+description: "Overview of all available DATA Foundation TypeScript SDKs"
 ---
 
-Story provides two TypeScript SDKs for building on the protocol:
+The DATA Foundation provides two TypeScript SDKs for building on the protocol:
 
 | Package                                                              | Description                                                                 | Install                                                       | GitHub                                                 |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------ |
@@ -20,7 +20,7 @@ A Python SDK is also available for the Protocol SDK:
 
 ## Protocol SDK
 
-The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting with Story's IP management layer. Use it to register IP Assets, attach license terms, mint license tokens, manage royalties, raise disputes, and more.
+The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting with the DATA Foundation's IP management layer. Use it to register IP Assets, attach license terms, mint license tokens, manage royalties, raise disputes, and more.
 
 <CardGroup cols={2}>
   <Card
@@ -35,64 +35,11 @@ The Protocol SDK (`@story-protocol/core-sdk`) is the primary SDK for interacting
   </Card>
 </CardGroup>
 
-### Licensing Module
-
-<CardGroup cols={2}>
-  <Card title="Register an IP Asset" icon="house" href="/sdk-reference/ipasset">
-    Learn how to register an IP asset using the SDK.
-  </Card>
-  <Card
-    title="Mint & Attach License Terms"
-    icon="house"
-    href="/sdk-reference/license"
-  >
-    Learn how to mint and attach license terms using the SDK.
-  </Card>
-</CardGroup>
-
-### Royalty Module
-
-<CardGroup cols={2}>
-  <Card title="Pay & Claim Royalty" icon="house" href="/sdk-reference/royalty">
-    Learn how to pay and claim royalty using the SDK.
-  </Card>
-</CardGroup>
-
-### Dispute Module
-
-<CardGroup cols={2}>
-  <Card title="Raise a Dispute" icon="house" href="/sdk-reference/dispute">
-    Learn how to raise a dispute using the SDK.
-  </Card>
-</CardGroup>
-
-### Grouping Module
-
-<CardGroup cols={2}>
-  <Card title="Manage Groups" icon="house" href="/sdk-reference/group">
-    Learn how to manage groups using the SDK.
-  </Card>
-</CardGroup>
-
-### Utility Clients
-
-<CardGroup cols={2}>
-  <Card title="Set Permissions" icon="house" href="/sdk-reference/permissions">
-    Learn how to set permissions using the SDK.
-  </Card>
-  <Card title="NFT Client" icon="house" href="/sdk-reference/nftclient">
-    Interact with SPG NFTs using the SDK.
-  </Card>
-  <Card title="WIP Client" icon="house" href="/sdk-reference/wip-client">
-    Learn how to use the WIP client using the SDK.
-  </Card>
-</CardGroup>
-
 ---
 
 ## CDR SDK
 
-The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for Story's
+The CDR SDK (`@piplabs/cdr-sdk`) provides a TypeScript client for the DATA Foundation's
 Confidential Data Rails system. The current release targets Aeneid and covers
 both on-chain secret vaults (`uploadCDR` / `accessCDR`) and encrypted-file
 workflows (`uploadFile` / `downloadFile`). The package is published to npm as

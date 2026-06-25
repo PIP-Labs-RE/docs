@@ -11,7 +11,7 @@ Get a quick 2-minute overview of IP Accounts [here](https://twitter.com/jacobmtu
 
 </Note>
 
-When an [🧩 IP Asset](/concepts/ip-asset/overview) is registered, it is given an associated **IP Account**. An IP Account is a modified ERC-6551 (Token Bound Account) implementation. It is a separate contract bound to the IP Asset for controlling permissions around interactions with Story's modules or storing the IP's associated data. Upon registration, an IP Asset is assigned a unique ID. This ID is the address of the IP Account that is bound to the IP Asset.
+When an [🧩 IP Asset](/concepts/ip-asset/overview) is registered, it is given an associated **IP Account**. An IP Account is a modified ERC-6551 (Token Bound Account) implementation. It is a separate contract bound to the IP Asset for controlling permissions around interactions with the DATA Foundation's modules or storing the IP's associated data. Upon registration, an IP Asset is assigned a unique ID. This ID is the address of the IP Account that is bound to the IP Asset.
 
 <img src="/images/concepts/ip-account.png" alt="IP Account Diagram" />
 
@@ -27,4 +27,4 @@ If the underlying NFT is transferred, the new owner is also automatically the ow
 
 ## `execute` and `executeWithSig`
 
-A key feature of IP Account is the generic `execute()` function, which allows calling arbitrary modules within Story via encoded bytes data (thus extensible for future modules). Additionally, there is a `executeWithSig()` function that enables users to sign transactions and have others execute on their behalf for seamless UX.
+A key feature of IP Account is the generic `execute()` function, which allows calling arbitrary modules within the DATA Foundation via encoded bytes data (thus extensible for future modules). Additionally, there is a `executeWithSig()` function that enables users to sign transactions and have others execute on their behalf for seamless UX.

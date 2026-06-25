@@ -11,7 +11,7 @@ description: Learn how to Register an NFT as an IP Asset in Solidity.
   Follow the completed code all the way through.
 </Card>
 
-Let's say you have some off-chain IP (ex. a book, a character, a drawing, etc). In order to register that IP on Story, you first need to mint an NFT. This NFT is the **ownership** over the IP. Then you **register** that NFT on Story, turning it into an [IP Asset](/concepts/ip-asset/overview). The below tutorial will walk you through how to do this.
+Let's say you have some off-chain IP (ex. a book, a character, a drawing, etc). In order to register that IP on the DATA Foundation, you first need to mint an NFT. This NFT is the **ownership** over the IP. Then you **register** that NFT on the DATA Foundation, turning it into an [IP Asset](/concepts/ip-asset/overview). The below tutorial will walk you through how to do this.
 
 ## Prerequisites
 
@@ -26,13 +26,13 @@ There are two scenarios:
 1. You already have a **custom** ERC-721 NFT contract and can mint from it
 2. You want to create an [SPG (Periphery)](/concepts/spg/overview) NFT contract to do minting for you
 
-## Scenario #1: You already have a custom ERC-721 NFT contract and can mint from it
+## Scenario #1: You Already Have a Custom ERC-721 NFT Contract and Can Mint From It
 
 If you already have an NFT minted, or you want to register IP using a custom-built ERC-721 contract, this is the section for you.
 
 As you can see below, the registration process is relatively straightforward. We use `SimpleNFT` as an example, but you can replace it with your own ERC-721 contract.
 
-All you have to do is call `register` on the [IP Asset Registry](/concepts/registry/ip-asset-registry) with:
+All you have to do is call `register` on the IP Asset Registry with:
 
 - `chainid` - you can simply use `block.chainid`
 - `tokenContract` - the address of your NFT collection
@@ -43,7 +43,7 @@ Let's create a test file under `test/0_IPARegistrar.t.sol` to see it work and ve
 <Note>
 **Contract Addresses**
 
-We have filled in the addresses from the Story contracts for you. However you can also find the addresses for them here: [Deployed Smart Contracts](/developers/deployed-smart-contracts)
+We have filled in the addresses from the DATA Foundation contracts for you. However you can also find the addresses for them here: [Deployed Smart Contracts](/developers/deployed-smart-contracts)
 
 You can view the `SimpleNFT` contract we're using to test [here](https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol).
 
@@ -66,11 +66,11 @@ import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPA
 import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 contract IPARegistrarTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - IPAssetRegistry
     IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
 
@@ -96,7 +96,7 @@ contract IPARegistrarTest is Test {
 }
 ```
 
-## Scenario #2: You want to create an SPG NFT contract to do minting for you
+## Scenario #2: You Want to Create an SPG NFT Contract to Do Minting for You
 
 If you don't have your own custom NFT contract, this is the section for you.
 
@@ -107,7 +107,7 @@ In order to use `mintAndRegisterIp`, we first have to create a new `SPGNFT` coll
 Once you have your own SPGNFT, all you have to do is call `mintAndRegisterIp` with:
 
 - `spgNftContract` - the address of your SPGNFT contract
-- `recipient` - the address of who will receive the NFT and thus be the owner of the newly registered IP. _Note: remember that registering IP on Story is permissionless, so you can register an IP for someone else (by paying for the transaction) yet they can still be the owner of that IP Asset._
+- `recipient` - the address of who will receive the NFT and thus be the owner of the newly registered IP. _Note: remember that registering IP on the DATA Foundation is permissionless, so you can register an IP for someone else (by paying for the transaction) yet they can still be the owner of that IP Asset._
 - `ipMetadata` - the metadata associated with your NFT & IP. See [this](/concepts/ip-asset/overview#nft-vs-ip-metadata) section to better understand setting NFT & IP metadata.
 
 1. Run `touch test/0_IPARegistrar.t.sol` to create a test file under `test/0_IPARegistrar.t.sol`. Then, paste in the following code:
@@ -115,7 +115,7 @@ Once you have your own SPGNFT, all you have to do is call `mintAndRegisterIp` wi
 <Note>
 **Contract Addresses**
 
-We have filled in the addresses from the Story contracts for you. However you can also find the addresses for them here: [Deployed Smart Contracts](/developers/deployed-smart-contracts)
+We have filled in the addresses from the DATA Foundation contracts for you. However you can also find the addresses for them here: [Deployed Smart Contracts](/developers/deployed-smart-contracts)
 
 </Note>
 
@@ -130,11 +130,11 @@ import { IRegistrationWorkflows } from "@storyprotocol/periphery/interfaces/work
 import { WorkflowStructs } from "@storyprotocol/periphery/lib/WorkflowStructs.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 contract IPARegistrarTest is Test {
     address internal alice = address(0xa11ce);
 
-    // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
     // Protocol Core - IPAssetRegistry
     IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
     // Protocol Periphery - RegistrationWorkflows
@@ -164,7 +164,7 @@ contract IPARegistrarTest is Test {
         );
     }
 
-    /// @notice Mint an NFT and register it in the same call via the Story Protocol Gateway.
+    /// @notice Mint an NFT and register it in the same call via the DATA Foundation Gateway.
     /// @dev Requires the collection address that is passed into the `mintAndRegisterIp` function
     /// to be created via SPG (createCollection), as done above. Or, a contract that
     /// implements the `ISPGNFT` interface.
@@ -211,7 +211,7 @@ contract IPARegistrarTest is Test {
 3. Now run the test by executing the following command:
 
 ```bash
-forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/0_IPARegistrar.t.sol
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
 ```
 
 ## Add License Terms to IP

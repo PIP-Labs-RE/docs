@@ -5,9 +5,9 @@ description: Module that facilitates communication between consensus and executi
 
 ## Abstract
 
-This document specifies the internal `x/evmengine` module of the Story blockchain.
+This document specifies the internal `x/evmengine` module of the DATA Network.
 
-As Story Network separates the consensus and execution client, like Ethereum, the consensus client (CL) and execution client (EL) needs to communicate to sync to the network, propose proper EVM blocks, and execute EVM-triggered EL actions in CL.
+As the DATA Network separates the consensus and execution client, like Ethereum, the consensus client (CL) and execution client (EL) needs to communicate to sync to the network, propose proper EVM blocks, and execute EVM-triggered EL actions in CL.
 
 The module exists to facilitate all communications between CL and EL using the [Engine API](/network/node-architecture/engine-api), from staking and upgrades to driving block production and consensus in CL and EL.
 

@@ -13,7 +13,7 @@ description: Learn how to Register an NFT as an IP Asset in TypeScript.
   </Card>
 </CardGroup>
 
-Let's say you have some off-chain IP (ex. a book, a character, a drawing, etc). In order to register that IP on Story, you first need to mint an NFT. This NFT is the **ownership** over the IP. Then you **register** that NFT on Story, turning it into an [IP Asset](/concepts/ip-asset). The below tutorial will walk you through how to do this.
+Let's say you have some off-chain IP (ex. a book, a character, a drawing, etc). In order to register that IP on the DATA Foundation, you first need to mint an NFT. This NFT is the **ownership** over the IP. Then you **register** that NFT on the DATA Foundation, turning it into an [IP Asset](/concepts/ip-asset). The below tutorial will walk you through how to do this.
 
 ### Prerequisites
 
@@ -32,7 +32,7 @@ PINATA_JWT=<YOUR_PINATA_JWT>
 npm install pinata-web3
 ```
 
-## 1. Set up your IP Metadata
+## 1. Set up Your IP Metadata
 
 We can set metadata on our NFT & IP, _but you don't have to_. To do this, view the [IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard) and construct your metadata for both your NFT & IP.
 
@@ -43,7 +43,7 @@ import { client } from "./utils";
 async function main() {
   const ipMetadata = {
     title: "Ippy",
-    description: "Official mascot of Story.",
+    description: "Official mascot of the DATA Foundation.",
     image:
       "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
     imageHash:
@@ -55,18 +55,18 @@ async function main() {
     mediaType: "image/png",
     creators: [
       {
-        name: "Story Foundation",
+        name: "The DATA Foundation",
         address: "0x67ee74EE04A0E6d14Ca6C27428B27F3EFd5CD084",
         description: "The World's IP Blockchain",
         contributionPercent: 100,
         socialMedia: [
           {
             platform: "Twitter",
-            url: "https://twitter.com/storyprotocol",
+            url: "https://x.com/DataFDN",
           },
           {
             platform: "Website",
-            url: "https://story.foundation",
+            url: "https://datafdn.org",
           },
         ],
       },
@@ -77,7 +77,7 @@ async function main() {
 main();
 ```
 
-## 2. Set up your NFT Metadata
+## 2. Set up Your NFT Metadata
 
 The NFT Metadata follows the [ERC-721 Metadata Standard](https://eips.ethereum.org/EIPS/eip-721).
 
@@ -98,7 +98,7 @@ async function main() {
 main();
 ```
 
-## 3. Upload your IP and NFT Metadata to IPFS
+## 3. Upload Your IP and NFT Metadata to IPFS
 
 In a separate `uploadToIpfs` file, create a function to upload your IP & NFT Metadata objects to IPFS:
 
@@ -217,7 +217,7 @@ async function main() {
     `Root IPA created at transaction hash ${response.txHash}, IPA ID: ${response.ipId}`
   );
   console.log(
-    `View on the explorer: https://aeneid.explorer.story.foundation/ipa/${response.ipId}`
+    `View on the explorer: https://aeneid.explorer.datafdn.org/ipa/${response.ipId}`
   );
 }
 
@@ -252,7 +252,7 @@ async function main() {
       {
         terms: PILFlavor.commercialRemix({
           commercialRevShare: 5,
-          defaultMintingFee: parseEther("1"), // 1 $IP
+          defaultMintingFee: parseEther("1"), // 1 $DATA
           currency: WIP_TOKEN_ADDRESS,
         }),
       },
@@ -269,7 +269,7 @@ async function main() {
     `Root IPA created at transaction hash ${response.txHash}, IPA ID: ${response.ipId}`
   );
   console.log(
-    `View on the explorer: https://aeneid.explorer.story.foundation/ipa/${response.ipId}`
+    `View on the explorer: https://aeneid.explorer.datafdn.org/ipa/${response.ipId}`
   );
 }
 

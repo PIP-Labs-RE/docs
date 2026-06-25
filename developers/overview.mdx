@@ -8,7 +8,7 @@ If you're a developer, here is everything you need:
 
 <Tip>
 
-Can't find something? Ask the writer of our docs for help in our [Builder Discord](https://discord.gg/storybuilders).
+Can't find something? Ask the writer of our docs for help in our [Builder Discord](https://discord.gg/databuilders).
 
 </Tip>
 
@@ -16,15 +16,15 @@ Can't find something? Ask the writer of our docs for help in our [Builder Discor
 
 <Card
   title="Testnet Block Explorer"
-  href="https://aeneid.storyscan.io"
+  href="https://aeneid.datanetscan.io"
   icon="house"
 >
-  View all testnet block & transaction data on Story.
+  View all testnet block & transaction data on the DATA Foundation.
 </Card>
 
 <Card
   title="IP-related Explorer"
-  href="https://aeneid.explorer.story.foundation"
+  href="https://aeneid.explorer.datafdn.org"
   icon="user"
 >
   View testnet transaction data specifically related to IP interactions like
@@ -37,18 +37,29 @@ Can't find something? Ask the writer of our docs for help in our [Builder Discor
   icon="truck-fast"
   
 >
-  Start building on Story quickly.
+  Start building on the DATA Foundation quickly.
 </Card>
   
 </CardGroup>
 
-## SDK
+## Confidential Data Rails (CDR)
 
-Check out the following resources to learn the SDK:
+CDR is the primary way to encrypt, store, and gate access to confidential data on the DATA Foundation.
+
+- [CDR SDK Guide](/developers/cdr-sdk/overview) - a step-by-step walkthrough of the `@piplabs/cdr-sdk`, from setup to encrypting data and gating it on IP Asset licenses **_(includes working code)_**
+- [CDR SDK Reference](/sdk-reference/cdr/overview) - detailed **explanations and examples** for every function in the CDR SDK
+
+## Trace
+
+[Trace](/trace/overview) is the data-provenance and audit layer. Providers integrate over a simple REST API. See the [Trace Integration Guide](/trace/integration).
+
+## IP & Licensing SDK
+
+The rights layer that CDR builds on:
 
 - [SDK Reference](/sdk-reference) - view the entire SDK reference with detailed **explanations and examples** for each function **_(includes working code so you can jump right to coding)_**
-- [TypeScript SDK Guide](/developers/typescript-sdk/overview) - a detailed, step-by-step walkthrough of how to set up and implement the most popular uses of the SDK (register IP, attach terms, register derivative, etc) **_(includes working code so you can jump right to coding)_**
-- [Tutorials](/developers/tutorials/overview) - more specific, external topics/tutorials that may be popular questions, like "How do I register music on Story?", "How do I implement wallet-less onboarding with the SDK?", etc **_(includes working code so you can jump right to coding)_**
+- [TypeScript SDK Guide](/developers/typescript-sdk/overview) - a detailed, step-by-step walkthrough of how to register IP, attach terms, and mint licenses **_(includes working code so you can jump right to coding)_**
+- [Tutorials](/developers/tutorials/how-to-register-ip) - more specific topics like "How do I register music on the DATA Foundation?" and "How do I implement wallet-less onboarding with the SDK?" **_(includes working code so you can jump right to coding)_**
 
 ## Smart Contracts
 
@@ -56,7 +67,6 @@ Check out the following resources to learn the protocol:
 
 - [Smart Contract Guide](/developers/smart-contracts-guide/overview) - a walkthrough of how to set up and implement the most popular uses of the protocol **_(includes working code so you can jump right to coding)_**
 - [Deployed Smart Contracts](/developers/deployed-smart-contracts) - all the deployed protocol addresses
-- [Tutorials](/developers/tutorials/overview) - includes tutorials that cover more specific topics, like registering music, registering AI-generated images, etc **_(includes working code so you can jump right to coding)_**
 
 <Warning>
   Do not use `RANDAO` for pseudo-randomness, instead use onchain VRF (Pyth or

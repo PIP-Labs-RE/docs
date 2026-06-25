@@ -1,6 +1,6 @@
 ---
 title: WIP
-description: Used to handle the wrapping/unwrapping of WIP (Wrapped IP) tokens within Story.
+description: Used to handle the wrapping/unwrapping of WIP (Wrapped IP) tokens within the DATA Foundation.
 ---
 
 ## WIP
@@ -34,7 +34,7 @@ Parameters:
 from web3 import Web3
 
 response = story_client.WIP.deposit(
-    amount=Web3.to_wei(10, 'ether'),  # 10 IP tokens
+    amount=Web3.to_wei(10, 'ether'),  # 10 DATA tokens
     tx_options={"wait_for_transaction": True}
 )
 print(f"Deposited IP to WIP at transaction hash {response['tx_hash']}")

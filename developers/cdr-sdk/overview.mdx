@@ -8,19 +8,29 @@ description: Learn how to integrate Confidential Data Rails (CDR) into your appl
   available on npm.
 </Note>
 
-<Card
-  title="Building with an AI agent? Install the CDR Skill"
-  icon="robot"
-  href="https://github.com/jacob-tucker/cdr-skill"
->
-  Drop-in skill for Claude and other agents, plus three end-to-end examples
-  covering the on-chain secret, encrypted file, and IP-gated flows. The fastest
-  way to get a working CDR integration.
-</Card>
+<CardGroup cols={2}>
+  <Card
+    title="Building with an AI agent? Install the CDR Skill"
+    icon="robot"
+    href="https://github.com/jacob-tucker/cdr-skill"
+  >
+    Drop-in skill for Claude and other agents, plus three end-to-end examples
+    covering the on-chain secret, encrypted file, and IP-gated flows. The fastest
+    way to get a working CDR integration.
+  </Card>
+  <Card
+    title="CDR Whitepaper"
+    icon="file-lines"
+    href="https://www.story.foundation/confidentialdatarails.pdf"
+  >
+    The full design behind Confidential Data Rails: cryptography, validator
+    protocol, and threat model.
+  </Card>
+</CardGroup>
 
 ## What is CDR?
 
-**Confidential Data Rails (CDR)** is Story's application layer for threshold-encrypted data on Story L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
+**Confidential Data Rails (CDR)** is the DATA Foundation's application layer for threshold-encrypted data on DATA Foundation L1. Under the hood, it uses the validator network's DKG-generated public key so you can encrypt secrets such that no single party ever holds the complete decryption key. Data can only be decrypted when a threshold number of validators collectively provide partial decryptions, with access control enforced on-chain via smart contracts. The validator-side DKG and partial decryption flows run inside `story-kernel` TEEs (Intel SGX enclaves).
 
 CDR enables powerful use cases like:
 
@@ -55,7 +65,7 @@ The current SDK surface is centered around two workflows:
 The Aeneid release also includes:
 
 - `observer`, `uploader`, and `consumer` sub-clients
-- DKG state reads over the Story-API REST endpoint (`apiUrl`)
+- DKG state reads over the DATA Foundation API REST endpoint (`apiUrl`)
 - Storage providers for Helia, gateway-backed IPFS, Storacha, and Synapse
 - Validator registration, attestation queries, and SGX attestation verification utilities
 
@@ -68,7 +78,7 @@ CDR revolves around **vaults**. Each vault stores encrypted data and has two con
 
 <Note>
   When `msg.sender` equals the configured condition address, the CDR contract
-  bypasses the condition check — so setting your own wallet address as the
+  bypasses the condition check, so setting your own wallet address as the
   condition makes a vault owner-only (other callers revert, since an EOA does
   not implement `checkWriteCondition` / `checkReadCondition`). The SDK validates
   condition addresses by default; when you intentionally use an EOA this way,
@@ -150,11 +160,11 @@ For an end-to-end example, see
 Use the deployed `LicenseReadCondition` contract on Aeneid and encode
 `abi.encode(licenseTokenAddress, ipId)` as `readConditionData`. The vault
 writer typically uses the deployed `OwnerWriteCondition` contract so only the
-uploader can write, while readers must present valid Story license token IDs in
+uploader can write, while readers must present valid DATA Foundation license token IDs in
 `accessAuxData`.
 
 Technical walkthrough:
-[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
+[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ### Custom Condition Contracts
 
@@ -185,8 +195,8 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
   `conditions.storyLicense()` is not available yet.
 </Note>
 
-For the deployed Story license-gated pattern, see
-[How the Story License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-story-license-read-pattern-works).
+For the deployed DATA Foundation license-gated pattern, see
+[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ## Next Steps
 
@@ -213,7 +223,7 @@ For the deployed Story license-gated pattern, see
     icon="certificate"
     href="/developers/cdr-sdk/ip-asset-vaults"
   >
-    Configure license-gated reads with Story license tokens on Aeneid.
+    Configure license-gated reads with DATA Foundation license tokens on Aeneid.
   </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
     Full API reference for every CDR SDK method.

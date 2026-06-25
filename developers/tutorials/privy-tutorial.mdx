@@ -45,10 +45,10 @@ NEXT_PUBLIC_PRIVY_APP_ID=
 </Frame>
 
 4. Once you enable Smart wallets, right underneath make sure to put a "Custom chain" with the following values:
-   1. Name: `Story Aeneid Testnet`
+   1. Name: `Aeneid Testnet`
    2. ID number: `1315`
-   3. RPC URL: `https://aeneid.storyrpc.io`
-   4. For the Bundler URL and Paymaster URL, go to [Pimlico's Dashboard](https://dashboard.pimlico.io) and create a new app. Then click on "API Keys", create a new API Key, click "RPC URLs" as shown below, and then select "Story Aeneid Testnet" as the network:
+   3. RPC URL: `https://aeneid.datarpc.io`
+   4. For the Bundler URL and Paymaster URL, go to [Pimlico's Dashboard](https://dashboard.pimlico.io) and create a new app. Then click on "API Keys", create a new API Key, click "RPC URLs" as shown below, and then select "Aeneid Testnet" as the network:
 
 <Warning>
 
@@ -180,7 +180,7 @@ export default function Home() {
 }
 ```
 
-## 3. Sign a Message with Privy
+## 3. Sign a Message With Privy
 
 <CardGroup cols={1}>
 
@@ -275,7 +275,7 @@ export default function Home() {
       transactionRequest,
       { uiOptions }
     );
-    console.log(`View Tx: https://aeneid.storyscan.io/tx/${txHash}`);
+    console.log(`View Tx: https://aeneid.datanetscan.io/tx/${txHash}`);
   }
 
   return (
@@ -401,7 +401,7 @@ export const defaultNftContractAbi = [
 
 </CodeGroup>
 
-## 5. Send a Transaction from Story SDK
+## 5. Send a Transaction From DATA Foundation SDK
 
 We can also use the generated smart wallet to send transactions from the [🛠️ TypeScript SDK](/developers/typescript-sdk). Some of the functions have an option to return the `encodedTxData`, which we can use to pass into Privy's smart wallet. You can see which functions support this in the [SDK Reference](/sdk-reference).
 
@@ -422,7 +422,7 @@ export default function Home() {
   async function setupStoryClient() {
     const config: StoryConfig = {
       account: smartWalletClient!.account,
-      transport: http("https://aeneid.storyrpc.io"),
+      transport: http("https://aeneid.datarpc.io"),
       chainId: "aeneid",
     };
     const client = StoryClient.newClient(config);
@@ -449,7 +449,7 @@ export default function Home() {
       response.encodedTxData as EncodedTxData,
       { uiOptions }
     );
-    console.log(`View Tx: https://aeneid.storyscan.io/tx/${txHash}`);
+    console.log(`View Tx: https://aeneid.datanetscan.io/tx/${txHash}`);
   }
 
   return (
@@ -472,7 +472,7 @@ export default function Home() {
   >
     View the completed code for this tutorial.
   </Card>
-  <Card title="Learn More" href="/developers/tutorials" icon="book-open">
+  <Card title="Learn More" href="/developers/tutorials/how-to-register-ip" icon="book-open">
     Explore more tutorials in our documentation
   </Card>
 </CardGroup>

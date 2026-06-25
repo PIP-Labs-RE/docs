@@ -1,6 +1,6 @@
 ---
 title: License
-description: License allows you to manage license terms and tokens within Story.
+description: License allows you to manage license terms and tokens within the DATA Foundation.
 ---
 
 ## License
@@ -34,7 +34,7 @@ Parameters:
 ```python Python
 response = story_client.License.attach_license_terms(
   ip_id="0x4c1f8c1035a8cE379dd4ed666758Fb29696CF721",
-  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.story.foundation/docs/deployed-smart-contracts
+  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.datafdn.org/docs/deployed-smart-contracts
   license_terms_id="1"
 )
 ```
@@ -86,7 +86,7 @@ Parameters:
 ```python Python
 response = client.License.mint_license_tokens(
   licensor_ip_id="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
-  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.story.foundation/docs/deployed-smart-contracts
+  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.datafdn.org/docs/deployed-smart-contracts
   license_terms_id="1",
   amount=1,
   receiver="0x14dC79964da2C08b23698B3D3cc7Ca32193d9955", # optional
@@ -133,7 +133,7 @@ Parameters:
 ```python Python
 response = story_client.License.register_pil_terms(
   transferable=False,
-  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   default_minting_fee=0,
   expiration=0,
   commercial_use=False,
@@ -147,7 +147,7 @@ response = story_client.License.register_pil_terms(
   derivatives_approval=False,
   derivatives_reciprocal=False,
   derivative_rev_ceiling=0,
-  currency="0x1514000000000000000000000000000000000000", # $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency="0x1514000000000000000000000000000000000000", # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   uri="",
 )
 ```
@@ -230,7 +230,7 @@ Convenient function to register a PIL commercial use license to the registry.
 Parameters:
 
 - `default_minting_fee`: The fee to be paid when minting a license.
-- `currency`: The ERC20 token to be used to pay the minting fee and the token must be registered on Story's protocol.
+- `currency`: The ERC20 token to be used to pay the minting fee and the token must be registered on the DATA Foundation's protocol.
 - `royalty_policy`: [Optional] The address of the royalty policy contract, default value is LAP.
 - `tx_options`: [Optional] Transaction options dictionary.
 
@@ -238,9 +238,9 @@ Parameters:
 
 ```python Python
 response = story_client.License.register_commercial_use_pil(
-  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   default_minting_fee=10, # 10 of the currency (using the above currency, 10 $WIP),
-  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
 )
 ```
 
@@ -272,7 +272,7 @@ Parameters:
 
 - `default_minting_fee`: The fee to be paid when minting a license.
 - `commercial_rev_share`: Percentage of revenue that must be shared with the licensor.
-- `currency`: The ERC20 token to be used to pay the minting fee and the token must be registered on Story's protocol.
+- `currency`: The ERC20 token to be used to pay the minting fee and the token must be registered on the DATA Foundation's protocol.
 - `royalty_policy`: The address of the royalty policy contract, default value is LAP.
 - `tx_options`: [Optional] Transaction options dictionary.
 
@@ -280,9 +280,9 @@ Parameters:
 
 ```python Python
 response = story_client.License.register_commercial_remix_pil(
-  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   default_minting_fee=10, # 10 of the currency (using the above currency, 10 $WIP)
-  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.story.foundation/docs/deployed-smart-contracts
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
   commercial_rev_share=10 # 10%
 )
 ```

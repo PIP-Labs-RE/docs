@@ -3,10 +3,10 @@ title: IP Asset Vaults
 description: Learn how to create CDR vaults backed by IP Assets that require license tokens to decrypt.
 ---
 
-CDR vaults can be gated behind Story Protocol license tokens so that only
+CDR vaults can be gated behind the DATA Foundation's license tokens so that only
 license holders can decrypt the vault contents. In the current Aeneid release,
 this is a manual integration: you encode the CDR condition data yourself and
-mint Story license tokens separately.
+mint DATA Foundation license tokens separately.
 
 ### Prerequisites
 
@@ -22,10 +22,10 @@ mint Story license tokens separately.
 | LicenseReadCondition | `0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3` |
 | LicenseToken | `0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC` |
 
-## How the Story License Read Pattern Works
+## How the DATA Foundation License Read Pattern Works
 
 Every CDR vault has a `writeConditionAddr` and `readConditionAddr`. For a
-Story license-gated vault on Aeneid:
+DATA Foundation license-gated vault on Aeneid:
 
 - `writeConditionAddr` usually points at `OwnerWriteCondition`, with
   `writeConditionData = abi.encode(ownerAddress)`
@@ -35,7 +35,7 @@ Story license-gated vault on Aeneid:
   `abi.encode(uint256[] licenseTokenIds)`
 
 The CDR SDK does not register the IP Asset or mint the license token for you.
-Create the IP and obtain its `ipId` with Story tooling first, then configure
+Create the IP and obtain its `ipId` with DATA Foundation tooling first, then configure
 the vault.
 
 If you have not registered the asset yet, start with
@@ -83,13 +83,13 @@ await client.uploader.uploadCDR({
 
 ## Mint a License Token Before Reading
 
-Before a user can read a Story license-gated vault, they still need to mint a
-license token. The Story core SDK's `wipClient` handles the WIP wrap and
+Before a user can read a DATA Foundation license-gated vault, they still need to mint a
+license token. The DATA Foundation core SDK's `wipClient` handles the WIP wrap and
 approval steps so the reader can wrap IP, approve the RoyaltyModule, and mint
 in three short calls.
 
 **WIP** is **Wrapped IP**, the ERC-20 wrapped form of the native `IP` token.
-Story's royalty / license flows use WIP, so the reader first wraps IP, then
+the DATA Foundation's royalty / license flows use WIP, so the reader first wraps IP, then
 approves the RoyaltyModule to spend it.
 
 ```typescript
@@ -99,7 +99,7 @@ import { StoryClient } from "@story-protocol/core-sdk";
 const ROYALTY_MODULE = "0xD2f60c40fEbccf6311f8B47c4f2Ec6b040400086";
 
 const storyClient = StoryClient.newClient({
-  transport: http("https://aeneid.storyrpc.io"),
+  transport: http("https://aeneid.datarpc.io"),
   account: readerAccount,
   chainId: "aeneid",
 });
@@ -115,7 +115,7 @@ await storyClient.wipClient.approve({
   amount: parseEther("1"),
 });
 
-// 3. Mint the Story license token.
+// 3. Mint the DATA Foundation license token.
 const mintResult = await storyClient.license.mintLicenseTokens({
   licensorIpId: ipId,
   licenseTermsId: BigInt(2054),
@@ -136,7 +136,7 @@ const licenseTokenId = mintResult.licenseTokenIds![0];
   later `accessCDR()` call adds one more on-chain read request.
 </Note>
 
-## Read with a License Token
+## Read With a License Token
 
 At read time, pass the caller's license token ID through `accessAuxData`.
 

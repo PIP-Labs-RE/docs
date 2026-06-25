@@ -1,0 +1,16 @@
+/*
+ * Custom styling for the Story / Data Foundation docs.
+ * Mintlify auto-loads style.css from the repo root.
+ */
+
+/* Enlarge the navbar logo (The Data Foundation wordmark). */
+#navbar img {
+  height: 3.5rem !important;
+  width: auto !important;
+}
+
+/* Fallback in case Mintlify renders the logo as a dedicated element. */
+nav-logo {
+  height: 3.5rem !important;
+  width: auto !important;
+}

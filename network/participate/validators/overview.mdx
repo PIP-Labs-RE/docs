@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: Guide to running a validator node on the Story Network
+description: Guide to running a validator node on the DATA Network
 ---
 
 ## Quick Links
@@ -18,7 +18,7 @@ description: Guide to running a validator node on the Story Network
     icon="github"
     href="https://github.com/piplabs/story/releases/"
   >
-    Download the latest Story consensus client releases
+    Download the latest DATA Foundation consensus client releases
   </Card>
 </CardGroup>
 
@@ -124,15 +124,15 @@ Below is a list of optional flags to further customize your validator setup:
 - `--moniker`: Defines a custom name for the validator, visible to users on the network.
 - `--chain-id`: Specifies the Chain ID for the transaction. By default, this is set to `1516`.
 - `--commission-rate`: Sets the validator's commission rate in bips (1% = 100 bips). For instance, `1000` represents a 10% commission (default is `1000`).
-- `--explorer`: Specifies the URL of the blockchain explorer (default: [https://www.storyscan.io](https://www.storyscan.io)).
+- `--explorer`: Specifies the URL of the blockchain explorer (default: [https://www.datanetscan.io](https://www.datanetscan.io)).
 - `--keyfile`: Points to the path of the Tendermint key file (default: `$HOME/.story/story/config/priv_validator_key.json`).
 - `--max-commission-change-rate`: Sets the maximum rate at which the validator's commission can change, in bips. For example, `100` represents a maximum change of 1% (default is `1000`).
 - `--max-commission-rate`: Defines the maximum commission rate the validator can charge, in bips. For instance, `5000` allows a 50% maximum rate (default is `5000`).
-- `--rpc`: Sets the RPC URL to connect to the network (default: [https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)).
+- `--rpc`: Sets the RPC URL to connect to the network (default: [https://mainnet.datarpc.io](https://mainnet.datarpc.io)).
 - `--unlocked`: Determines if unlocked token staking is supported (`true` for unlocked staking, `false` for locked staking). By default, this is set to `true`.
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example creation command use
+### Example Creation Command Use
 
 ```bash
 story validator create
@@ -140,19 +140,19 @@ story validator create
   --moniker "timtimtim"
   --commission-rate 700
   --validator-pubkey "<validator_pubkey>" # if you dont have a .env
-  --rpc "https://mainnet.storyrpc.io"
+  --rpc "https://mainnet.datarpc.io"
   --chain-id 1514
 ```
 
-### Verifying your validator
+### Verifying Your Validator
 
 Once created, please use the `Explorer URL` to confirm the transaction. If successful, you should see your validator pub key (_found in your`priv_validator_key.json` file)_ listed as part of the following endpoint:
 
 ```bash
-curl https://testnet.storyrpc.io/validators | jq .
+curl https://testnet.datarpc.io/validators | jq .
 ```
 
-Congratulations, you are now one of Story’s very first IP validators!
+Congratulations, you are now one of the DATA Foundation’s very first IP validators!
 
 ## Validator Staking
 
@@ -168,7 +168,7 @@ To stake to an existing validator, run the following command:
 - Note that your own `${VALIDATOR_PUB_KEY_IN_HEX}`may be found by running the `./story validator export` command as the `Compressed Public Key (hex)`.
 - You must stake at least 1024 IP worth (`*1024000000000000000000 wei`) for the transaction to be valid
 
-Once staked, you may use the `Explorer URL` to confirm the transaction. As mentioned earlier, you may use our [validator endpoint](https://mainnet.storyrpc.io/validators) to confirm the new voting power of the validator.
+Once staked, you may use the `Explorer URL` to confirm the transaction. As mentioned earlier, you may use our [validator endpoint](https://mainnet.datarpc.io/validators) to confirm the new voting power of the validator.
 
 **Available Flags:**
 
@@ -181,7 +181,7 @@ Once staked, you may use the `Explorer URL` to confirm the transaction. As menti
 - `--staking-period`: (stakingPeriod) Staking period (options: "flexible", "short", "medium", "long") (default: flexible)
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example staking command use
+### Example Staking Command Use
 
 ```bash
 ./story validator stake \
@@ -203,20 +203,20 @@ To unstake from a validator, run the following command:
 
 This will unstake `${AMOUNT_TO_UNSTAKE_IN_WEI}` IP from the selected validator. You must unstake at least 1024 IP worth (`*1024000000000000000000 wei`) for the transaction to be valid.
 
-Like in the staking operation, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.storyrpc.io/validators) to double-check the newly reduced voting power of the validator.
+Like in the staking operation, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.datarpc.io/validators) to double-check the newly reduced voting power of the validator.
 
 **Available Flags:**
 
 - `--chain-id`: (int) Chain ID to use for the transaction (default: 1514)
 - `--delegation-id`: (uint32) The delegation ID (0 for flexible staking)
-- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--help`, `-h`: Help for unstake command
-- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 - `--unstake`: (string) Amount to unstake in wei
 - `--validator-pubkey`: (string) Validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example unstaking command use
+### Example Unstaking Command Use
 
 ```bash
 ./story validator unstake \
@@ -225,7 +225,7 @@ Like in the staking operation, please use the `Explorer URL` to confirm the tran
    --delegation-id 1
 ```
 
-## Validator Stake-on-behalf
+## Validator Stake-on-Behalf
 
 To stake on behalf of another delegator, run the following command:
 
@@ -241,21 +241,21 @@ To stake on behalf of another delegator, run the following command:
 
 This will stake `${AMOUNT_TO_STAKE_IN_WEI}` IP to the validator on behalf of the provided delegator. You must stake at least 1024 IP worth (`*1024000000000000000000 wei`) for the transaction to be valid.
 
-Like in the other staking operations, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.storyrpc.io/validators) to double-check the increased voting power of the validator.
+Like in the other staking operations, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.datarpc.io/validators) to double-check the increased voting power of the validator.
 
 **Available Flags:**
 
 - `--chain-id`: (int) Chain ID to use for the transaction (default: 1514)
 - `--delegator-address`: (string) Delegator's EVM address
-- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--help`, `-h`: Help for stake-on-behalf command
-- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 - `--stake`: (string) Amount for the validator to self-delegate in wei
 - `--staking-period`: (stakingPeriod) Staking period (options: "flexible", "short", "medium", "long") (default: flexible)
 - `--validator-pubkey`: (string) Validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example Stake-on-behalf command use
+### Example Stake-on-Behalf Command Use
 
 ```bash
 ./story validator stake-on-behalf \
@@ -267,7 +267,7 @@ Like in the other staking operations, please use the `Explorer URL` to confirm t
    --chain-id
 ```
 
-## Validator Unstake-on-behalf
+## Validator Unstake-on-Behalf
 
 You may also unstake on behalf of delegators. However, to do so, you must be registered as an authorized operator for that delegator. To unstake on behalf of another delegator as an operator, run the following command:
 
@@ -282,20 +282,20 @@ You may also unstake on behalf of delegators. However, to do so, you must be reg
 
 This will unstake `${AMOUNT_TO_STAKE_IN_WEI}` IP from the validator on behalf of the delegator, assuming you are a registered operator for that delegator. You must unstake at least 1024 IP worth (`*1024000000000000000000 wei`) for the transaction to be valid.
 
-Like in the other staking operations, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.storyrpc.io/validators) to double-check the decreased voting power of the validator.
+Like in the other staking operations, please use the `Explorer URL` to confirm the transaction and our [validator endpoint](https://mainnet.datarpc.io/validators) to double-check the decreased voting power of the validator.
 
 **Available Flags:**
 
 - `--chain-id`: (int) Chain ID to use for the transaction (default: 1514)
 - `--delegator-address`: (string) Delegator's EVM address
-- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer`: (string) URL of the blockchain explorer (default: "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--help`, `-h`: Help for unstake-on-behalf command
-- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc`: (string) RPC URL to connect to the network (default: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 - `--unstake`: (string) Amount to unstake in wei
 - `--validator-pubkey`: (string) Validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example Unstake-on-behalf command use
+### Example Unstake-on-Behalf Command Use
 
 ```bash
 ./story validator unstake-on-behalf \
@@ -325,7 +325,7 @@ Note that you will need at least 1 IP in the wallet submitting the transaction f
 - `--rpc`: (string) RPC URL to connect to the network
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example unjail command use
+### Example Unjail Command Use
 
 ```bash
 ./story validator unjail \
@@ -333,7 +333,7 @@ Note that you will need at least 1 IP in the wallet submitting the transaction f
   --chain-id
 ```
 
-## Validator Unjail-on-behalf
+## Validator Unjail-on-Behalf
 
 If you are an authorized operator, you may unjail a validator on their behalf using the following command:
 
@@ -352,7 +352,7 @@ If you are an authorized operator, you may unjail a validator on their behalf us
 - `--validator-pubkey`: (string) Validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example unjail-on-behalf command use
+### Example Unjail-on-Behalf Command Use
 
 ```bash
 ./story validator unjail-on-behalf \
@@ -360,7 +360,7 @@ If you are an authorized operator, you may unjail a validator on their behalf us
   --chain-id
 ```
 
-## Validator rollback
+## Validator Rollback
 
 <Warning>
   The snapshot must be taken from a node that has already been upgraded. That
@@ -399,7 +399,7 @@ Apply a snapshot: Use a snapshot from a node that has already been upgraded to P
 - `--log-format`: (string) Log format; console, json (default "console")
 - `--log-level`: (string) Log level; debug, info, warn, error (default "info")
 - `--min-retain-blocks`: (uint) Minimum block height offset during ABCI commit to prune CometBFT blocks
-- `--network`: (string) Story network to participate in: story, odyssey, aeneid or local
+- `--network`: (string) DATA Network to participate in: story, odyssey, aeneid or local
 - `--number`: (uint) number of blocks to rollback (default 1)
 - `--pruning`: (string) Pruning strategy (default|nothing|everything) (default "nothing")
 - `--snapshot-interval`: (uint) State sync snapshot interval (default 1000)
@@ -407,7 +407,7 @@ Apply a snapshot: Use a snapshot from a node that has already been upgraded to P
 - `--tracing-endpoint`: (string) Tracing OTLP endpoint
 - `--tracing-headers`: (string) Tracing OTLP headers
 
-### Example rollback command use
+### Example Rollback Command Use
 
 ```bash
 ./story validator rollback \
@@ -432,10 +432,10 @@ To redelegate from one validator to another, run the following command:
 
 - `--chain-id`: (int) Chain ID to use for the transaction (default 1514)
 - `--delegation-id`: (uint32) The delegation ID (0 for flexible staking)
-- `--explorer`: (string) URL of the blockchain explorer (default "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer`: (string) URL of the blockchain explorer (default "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--help`, `-h`: Help for redelegate command
 - `--redelegate`: (string) Amount to redelegate in wei
-- `--rpc`: (string) RPC URL to connect to the network (default "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc`: (string) RPC URL to connect to the network (default "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 - `--validator-dst-pubkey`: (string) Dst validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--validator-src-pubkey`: (string) Src validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
@@ -451,7 +451,7 @@ To redelegate from one validator to another, run the following command:
   --chain-id
 ```
 
-## Validator Redelegate-on-behalf
+## Validator Redelegate-on-Behalf
 
 If you are an authorized operator, you may redelegate from one validator to another on behalf of a delegator using the following command:
 
@@ -470,15 +470,15 @@ If you are an authorized operator, you may redelegate from one validator to anot
 - `--chain-id`: (int) Chain ID to use for the transaction (default 1514)
 - `--delegation-id`: (uint32) The delegation ID (0 for flexible staking)
 - `--delegator-address`: (string) Delegator's EVM address
-- `--explorer`: (string) URL of the blockchain explorer (default "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer`: (string) URL of the blockchain explorer (default "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--help`, `-h`: Help for redelegate-on-behalf command
 - `--redelegate`: (string) Amount to redelegate in wei
-- `--rpc`: (string) RPC URL to connect to the network (default "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc`: (string) RPC URL to connect to the network (default "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 - `--validator-dst-pubkey`: (string) Dst validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--validator-src-pubkey`: (string) Src validator's hex-encoded compressed 33-byte secp256k1 public key
 - `--story-api`: Prevent potential fund losses. By default, you should set `http://localhost:1317`as the value
 
-### Example redelegate-on-behalf command use
+### Example Redelegate-on-Behalf Command Use
 
 ```bash
 ./story validator redelegate-on-behalf \
@@ -495,21 +495,21 @@ If you are an authorized operator, you may redelegate from one validator to anot
 Delegators may add operators to unstake or redelegate on their behalf. To add an operator, run the following command:
 
 - `--chain-id` int Chain ID to use for the transaction (default 1514)
-- `--explorer` string URL of the blockchain explorer (default "[https://www.storyscan.io](https://www.storyscan.io)")
+- `--explorer` string URL of the blockchain explorer (default "[https://www.datanetscan.io](https://www.datanetscan.io)")
 - `--operator` string Sets an operator to your delegator
-- `--rpc` string RPC URL to connect to the network (default "[https://mainnet.storyrpc.io](https://mainnet.storyrpc.io)")
+- `--rpc` string RPC URL to connect to the network (default "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
 
 ```bash
 ./story validator set-operator \
   --operator ${OPERATOR_EVM_ADDRESS} \
   --rpc \
   --chain-id \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
 
-### Example add operator command use
+### Example Add Operator Command Use
 
 ```bash
 ./story validator set-operator \
@@ -528,10 +528,10 @@ To remove an operator, run the following command:
   --operator ${OPERATOR_EVM_ADDRESS} \
   --rpc \
   --chain-id \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
-### Example Remove Operator command use
+### Example Remove Operator Command Use
 
 ```bash
 ./story validator remove-operator \
@@ -548,12 +548,12 @@ To change the address that your delegator receives staking and withdrawal reward
 ```bash
 ./story validator set-rewards-address \
   --rewards-address ${OPERATOR_EVM_ADDRESS} \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
 
-### Example Set Withdrawal Address command use
+### Example Set Withdrawal Address Command Use
 
 ```bash
 ./story validator set-rewards-address \
@@ -568,12 +568,12 @@ To change the address that your delegator receives staking and withdrawal reward
 ```bash
 ./story validator set-withdrawal-address \
   --withdrawal-address ${OPERATOR_EVM_ADDRESS} \
-  --story-api ${STORY_API_URL}
+  --story-api ${DATAFDN_API_URL}
 ```
 
 Note that you will need at least 1 IP in the wallet submitting the transaction for the transaction to be valid.
 
-### Example Set Withdrawal Address command use
+### Example Set Withdrawal Address Command Use
 
 ```bash
 ./story validator set-withdrawal-address \
@@ -597,7 +597,7 @@ To change the commission rate for your validator, you can run the following:
     --commission-rate 5000
 ```
 
-## Enabling Story API
+## Enabling DATA Foundation API
 
 Prerequisites:
 
@@ -605,13 +605,13 @@ Prerequisites:
 
 Steps to enable:
 
-1. Navigate to `${STORY_DATA_ROOT}/config/story.toml`
+1. Navigate to `${DATAFDN_DATA_ROOT}/config/story.toml`
 2. Set `enable = true` under the `[api]` section
 3. Restart the node
 
 Then you could use `http://localhost:1317` as the `-story-api` value
 
-## Migrating a validator to another machine
+## Migrating a Validator to Another Machine
 
 <Warning>
   Before migrating your validator node to a new machine, make sure the current
@@ -653,13 +653,13 @@ rm ~/.story/story/config/priv_validator_key.json
 
 ## Private Key Encryption for Validators
 
-This feature allows operators to securely generate, store, and manage private keys in encrypted form through CLI commands—including encrypting keys during setup, migrating unencrypted keys, and safely accessing them for validator operations.
+This feature allows operators to securely generate, store, and manage private keys in encrypted form through CLI commands, including encrypting keys during setup, migrating unencrypted keys, and safely accessing them for validator operations.
 
 ### Overview of Private Key Encryption
 
 Private key encryption is a critical security measure that encrypts sensitive cryptographic keys with a user-defined password. In the context of validator operations, this means that even if a private key file is exposed or accessed by unauthorized parties, it remains unusable without the correct password. Story CLI helps operators enforce stronger security controls while maintaining ease of use by integrating encryption directly into the validator workflow. This feature is designed to mitigate common attack vectors, such as accidental key leaks or unauthorized server access, by preventing private keys from being stored or used in plaintext.
 
-### Initializing a Validator with Private Key Encryption
+### Initializing a Validator With Private Key Encryption
 
 When setting up a new validator using the Story CLI, operators can generate and encrypt the validator’s private key in one step. By adding the `--encrypt-priv-key` flag during initialization, the CLI will prompt the operator to create a password, which is used to encrypt the generated private key. This encrypted key is then securely stored at `story/config/priv_validator_key.enc`.
 
@@ -706,7 +706,7 @@ This enables existing validators to benefit from the enhanced security of encryp
 
 ### Viewing the Encrypted Private Key
 
-Story CLI introduces a show command to give operators transparency and control over their encrypted keys. This command decrypts the encrypted private key file—specified via the `--enc-key-file` flag—and displays essential information such as the public key and validator address. It mirrors the functionality of the traditional export command but supports encrypted keys.
+Story CLI introduces a show command to give operators transparency and control over their encrypted keys. This command decrypts the encrypted private key file (specified via the `--enc-key-file` flag) and displays essential information such as the public key and validator address. It mirrors the functionality of the traditional export command but supports encrypted keys.
 
 Operators will be prompted for the encryption password before revealing key details, protecting sensitive information from unauthorized access. For advanced users, the optional `--show-private` flag will reveal the hex-encoded private key. However, this should be used cautiously as it defeats the purpose of encryption and exposes the key to potential compromise.
 

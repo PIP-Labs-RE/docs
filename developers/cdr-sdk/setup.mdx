@@ -42,7 +42,7 @@ yarn add @piplabs/cdr-sdk viem
 </Note>
 
 <Note>
-  If you plan to mint Story license tokens in an IP-gated flow, also install
+  If you plan to mint DATA Foundation license tokens in an IP-gated flow, also install
   `@story-protocol/core-sdk`.
 </Note>
 
@@ -82,15 +82,15 @@ await initWasm();
 export const runtime = "nodejs";
 ```
 
-## Story-API REST Endpoint
+## DATA Foundation API REST Endpoint
 
-Every `CDRClient` requires an `apiUrl` — the base URL of a Story-API REST
+Every `CDRClient` requires an `apiUrl`: the base URL of a DATA Foundation API REST
 endpoint. The SDK reads all DKG state (active round, global public key,
 threshold, participant count, registered validators, and validator
 attestations) over this REST API. Contract state such as vaults and fees is
 still read over the EVM `publicClient`.
 
-| Network | Story-API REST URL          | Notes                                       |
+| Network | DATA Foundation API REST URL          | Notes                                       |
 | ------- | --------------------------- | ------------------------------------------- |
 | Aeneid  | `http://172.192.41.96:1317` | Plain HTTP. May change between deployments. |
 
@@ -117,7 +117,7 @@ import { useMemo } from "react";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { CDRClient } from "@piplabs/cdr-sdk";
 
-// Example using Privy — adapt for your wallet connector
+// Example using Privy, adapt for your wallet connector
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 
 export function useCDRClient() {
@@ -125,21 +125,21 @@ export function useCDRClient() {
   const { wallets } = useWallets();
   const wallet = wallets[0];
 
-  // Read-only client — always available
+  // Read-only client, always available
   const publicClient = useMemo(
     () =>
       createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
     [],
   );
 
-  const apiUrl = process.env.NEXT_PUBLIC_STORY_API_URL!;
+  const apiUrl = process.env.NEXT_PUBLIC_DATAFDN_API_URL!;
 
   const client = useMemo(
     () => new CDRClient({ network: "testnet", publicClient, apiUrl }),
     [publicClient, apiUrl],
   );
 
-  // Write client — created on demand from the wallet's provider
+  // Write client, created on demand from the wallet's provider
   const getWriteClient = async () => {
     if (!wallet) throw new Error("No wallet connected");
     const provider = await wallet.getEthereumProvider();
@@ -167,7 +167,7 @@ const { client, getWriteClient } = useCDRClient();
 // Read-only operations work immediately
 const vault = await client.observer.getVault(42);
 
-// Write operations — get a write client first
+// Write operations: get a write client first
 const writeClient = await getWriteClient();
 await writeClient.uploader.write({ uuid, accessAuxData: "0x", encryptedData });
 ```
@@ -196,7 +196,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  apiUrl: process.env.STORY_API_URL!,
+  apiUrl: process.env.DATAFDN_API_URL!,
 });
 ```
 
@@ -208,7 +208,7 @@ If you only need to query vault data or DKG state, you can omit the `walletClien
 const client = new CDRClient({
   network: "testnet",
   publicClient,
-  apiUrl: process.env.STORY_API_URL!,
+  apiUrl: process.env.DATAFDN_API_URL!,
 });
 
 // observer methods work without a wallet
@@ -225,13 +225,13 @@ const allocateFee = await client.observer.getAllocateFee();
 
 ### Supported Network
 
-| Network | `network` param | Default RPC URL              | Story-API REST URL          | Description               |
+| Network | `network` param | Default RPC URL              | DATA Foundation API REST URL          | Description               |
 | ------- | --------------- | ---------------------------- | --------------------------- | ------------------------- |
-| Aeneid  | `"testnet"`     | `https://aeneid.storyrpc.io` | `http://172.192.41.96:1317` | Current supported release |
+| Aeneid  | `"testnet"`     | `https://aeneid.datarpc.io` | `http://172.192.41.96:1317` | Current supported release |
 
 ```typescript Testnet
 const publicClient = createPublicClient({
-  transport: http("https://aeneid.storyrpc.io"),
+  transport: http("https://aeneid.datarpc.io"),
 });
 const client = new CDRClient({
   network: "testnet",
@@ -244,8 +244,8 @@ const client = new CDRClient({
 
 You can point the SDK to any Aeneid-compatible RPC endpoint by changing the
 `http()` transport URL. This is useful for third-party RPC providers with
-higher rate limits. The `apiUrl` is configured independently — point it at the
-shared Story-API endpoint or your own Story node's REST gateway.
+higher rate limits. The `apiUrl` is configured independently; point it at the
+shared DATA Foundation API endpoint or your own Story node's REST gateway.
 
 ```typescript
 const publicClient = createPublicClient({
@@ -270,27 +270,27 @@ const client = new CDRClient({
 A common pattern is to configure the network via environment variables:
 
 ```typescript config.ts
-const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
-const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
 const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
 
 const publicClient = createPublicClient({ transport: http(RPC_URL) });
 const client = new CDRClient({
   network: NETWORK,
   publicClient,
-  apiUrl: STORY_API_URL,
+  apiUrl: DATAFDN_API_URL,
 });
 ```
 
 ```bash .env
 # Testnet (default)
-RPC_URL=https://aeneid.storyrpc.io
-STORY_API_URL=http://172.192.41.96:1317
+RPC_URL=https://aeneid.datarpc.io
+DATAFDN_API_URL=http://172.192.41.96:1317
 NETWORK=testnet
 
 # Alternate Aeneid RPC
 RPC_URL=https://your-aeneid-rpc.example.com
-STORY_API_URL=http://your-story-node:1317
+DATAFDN_API_URL=http://your-data-node:1317
 NETWORK=testnet
 ```
 
@@ -310,8 +310,8 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-const RPC_URL = process.env.RPC_URL ?? "https://aeneid.storyrpc.io";
-const STORY_API_URL = process.env.STORY_API_URL ?? "http://172.192.41.96:1317";
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 
 if (!PRIVATE_KEY) {
@@ -331,7 +331,7 @@ const client = new CDRClient({
   network: "testnet",
   publicClient,
   walletClient,
-  apiUrl: STORY_API_URL,
+  apiUrl: DATAFDN_API_URL,
 });
 
 // Use the wallet (EOA) address as both write and read condition. Only this
@@ -375,12 +375,12 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 <Note>
   This example sends three transactions total: `allocate()`, `write()`, and
   `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`
-  with deployed condition contracts (such as the Story license-gated pattern
+  with deployed condition contracts (such as the DATA Foundation license-gated pattern
   in [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)).
 </Note>
 
 <Note>
-  Any EOA address works as a write or read condition — only that EOA can
+  Any EOA address works as a write or read condition; only that EOA can
   perform the matching action. The high-level `uploadCDR()` / `uploadFile()`
   helpers validate that condition addresses point at deployed contracts, so
   EOA conditions go through the low-level `allocate()` call with

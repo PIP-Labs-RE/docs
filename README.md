@@ -1,8 +1,8 @@
-# Story Documentation
+# DATA Foundation Documentation
 
-This repository contains the official documentation for **Story**, a purpose-built layer 1 blockchain designed specifically for intellectual property.
+This repository contains the official documentation for **DATA Foundation**, a purpose-built layer 1 blockchain designed specifically for intellectual property.
 
-📚 [Official Documentation](https://docs.story.foundation)
+📚 [Official Documentation](https://docs.datafdn.org)
 
 ## Proposing Changes
 

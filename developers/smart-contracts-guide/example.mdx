@@ -37,7 +37,7 @@ In this first section, we will combine a few of the tutorials into one. We will 
 - Complete [Register License Terms](/developers/smart-contracts-guide/register-terms)
 - Complete [Attach Terms to an IPA](/developers/smart-contracts-guide/attach-terms)
 
-### Writing our Contract
+### Writing Our Contract
 
 Create a new file under `./src/Example.sol` and paste the following:
 
@@ -131,9 +131,8 @@ In this next section, we will combine a few of the later tutorials into one. We 
 ### Prerequisites
 
 - Complete [Mint a License Token](/developers/smart-contracts-guide/mint-license)
-- Complete [Register a Derivative](/developers/smart-contracts-guide/register-derivative)
 
-### Writing our Contract
+### Writing Our Contract
 
 In your `Example.sol` contract, add the following function at the bottom:
 
@@ -189,7 +188,7 @@ function mintLicenseTokenAndRegisterDerivative(
 }
 ```
 
-# Testing our Contract
+# Testing Our Contract
 
 Create another new file under `test/Example.t.sol` and paste the following:
 
@@ -207,12 +206,12 @@ import { Example } from "../src/Example.sol";
 import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
 
 // Run this test:
-// forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/Example.t.sol
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/Example.t.sol
 contract ExampleTest is Test {
   address internal alice = address(0xa11ce);
   address internal bob = address(0xb0b);
 
-  // For addresses, see https://docs.story.foundation/developers/deployed-smart-contracts
+  // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
   // Protocol Core - IPAssetRegistry
   address internal ipAssetRegistry = 0x77319B4031e6eF1250907aa00018B8B1c67a244b;
   // Protocol Core - LicenseRegistry
@@ -291,7 +290,7 @@ Run `forge build`. If everything is successful, the command should successfully 
 To test this out, simply run the following command:
 
 ```bash
-forge test --fork-url https://aeneid.storyrpc.io/ --match-path test/Example.t.sol
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/Example.t.sol
 ```
 
 # Deploy & Verify the Example Contract
@@ -300,17 +299,17 @@ The `--constructor-args` come from [Deployed Smart Contracts](/developers/deploy
 
 ```bash
 forge create \
-  --rpc-url https://aeneid.storyrpc.io/ \
+  --rpc-url https://aeneid.datarpc.io/ \
   --private-key $PRIVATE_KEY \
   ./src/Example.sol:Example \
   --legacy \
   --verify \
   --verifier blockscout \
-  --verifier-url https://aeneid.storyscan.io/api/ \
+  --verifier-url https://aeneid.datanetscan.io/api/ \
   --constructor-args 0x77319B4031e6eF1250907aa00018B8B1c67a244b 0x04fbd8a2e56dd85CFD5500A4A4DfA955B9f1dE6f 0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E 0xF2104833d386a2734a4eB3B8ad6FC6812F29E38E
 ```
 
-If everything worked correctly, you should see something like `Deployed to: 0xfb0923D531C1ca54AB9ee10CB8364b23d0C7F47d` in the console. Paste that address into [the explorer](https://aeneid.storyscan.io/) and see your verified contract!
+If everything worked correctly, you should see something like `Deployed to: 0xfb0923D531C1ca54AB9ee10CB8364b23d0C7F47d` in the console. Paste that address into [the explorer](https://aeneid.datanetscan.io/) and see your verified contract!
 
 # Great job! :)
 

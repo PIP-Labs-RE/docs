@@ -16,7 +16,7 @@ This guide walks through the two main CDR flows:
 
 | Operation                    | Sends transaction?           | What happens                                                               |
 | ---------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
-| `observer.getGlobalPubKey()` | No                           | Pure read of DKG state over the Story-API REST endpoint                    |
+| `observer.getGlobalPubKey()` | No                           | Pure read of DKG state over the DATA Foundation API REST endpoint                    |
 | `uploadCDR()`                | Yes, 2 txs                   | Local TDH2 encryption plus `allocate()` and `write()`                      |
 | `uploadFile()`               | Yes, 2 txs + storage upload  | Local AES encryption, storage upload, then `allocate()` and `write()`      |
 | `accessCDR()`                | Yes, 1 tx                    | `read()` on-chain, then off-chain partial collection and local combination |
@@ -91,12 +91,12 @@ console.log(`Write tx: ${writeTx}`);
 ```
 
 <Note>
-  Any EOA address works as a write or read condition — only that EOA can
+  Any EOA address works as a write or read condition; only that EOA can
   perform the matching action. To gate just one side, set your wallet address
   on that side and a condition contract (such as `LicenseReadCondition`) on the
   other. The high-level `uploadCDR()` helper expects deployed condition
   contracts on both sides and does not support EOA conditions, so use it for
-  patterns like Story license-gated reads (see [IP Asset
+  patterns like DATA Foundation license-gated reads (see [IP Asset
   Vaults](/developers/cdr-sdk/ip-asset-vaults)) and use the low-level
   `allocate()` + `write()` flow above for owner-only EOA conditions.
 </Note>
@@ -210,7 +210,7 @@ Upload happens once by the data owner. Download happens later by an authorized
 reader who recovers the vault payload and then decrypts the stored file.
 
 The `uploadFile()` helper requires deployed condition contracts on both sides,
-so the example below uses Story's `OwnerWriteCondition` for the write side and
+so the example below uses DATA Foundation's `OwnerWriteCondition` for the write side and
 `LicenseReadCondition` for the read side. License token holders can decrypt
 the file (see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults) for the
 end-to-end license setup). For an owner-only file flow, replicate the
@@ -364,7 +364,7 @@ const { txHash: readTx } = await consumer.read({
   requesterPubKey,
 });
 
-// Off-chain: poll the Story-API endpoint for validator partial decryptions.
+// Off-chain: poll the DATA Foundation API endpoint for validator partial decryptions.
 // The required threshold is derived from the bucket's own DKG round.
 const partials = await consumer.collectPartials({
   uuid,
@@ -398,7 +398,7 @@ import { createPublicClient, http } from "viem";
 import { CDRClient } from "@piplabs/cdr-sdk";
 
 const publicClient = createPublicClient({
-  transport: http("https://aeneid.storyrpc.io"),
+  transport: http("https://aeneid.datarpc.io"),
 });
 const client = new CDRClient({
   network: "testnet",
@@ -415,7 +415,7 @@ const [allocateFee, writeFee, readFee] = await Promise.all([
   client.observer.getReadFee(),
 ]);
 console.log(
-  `Fees — allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
+  `Fees: allocate: ${allocateFee}, write: ${writeFee}, read: ${readFee}`,
 );
 
 // Query a specific vault

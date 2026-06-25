@@ -1,11 +1,11 @@
 ---
 title: Full Node
-description: Guide to setting up a Story node for mainnet
+description: Guide to setting up a DATA Foundation node for mainnet
 ---
 
-This section will guide you through how to setup a Story node for mainnet. Story draws inspiration from ETH PoS in decoupling execution and consensus clients. The execution client `story-geth` relays EVM blocks into the `story` consensus client via Engine API, using an ABCI++ adapter to make EVM state compatible with that of CometBFT. With this architecture, consensus efficiency is no longer bottlenecked by execution transaction throughput.
+This section will guide you through how to setup a DATA Foundation node for mainnet. The DATA Foundation draws inspiration from ETH PoS in decoupling execution and consensus clients. The execution client `story-geth` relays EVM blocks into the `story` consensus client via Engine API, using an ABCI++ adapter to make EVM state compatible with that of CometBFT. With this architecture, consensus efficiency is no longer bottlenecked by execution transaction throughput.
 
-The `story` and `geth` binaries, which make up the clients required for running Story nodes, are available from our latest `release` pages:
+The `story` and `geth` binaries, which make up the clients required for running DATA Foundation nodes, are available from our latest `release` pages:
 
 | Network | story-geth        | story            |
 | ------- | ----------------- | ---------------- |
@@ -26,7 +26,7 @@ The `story` and `geth` binaries, which make up the clients required for running 
   - Latest Stable Binary (v1.4.2): [**Click here**](https://github.com/piplabs/story/releases/tag/v1.4.2)
 
 
-# Story Node Installation Guide
+# DATA Foundation Node Installation Guide
 
 ## Pre-Installation Checklist
 
@@ -39,7 +39,7 @@ The `story` and `geth` binaries, which make up the clients required for running 
 ## Quick Reference
 
 - Installation time: \~30 minutes
-- Network: Story Mainnet or Story Aeneid Testnet
+- Network: DATA Foundation Mainnet or DATA Foundation Aeneid Testnet
 - Required versions:
   - Check Latest Release
 
@@ -130,7 +130,7 @@ source ~/.bash_profile
 go version
 ```
 
-## 2. Story Node Installation
+## 2. DATA Foundation Node Installation
 
 ### 2.1 Install Story-Geth
 
@@ -225,9 +225,9 @@ sudo xattr -rd com.apple.quarantine ./geth
   </Tab>
 </Tabs>
 
-### 2.2 Install Story Consensus Client
+### 2.2 Install DATA Foundation Consensus Client
 
-#### Cosmovisor installation
+#### Cosmovisor Installation
 
 For updating the story client, we recommend using Cosmovisor.
 
@@ -277,7 +277,7 @@ story version
 sudo xattr -rd com.apple.quarantine ./story
 ```
 
-#### Init Story with Cosmovisor
+#### Init DATA Foundation With Cosmovisor
 
 <Tabs>
   <Tab title="Mainnet">
@@ -301,15 +301,15 @@ sudo xattr -rd com.apple.quarantine ./story
 
 To override your own node settings, you can do the following:
 
-- `${STORY_DATA_ROOT}/config/config.toml` can be modified to change network and consensus settings
-- `${STORY_DATA_ROOT}/config/story.toml` to update various client configs
-- `${STORY_DATA_ROOT}/priv_validator_key.json` is a sensitive file containing your validator key, but may be replaced with your own
+- `${DATAFDN_DATA_ROOT}/config/config.toml` can be modified to change network and consensus settings
+- `${DATAFDN_DATA_ROOT}/config/story.toml` to update various client configs
+- `${DATAFDN_DATA_ROOT}/priv_validator_key.json` is a sensitive file containing your validator key, but may be replaced with your own
 
 #### Custom Automation
 
 Below we list a sample `Systemd` configuration you may use on Linux
 
-<Note>The Story API endpoint (`--api-address`) can be modified as needed depending on your environment or use case.</Note>
+<Note>The DATA Foundation API endpoint (`--api-address`) can be modified as needed depending on your environment or use case.</Note>
 
 ```bash
 # story
@@ -402,7 +402,7 @@ EOF
   </Tab>
 </Tabs>
 
-#### Start the service
+#### Start the Service
 
 ```bash
 sudo systemctl daemon-reload
@@ -444,7 +444,7 @@ curl localhost:26657/status
 curl localhost:26657/net_info | jq '.result.peers[].node_info.moniker'
 ```
 
-## Clean status
+## Clean Status
 
 If you ever run into issues and would like to try joining the network from a cleared state, run the following:
 
@@ -474,12 +474,12 @@ If you ever run into issues and would like to try joining the network from a cle
   </Tab>
 </Tabs>
 
-### Story
+### DATA Foundation
 
 <Tabs>
   <Tab title="Mainnet">
     ```bash
-    rm -rf ${STORY_DATA_ROOT} && ./story init --network story && ./story run
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network story && ./story run
     ```
 
     Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network story && ./story run`
@@ -490,7 +490,7 @@ If you ever run into issues and would like to try joining the network from a cle
 
   <Tab title="Aeneid Testnet">
     ```bash
-    rm -rf ${STORY_DATA_ROOT} && ./story init --network aeneid && ./story run
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network aeneid && ./story run
     ```
 
     Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network aeneid && ./story run`

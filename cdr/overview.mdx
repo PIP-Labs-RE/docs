@@ -1,0 +1,81 @@
+---
+title: "CDR Overview"
+description: "Threshold-encrypted, on-chain-gated confidentiality for data registered on the DATA Foundation."
+icon: "lock"
+---
+
+<Note>
+  CDR's current public release runs on Aeneid testnet. Build and test
+  integrations there, but do not treat it as a production confidentiality
+  environment.
+</Note>
+
+## What is CDR?
+
+**Confidential Data Rails (CDR)** is the DATA Foundation's confidentiality layer.
+It lets you encrypt data so that no single party ever holds the complete
+decryption key: secrets are encrypted against the validator network's
+DKG-generated public key and can only be recovered when a threshold number of
+validators collectively provide partial decryptions. Access is enforced
+**on-chain** through smart-contract conditions, and the validator-side flows run
+inside `story-kernel` TEEs (Intel SGX enclaves).
+
+The result is data that stays **confidential at rest** while remaining
+**programmatically unlockable** to exactly the wallets, license holders, or
+custom conditions you define.
+
+```text
+Data owner
+  -> encrypt locally against the DKG public key   (plaintext never leaves the client)
+  -> allocate a vault on-chain with read/write conditions
+  -> authorized reader requests decryption         (validated on-chain)
+  -> validators return TEE-confined partial decryptions; reader combines client-side
+```
+
+<Card title="CDR Whitepaper" icon="file-lines" href="https://www.story.foundation/confidentialdatarails.pdf">
+  The full design behind Confidential Data Rails: cryptography, validator
+  protocol, and threat model.
+</Card>
+
+## Where CDR Fits
+
+<CardGroup cols={3}>
+  <Card title="Trace: provenance" icon="fingerprint" href="/trace/overview">
+    Proves the origin, consent, and lineage of data with a provider-normalized
+    schema and public audit views.
+  </Card>
+  <Card title="CDR: confidentiality" icon="lock">
+    Keeps the underlying data encrypted, with threshold decryption gated by
+    on-chain access control.
+  </Card>
+  <Card title="IP & Licensing: rights" icon="scroll" href="/concepts/ip-asset/overview">
+    Defines who owns the data and the terms under which it can be used.
+  </Card>
+</CardGroup>
+
+Together they let a provider register data that is **provable** (Trace),
+**confidential** (CDR), and **governed by clear usage rights** (IP & Licensing).
+
+## What CDR Enables
+
+- **Secret sharing**: encrypt and share secrets that only specific wallets can decrypt.
+- **Encrypted file delivery**: keep large files off-chain while storing the encrypted file key on-chain.
+- **Data marketplaces**: sell access to encrypted data with on-chain payment enforcement.
+- **IP-gated content**: tie encrypted data to IP Assets and require license tokens to decrypt.
+
+## How Developers Integrate
+
+CDR ships as the `@piplabs/cdr-sdk` TypeScript SDK. The current Aeneid surface
+centers on two workflows: **data key vaults** for small secrets stored directly
+on-chain, and **encrypted files** for off-chain content with on-chain key
+management.
+
+<CardGroup cols={2}>
+  <Card title="Integration Guide" icon="plug" href="/developers/cdr-sdk/overview">
+    Install the SDK, allocate vaults, and run the on-chain secret, encrypted
+    file, and IP-gated flows end to end.
+  </Card>
+  <Card title="SDK Reference" icon="book" href="/sdk-reference/cdr/overview">
+    Full API reference for every CDR SDK method.
+  </Card>
+</CardGroup>
