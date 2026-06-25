@@ -1,0 +1,643 @@
+---
+title: 문제 해결
+description: DATA Foundation 노드 실행 시 일반적인 문제와 해결책
+---
+
+DATA Foundation 노드 문제 해결에 오신 것을 환영합니다! 이 섹션에서는 DATA Foundation 노드 실행 시 일반적인 문제와 해결책을 다룹니다.
+
+### 노드 설정
+
+<Accordion title="하드웨어 요구 사항은 무엇인가요?">
+
+[시스템 사양](/network/operating-a-node/node-setup-mainnet)을 참조하세요
+
+</Accordion>
+
+<Accordion title="예상되는 최대 TPS는 얼마인가요?">
+
+\~700
+
+</Accordion>
+
+<Accordion title="완전히 EVM과 호환되나요? IP 블록체인에 이미 적용된 사용자 지정이 있나요? 또는 적용 예정인 사용자 지정이 있나요?">
+
+네, EVM과 호환됩니다. DATA Foundation의 실행 클라이언트는 우리의 커스텀 precompile이 있는 Geth의 포크로, 엄격한 EVM 호환성을 유지하면서 IP 그래프의 성능을 향상시킵니다. RETH 및 Erigon과 같은 다른 이더리움 실행 클라이언트는 나중에 지원될 수 있습니다.
+
+</Accordion>
+
+<Accordion title="컨센서스 메커니즘은 무엇인가요?">
+
+우리의 컨센서스 메커니즘은 CometBFT입니다.
+
+</Accordion>
+
+<Accordion title="배치 지원이 되나요? 배치 요청 제한이 있나요?">
+
+배치 RPC가 지원됩니다. Geth의 경우 1K 제한이 있고, 컨센서스 측에서는 10 요청 제한이 있습니다.
+
+</Accordion>
+
+<Accordion title="WS 연결이 가능한가요? (가능하다면, 어떻게 작동하나요)">
+
+네, WS는 실행 클라이언트에서 활성화되어 있으며, 구독 사용 사례에 권장됩니다. 포트 8546에서 열려 있습니다.
+
+</Accordion>
+
+<Accordion title="노드가 제공하는 경로는 몇 개인가요 (다른 메서드 RPC를 가진 여러 경로)?">
+
+전체 포괄적인 목록은 Geth의 최신 JSON-RPC 문서를 [여기](https://ethereum.org/en/developers/docs/apis/json-rpc/#web3_clientversion)에서 확인하세요. 향후 더 추가될 수 있습니다.
+
+</Accordion>
+
+<Accordion title="RPC 메서드 캐싱 규칙은?">
+
+RPC 메서드에 따라 1-10분 TTL을 가진 표준 인메모리 캐싱을 사용하는 것을 권장합니다.
+
+</Accordion>
+
+<Accordion title="최신 블록을 가져오고 노드가 정상이고 동기화되어 있는지 확인하는 가장 좋은 방법은 무엇인가요?">
+
+실행 클라이언트에서 `eth_syncing` RPC 호출을 사용하여 노드가 동기화되었는지 확인하고, 최신 블록을 가져오려면 `eth_blockNumber`를 사용하세요.
+
+</Accordion>
+
+<Accordion title="가장 무거운 RPC 메서드는 무엇인가요? 이러한 메서드로 요청에 응답하는 데 시간이 얼마나 걸리나요?">
+
+`eth_call` / `eth_getLogs` / `eth_getBlockByNumber` \
+ 응답 시간 감을 잡기 위해 여전히 지연 시간 테스트를 진행 중입니다.
+
+</Accordion>
+
+<Accordion title="아카이브 노드 프로비저닝이 필수인가요? 그렇다면 얼마나 큰가요?">
+
+아니요, 현재로서는 그렇지 않습니다.
+
+</Accordion>
+
+<Accordion title="풀/아카이브용 스냅샷이 제공되나요?">
+
+아직은 아니지만, 작업 중입니다.
+
+</Accordion>
+
+<br />
+
+### 일반적인 문제
+
+<Accordion title="데이터베이스 초기화 실패">
+
+**오류:**
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly !! err="create db: failed to initialize database:
+```
+
+**해결책:**
+
+1. 검증자 상태를 저장하세요:
+
+```bash
+cp $HOME/.story/story/data/priv_validator_state.json $HOME/.story/story/priv_validator_state.json.backup
+```
+
+> 🚧 이 파일은 매우 조심히 다루세요. 특히 검증자가 이미 블록을 서명하고 있는 경우에는 더욱 그렇습니다.
+
+- 데이터베이스 백엔드 타입을 확인하세요. 노드는 사용 중인 스냅샷과 동일한 것을 지원해야 합니다:
+
+```bash
+cat $HOME/.story/story/config/story.toml
+```
+
+기본값은 `app-db-backend = "goleveldb"`입니다. 폴백은 CometBFT의 `config.toml`에 설정된 `db_backend` 값입니다.
+
+```bash
+cat $HOME/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="높은 가스 수수료">
+
+**문제:** RPC 노드에서 가스 수수료를 조정해야 함
+
+**해결책:**
+geth 시작 명령에 `--rpc.txfee` 플래그를 추가하세요:
+
+```bash
+sudo tee /etc/systemd/system/story-geth.service > /dev/null <<EOF
+[Unit]
+Description=Story-Geth Node
+After=network.target
+
+[Service]
+User=$USER
+Type=simple
+WorkingDirectory=$HOME/.story/geth
+ExecStart=$(which geth) --story --syncmode full --rpc.txfee 2
+Restart=on-failure
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+</Accordion>
+
+<Accordion title="PacketPing 전송 실패">
+
+**오류:**
+
+```bash
+ERRO Failed to send PacketPing module=p2p peer=19fa6dd52e72e4e85bbb873b705282cf73217a6b@158.220.80.96:40128 err="write tcp 139.59.139.135:26656->158.220.80.96:40128: write: broken pipe"
+```
+
+해결책:
+
+- 노드가 동기화되어 있다면, 이 오류는 무시해도 됩니다. 클라이언트가 약간 뒤처져 있을 수 있습니다.
+- 노드가 멈추면, 서비스를 재시작해야 합니다.
+
+</Accordion>
+
+<Accordion title="Cosmovisor: 업그레이드 정보 읽기 실패">
+
+cosmovisor를 시작할 때 오류가 발생합니다:
+
+```bash
+panic: failed to read upgrade info from disk unexpected end of JSON input
+```
+
+해결책:
+
+- 설치된 cosmovisor 버전이 최소 [v1.7.0](https://docs.cosmos.network/main/build/tooling/cosmovisor) 이상이어야 합니다.
+- 그런 다음 정보 파일을 확인하세요 (이 경우 버전 `v0.13.0` 편집):
+
+```bash
+cat $HOME/.story/story/cosmovisor/upgrades/v0.13.0/upgrade-info.json
+```
+
+없는 경우 새로 생성하세요:
+
+```bash
+echo '{"name":"v0.13.0","time":"0001-01-01T00:00:00Z","height":858000}' > $HOME/.story/story/cosmovisor/upgrades/v0.13.0/upgrade-info.json
+```
+
+cosmovisor를 사용한 자동 업데이트에 대해 자세히 알아보려면 [여기](/network/operating-a-node/node-setup-mainnet#custom-automation)를 참조하세요.
+
+</Accordion>
+
+<Accordion title="IPC 엔드포인트 닫힘">
+
+오류:
+
+```bash
+INFO HTTP server stopped
+INFO IPC endpoint closed
+```
+
+해결책:
+
+- 포트 8551이 중지된 것으로 보이며, 백그라운드 프로세스에서 실행되는 `iptables`가 ip와 포트를 차단하고 posix에 접근하는 것입니다.
+- 해결책은 `ufw posix`와 `iptables`를 제거해 보세요:
+
+```bash
+iptables -I INPUT -s localhost -j ACCEPT
+```
+
+</Accordion>
+
+<Accordion title="동일한 키에서 서명 발견">
+
+오류:
+
+```bash
+panic: Faile to consensus  state: found signature from the same key
+```
+
+해결책:
+
+- 검증자가 이중 서명되었습니다. 이중 서명된 후에는 현재로서는 검증자를 복원할 수 없습니다.
+- 이러한 상황을 피하려면, [검증자를 다른 머신으로 올바르게 마이그레이션하는 방법](/network/become-a-validator#migrating-a-validator-to-another-machine)에 대한 이 게시물을 참조하세요.
+
+</Accordion>
+
+<Accordion title="create flags 검증 실패: 필수 플래그(s) 누락: moniker">
+
+오류:
+
+```bash
+4-11-26 08:42:20.302 ERRO !! Fatal error occurred, app died️ unexpectedly !! err="failed to validate create flags: missing required flag(s): moniker" stacktrace="[errors.go:39 flags.go:173 validator.go:168 validator.go:384 command.go:985 command.go:1117 command.go:1041 command.go:1034 cmd.go:34 main.go:10 proc.go:271 asm_amd64.s:1695]"
+```
+
+해결책:
+
+- `--moniker` 플래그를 누락했습니다.
+- 새 검증자를 생성하는 명령은 다음과 같이 보여야 합니다:
+
+```bash
+./story validator create --stake ${AMOUNT_TO_STAKE_IN_WEI} --moniker ${VALIDATOR_NAME}
+```
+
+자세한 옵션은 [여기](/network/become-a-validator#validator-creation)를 참조하세요.
+
+</Accordion>
+
+<Accordion title="투표 추가 오류">
+
+오류:
+
+```bash
+ERRO failed to process message msg_type= *consensus.VoteMessage err:" error adding vote"
+```
+
+해결책:
+
+- 노드가 다운된 것 같습니다. 시작하려면, [여기](/network/operating-a-node/node-setup-mainnet)에서 현재 바이너리 버전을 확인하세요.
+- 최신 바이너리를 가지고 있다면 - 피어 업데이트를 시도하세요, 이는 보통 노드가 p2p 통신을 잃을 때 발생합니다:
+
+```bash
+PEERS="..."
+sed -i -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*persistent_peers *=.*/persistent_peers = \"$PEERS\"/}" $HOME/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="투표 서명 오류">
+
+오류:
+
+```bash
+ERRO failed signing vote module=consensus height=403750 round=0 vote="Vote{23:B12C6AE31E8E 403750/00/SIGNED_MSG_TYPE_PREVOTE(Prevote) FA591EB1E540 000000000000 000000000000 @ 2024-11-08T16:58:10.375918193Z}" err="error signing vote: height regression. Got 403750, last height 420344"
+```
+
+해결책:
+
+- 검증자의 `priv_validator_state`에 문제가 있는 것 같습니다.
+  > 🚧 이 파일은 매우 조심히 다루세요. 특히 검증자가 이미 블록을 서명하고 있는 경우에는 더욱 그렇습니다.
+- 명령으로 상태 사본을 만들 수 있습니다:
+
+```bash
+cp $HOME/.story/story/data/priv_validator_state.json $HOME/.story/story/priv_validator_state.json.backup
+```
+
+검증자 상태를 확인하세요:
+
+```bash
+cat $HOME/.story/story/data/priv_validator_state.json
+```
+
+- 이 오류가 발생하면, 상태를 재설정할 수 있습니다 (🚧 검증자가 아직 블록을 서명하지 않은 경우에만).
+- 노드를 중지하세요.
+
+```bash
+sudo tee $HOME/.story/story/data/priv_validator_state.json > /dev/null <<EOF
+{
+  "height": "0",
+  "round": 0,
+  "step": 0
+}
+EOF
+```
+
+- 노드를 시작하세요.
+
+</Accordion>
+
+<Accordion title="알 수 없는 플래그: --home">
+
+오류:
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly !! err="unknown flag: --home"
+```
+
+해결책:
+
+- 잘못된 구성으로 보입니다. 시작 명령에서 `--home` 플래그를 제거해 보세요.
+- systemd 실행은 다음과 같이 보일 수 있습니다:
+
+</Accordion>
+
+<Accordion title="이더리움 서비스 등록 실패">
+
+오류:
+
+```bash
+Fatal: Failed to register the Ethereum service: incompatible state scheme, stored: path, provided: hash
+```
+
+해결책:
+
+- 검증자 상태 또는 손상된 데이터베이스에 문제가 있습니다.
+- 스냅샷 사용을 시도해 보세요.
+  > 🚧 이 파일은 매우 조심히 다루세요. 특히 검증자가 이미 블록을 서명하고 있는 경우에는 더욱 그렇습니다.
+- 상태를 재설정하는 방법은 [여기](/network/more/troubleshooting#error-signing-vote)에 설명되어 있습니다.
+
+## 피어 재연결 실패
+
+오류:
+
+```bash
+24-09-25 06:38:45.235 ERRO Failed to reconnect to peer. Beginning exponential backoff module=p2p addr=e0600fa5f2129e647ef30a942aac1695201ff135@65.109.115.98:26656 elapsed=2m29.598884906s
+```
+
+해결책:
+
+- 노드가 동기화되어 있고 크게 뒤처지지 않았다면, 이 오류는 무시할 수 있습니다.
+- 노드가 지연되거나 완전히 중지되었다면, 피어 업데이트를 시도하세요. 이는 보통 노드가 p2p 통신을 잃을 때 발생합니다:
+
+```bash
+PEERS="..."
+sed -i -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*persistent_peers =./persistent_peers = \"$PEERS\"/}" $HOME/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="evm 동기화 중 finalized payload 처리가 중단됨">
+
+경고:
+
+```bash
+WARN Processing finalized payload halted while evm syncing (will retry) payload_height=...
+```
+
+해결책:
+
+- 이는 단지 story-geth가 동기화 중이라는 의미이므로 이 경고는 무시할 수 있습니다.
+- 그러나 시간이 오래 걸린다면, 다음 순서로 프로세스를 하나씩 중지한 다음 나중에 다시 시작하는 것을 권장합니다:
+
+```bash
+sudo systemctl stop story-geth story
+sudo systemctl daemon-reload
+sudo systemctl start story-geth
+sudo systemctl enable story-geth
+
+sudo systemctl daemon-reload
+sudo systemctl start story
+sudo systemctl enable story
+```
+
+</Accordion>
+
+<Accordion title="업그레이드 핸들러 누락">
+
+오류:
+
+```bash
+ERRO error in proxyAppConn.FinalizeBlock      module=consensus err="module manager preblocker: wrong app version 0, upgrade handler is missing for upgrade plan"
+```
+
+해결책:
+
+- 업데이트를 놓친 것 같습니다.
+- 시작하려면, [여기](/network/operating-a-node/node-setup-mainnet)에서 현재 바이너리 버전을 확인하세요.
+
+</Accordion>
+
+<Accordion title="홈 디렉터리에 예상치 못한 파일이 포함됨">
+
+오류:
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly !! err="home directory contains unexpected file(s), use --force to initialize anyway"
+```
+
+해결책:
+
+- 이는 이미 노드를 초기화했다는 의미입니다.
+- `$HOME/.story/story` 디렉터리가 생성되었고, 그 안에 파일이 있습니다. 삭제하거나, 그것으로 시도해 보세요.
+
+</Accordion>
+
+<Accordion title="Err='create comet node: create node">
+
+오류:
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly ! err="create comet node: create node
+```
+
+해결책:
+
+- 노드가 잘못된 버전을 사용하고 있는 것 같습니다.
+- [여기](/network/operating-a-node/node-setup-mainnet)에서 현재 바이너리 버전을 확인하세요.
+- 그리고 가장 가능성 높은 것은 현재 버전으로 바이너리를 롤백해야 한다는 것입니다.
+
+</Accordion>
+
+<Accordion title="WAL에 포함되지 않음">
+
+오류:
+
+```bash
+ERRO catchup replay: WAL does not contain
+```
+
+해결책:
+
+- `AppHash` 문제로 보입니다.
+- 시작하려면, [여기](/network/operating-a-node/node-setup-mainnet)에서 바이너리의 현재 버전으로 업그레이드하세요.
+- 버전이 현재 것보다 최신이라면, 롤백을 수행하세요.
+
+</Accordion>
+
+<Accordion title="Err='load engine JWT file: read jwt file">
+
+오류:
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly !! err="load engine JWT file: read jwt file: open /root/.story/geth/odyssey/geth/jwtsecret: no such file or directory
+```
+
+해결책:
+
+- 노드가 `jwtsecret`을 얻을 수 없는 것 같습니다.
+- `geth-service`에서 `WorkingDirectory`를 확인하세요. 기본값은 `WorkingDirectory=$HOME/.story/geth`입니다.
+- 모든 경로를 확인하세요. 명령으로 `jwtsecret`을 얻을 수 있습니다 (odyssey 네트워크의 경우):
+
+```bash
+cat .story/geth/odyssey/geth/jwtsecret
+```
+
+</Accordion>
+
+<Accordion title="시드에 연결할 수 없음">
+
+오류:
+
+```bash
+ERRO Couldn't connect to any seeds module=p2p
+```
+
+해결책:
+
+- 노드가 동기화되어 있고 크게 뒤처지지 않았다면, 이 오류는 무시할 수 있습니다.
+- 노드가 지연되거나 완전히 중지되었다면, 시드/피어 업데이트를 시도하세요. 이는 보통 노드가 p2p 통신을 잃을 때 발생합니다 (노드를 중지하고 addrbook을 삭제하는 것을 권장합니다).
+
+```bash
+rm -rf $HOME/.story/story/config/addrbook.json
+SEEDS="..."
+PEERS="..."
+sed -i -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*seeds *=.*/seeds = \"$SEEDS\"/}" \
+       -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*persistent_peers *=.*/persistent_peers = \"$PEERS\"/}" $HOME/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="finalized payload 처리 실패 err='rpc forkchoice updated">
+
+경고:
+
+```bash
+WRN Processing finalized payload; evm syncing
+WRN Processing finalized payload failed: evm fork choice update (will retry) status="" err="rpc forkchoice updated v3: beacon syncer reorging"
+```
+
+해결책:
+
+- 모든 것이 괜찮습니다. 단지 `story-geth`가 동기화 중이라는 의미이며, 이는 시간이 좀 걸립니다.
+- 노드가 크게 뒤처지지 않았다면, 이 경고는 무시할 수 있습니다.
+
+## Dial tcp 127.0.0.1:9090
+
+경고:
+
+```bash
+WRN error getting latest block error:"rpc error: dial tcp 127.0.0.1:9090"
+```
+
+해결책:
+
+- 로그에 포트 `9090`의 연결 실패가 표시됩니다.
+- 수신 포트를 확인하세요:
+
+```bash
+sudo ss -tulpn  | grep LISTEN
+```
+
+- 다른 노드가 `9090`을 사용 중이라면, 다른 포트로 변경하세요.
+- 일반적으로 이 경고는 노드의 성능에 영향을 미치지 않아야 합니다.
+
+</Accordion>
+
+<Accordion title="잘못된 AppHash">
+
+오류:
+
+```bash
+ERRO Error in validation module=blocksync err="wrong Block[dot]Header[dot]AppHash  Expected [...]
+```
+
+해결책:
+
+- `Wrong AppHash` 유형의 로그는 사용 중인 story 노드 버전이 잘못되었음을 의미합니다.
+- [여기](/network/operating-a-node/node-setup-mainnet)에서 바이너리의 현재 버전으로 업그레이드하세요.
+- 버전이 현재 것보다 최신이라면, 롤백을 수행하세요.
+
+</Accordion>
+
+<Accordion title="연결 실패 sendRoutine / 피어 중지">
+
+오류:
+
+```bash
+ERRO Connection failed @ sendRoutine module=p2p peer=...
+ERRO Stopping peer for error module=p2p peer=...
+```
+
+해결책:
+
+- 노드가 동기화되어 있고 크게 뒤처지지 않았다면, 이 오류는 무시할 수 있습니다.
+- 노드가 지연되거나 완전히 중지되었다면, 피어 업데이트를 시도하세요. 이는 보통 노드가 p2p 통신을 잃을 때 발생합니다:
+
+```bash
+PEERS="..."
+sed -i -e "/^\[p2p\]/,/^\[/{s/^[[:space:]]*persistent_peers =./persistent_peers = \"$PEERS\"/}" $HOME/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="Moniker는 유효하고 비어있지 않아야 함">
+
+오류:
+
+```bash
+ERRO !! Fatal error occurred, app died️ unexpectedly ! err="create comet node: create node: info.Moniker must be valid non-empty
+```
+
+해결책:
+
+- 노드 moniker에 문제가 있는 것 같습니다.
+- init을 실행할 때 `""`를 사용해야 합니다:
+
+```bash
+story init --network "..." --moniker "..."
+```
+
+- 설정으로 가서 moniker를 찾고 `""` 안에 넣으세요:
+
+```bash
+sudo nano ~/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="잘못된 주소 (26656)">
+
+오류:
+
+```bash
+Fatal error occurred, app died️ unexpectedly ! err="create comet node: create node: invalid address (26656):
+```
+
+해결책:
+
+- 로그에 포트 `26656`의 연결 실패가 보고됩니다.
+- 수신 포트를 확인하세요:
+
+```bash
+sudo ss -tulpn  | grep LISTEN
+```
+
+- 다른 노드가 `26656`을 사용 중이라면, 다른 포트로 변경하고 `config`의 `P2P configuration` 옵션에서 story를 위한 기본 `26656`을 유지하세요:
+
+```bash
+sudo nano ~/.story/story/config/config.toml
+```
+
+</Accordion>
+
+<Accordion title="Eth_coinbase가 존재하지 않음">
+
+경고:
+
+```bash
+WARN Beacon client online, but no consensus updates received in a while. Please fix your beacon client to follow the chain!
+Served eth_coinbase eth_coinbase does not exist
+```
+
+해결책:
+
+- 이 오류는 네트워크가 중지되었음을 나타냅니다.
+
+</Accordion>
+
+<Accordion title="제안 검증 실패">
+
+경고:
+
+```bash
+WARN Verifying proposal failed: push new payload to evm (will retry) status="" err="new payload: rpc new payload v3: Post \"http://localhost:8551\": round trip: dial tcp 127.0.0.1:8551: connect: connection refused" stacktrace="[errors.go:39 jwt.go:41 client.go:259 client.go:180 client.go:724 client.go:590 http.go:229 http.go:173 client.go:351 engineclient.go:101 msg_server.go:183 proposal_server.go:34 helpers.go:30 proposal_server.go:33 tx.pb.go:299 msg_service_router.go:175 tx.pb.go:301 msg_service_router.go:198 prouter.go:74 abci.go:520 cmt_abci.go:40 abci.go:85 local_client.go:164 app_conn.go:89 execution.go:166 state.go:1381 state.go:1338 state.go:2055 state.go:910 state.go:836 asm_amd64.s:1695]"
+WARN Verifying proposal
+```
+
+해결책:
+
+- 포트 8551이 중지된 것으로 보이며, 백그라운드 프로세스에서 실행되는 `iptables`가 ip와 포트를 차단하고 posix에 접근하는 것입니다.
+- 해결책은 `ufw posix`와 `iptables`를 제거해 보세요:
+
+```bash
+iptables -I INPUT -s localhost -j ACCEPT
+```
+
+</Accordion>

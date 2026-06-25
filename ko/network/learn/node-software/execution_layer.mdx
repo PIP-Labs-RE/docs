@@ -1,0 +1,6 @@
+---
+title: 실행 계층 (EL)
+icon: gear-code
+---
+
+**실행 계층(Execution Layer, EL)**은 Geth 클라이언트를 포크한 것으로, [IPGraph Precompile](/network/node-architecture/precompile)과 [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md) 프리컴파일이 추가되어 있습니다. EL은 트랜잭션 실행, 브로드캐스팅, 상태 저장을 담당하며, Ethereum Virtual Machine(EVM)과 완전히 호환되고 모든 Ethereum JSON-RPC 메서드를 지원합니다. 현재 Pectra 업그레이드에서 도입된 모든 기능을 지원합니다. 코드는 [story-geth](https://github.com/piplabs/story-geth) 저장소에서 확인할 수 있습니다.

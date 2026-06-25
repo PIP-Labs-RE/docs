@@ -1,0 +1,480 @@
+---
+title: IP Asset
+description: IPAssetClient를 사용하면 DATA Foundation 내에서 IP Asset을 생성, 가져오기 및 나열할 수 있습니다.
+---
+
+## IPAssetClient
+
+### 메서드
+
+- registerIpAsset
+- registerDerivativeIpAsset
+- linkDerivative
+
+### registerIpAsset
+
+IP를 [🧩 IP Asset](/concepts/ip-asset)으로 등록합니다. 다음 워크플로우를 지원합니다:
+
+1. IP Asset 등록
+   1a. 기존 NFT를 IP Asset으로 등록
+   1b. 새 NFT를 민팅하고 IP Asset으로 등록
+2. IP Asset에 라이선스 조건 첨부
+3. 로열티 토큰 배포
+
+<Note title="NFT Metadata">
+  이 함수는 또한 기본 NFT의 `tokenUri`를 `ipMetadata.nftMetadataURI`에
+  전달된 값으로 설정합니다.
+</Note>
+
+| Method            | Type                                                                    |
+| ----------------- | ----------------------------------------------------------------------- |
+| `registerIpAsset` | `(request: RegisterIpAssetRequest) => Promise<RegisterIpAssetResponse>` |
+
+매개변수:
+
+- `request.nft`: 두 가지 옵션이 있습니다
+  - `{ type: "minted", nftContract: Address, tokenId: number | bigint }`: 기존 NFT를 IP Asset으로 등록합니다. 이미 NFT가 민팅되어 있어야 하므로, 일반적으로 더 어려운 옵션입니다.
+  - `{ type: "mint", spgNftContract: Address, recipient?: Address, allowDuplicates?: boolean }`: 새 NFT를 민팅하고 IP Asset으로 등록합니다. 일반적으로 더 쉬운 옵션인데, 이미 민팅된 NFT를 걱정할 필요가 없기 때문입니다. spgNftContract를 만들거나 기본값을 사용하여 민팅을 대신합니다.
+- `request.licenseTermsData`: 라이선스 조건을 첨부하려는 경우.
+  - `request.licenseTermsData.terms`: IP Asset에 첨부할 [license terms](/concepts/programmable-ip-license/pil-terms).
+  - `request.licenseTermsData.licensingConfig`: IP Asset에 첨부할 [licensing config](/concepts/licensing-module/license-config).
+  - `request.licenseTermsData.maxLicenseTokens`: 이 라이선스 조건에서 민팅할 수 있는 라이선스 토큰의 최대 수.
+- `request.royaltyShares`: 로열티 토큰을 배포하려는 경우.
+  - `request.royaltyShares.recipient`: 로열티 지분 수신자의 주소.
+  - `request.royaltyShares.percentage`: 로열티 지분의 백분율.
+- `request.ipMetadata`: IP Asset의 메타데이터
+  - `request.ipMetadata.ipMetadataURI`: IP의 메타데이터 URI.
+  - `request.ipMetadata.ipMetadataHash`: IP의 메타데이터 해시.
+  - `request.ipMetadata.nftMetadataURI`: NFT의 메타데이터 URI.
+  - `request.ipMetadata.nftMetadataHash`: IP NFT의 메타데이터 해시.
+- `request.deadline`: 서명의 마감 시간 (밀리초). **기본값은 1000**.
+
+<CodeGroup>
+
+```typescript Example
+import { PILFlavor, WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk";
+import { toHex } from "viem";
+
+// an example of an SPG NFT contract address
+// you can create one via `client.nftClient.createNFTCollection`
+const spgNftContract = "0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc";
+
+const response = await client.ipAsset.registerIpAsset({
+  nft: { type: "mint", spgNftContract: spgNftContract },
+  licenseTermsData: [
+    {
+      terms: PILFlavor.creativeCommonsAttribution({
+        currency: WIP_TOKEN_ADDRESS,
+        // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+        royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E",
+      }),
+    },
+    {
+      terms: PILFlavor.commercialRemix({
+        defaultMintingFee: 10000n,
+        commercialRevShare: 20, // 20%
+        currency: WIP_TOKEN_ADDRESS,
+        // RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+        royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E",
+      }),
+      maxLicenseTokens: 100,
+    },
+  ],
+  royaltyShares: [
+    {
+      recipient: "0x123...",
+      percentage: 10,
+    },
+  ],
+  ipMetadata: {
+    ipMetadataURI:
+      "https://ipfs.io/ipfs/bafkreiardkgvkejqnnkdqp4pamkx2e5bs4lzus5trrw3hgmoa7dlbb6foe",
+    ipMetadataHash: toHex("test-metadata-hash", { size: 32 }),
+    nftMetadataURI:
+      "https://ipfs.io/ipfs/bafkreicexrvs2fqvwblmgl3gnwiwh76pfycvfs66ck7w4s5omluyhti2kq",
+    nftMetadataHash: toHex("test-nft-metadata-hash", { size: 32 }),
+  },
+});
+
+console.log(
+  `Root IPA created at transaction hash ${response.txHash}, IPA ID: ${response.ipId}`
+);
+```
+
+```typescript RegisterIpAssetRequest
+export type RegisterRequest = {
+  nft: MintedNFT | MintNFT;
+  // attach license terms
+  licenseTermsData?: LicenseTermsDataInput[];
+  // sent royalty tokens out
+  royaltyShares?: RoyaltyShare[];
+  // add metadata
+  ipMetadata?: {
+    ipMetadataURI: string;
+    ipMetadataHash: Hex;
+    nftMetadataURI: string;
+    nftMetadataHash: Hex;
+  };
+  deadline?: number | bigint;
+};
+
+type MintedNFT = {
+  type: "minted";
+  /** The address of the NFT contract. */
+  nftContract: Address;
+  tokenId: number | bigint;
+};
+
+type MintNFT = {
+  type: "mint";
+  /**
+   * The address of the SPG NFT contract.
+   * You can create one via `client.nftClient.createNFTCollection`.
+   */
+  spgNftContract: Address;
+  /**
+   * The address to receive the NFT.
+   * Defaults to client's wallet address if not provided.
+   */
+  recipient?: Address;
+  /**
+   * Set to true to allow minting an NFT with a duplicate metadata hash.
+   * @default true
+   */
+  allowDuplicates?: boolean;
+};
+
+type LicenseTermsDataInput = {
+  terms: LicenseTerms;
+  licensingConfig?: LicensingConfig;
+  /**
+   * The max number of license tokens that can be minted from this license term.
+   *
+   * - When not specified, there is no limit on license token minting
+   * - When specified, minting is capped at this value and the TotalLicenseTokenLimitHook
+   *   is automatically configured as the licensingConfig.licensingHook
+   */
+  maxLicenseTokens?: number | bigint;
+};
+
+type RoyaltyShare = {
+  recipient: Address;
+  /**
+   * The percentage of the total royalty share. For example, a
+   * value of 10 represents 10% of max royalty shares, which is 10,000,000.
+   * @example 10
+   */
+  percentage: number | bigint;
+};
+```
+
+```typescript RegisterIpAssetResponse
+export type RegisterIpResponse = {
+  txHash?: Hex;
+  // ipId of the newly registered IP Asset
+  ipId: Address;
+  // if license terms were attached
+  licenseTermsIds?: bigint[];
+  // other fields based on input
+  // ...
+};
+```
+
+</CodeGroup>
+
+### registerDerivativeIpAsset
+
+IP를 다른 IP Asset의 파생물로 등록합니다. 이 함수를 사용하면 기존 라이선스 토큰을 사용하여 파생물로 등록하거나, 직접 라이선스 토큰을 민팅할 수 있습니다. IP를 파생물로 등록하려면, 그 자체가 IP Asset이어야 합니다. 따라서 이 함수를 사용하면 기존 NFT를 IP Asset(파생물이 될 것)으로 등록하거나, 새 NFT를 민팅(그리고 이를 파생물로 등록)할 수 있습니다.
+
+| Method                      | Type                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `registerDerivativeIpAsset` | `(request: RegisterDerivativeIpRequest) => Promise<RegisterDerivativeIpResponse>` |
+
+매개변수:
+
+- `request.nft`: 두 가지 옵션이 있습니다
+  - `{ type: "minted", nftContract: Address, tokenId: number | bigint }`: 기존 NFT를 IP Asset으로 등록합니다. 이미 NFT가 민팅되어 있어야 하므로, 일반적으로 더 어려운 옵션입니다.
+  - `{ type: "mint", spgNftContract: Address, recipient?: Address, allowDuplicates?: boolean }`: 새 NFT를 민팅하고 IP Asset으로 등록합니다. 일반적으로 더 쉬운 옵션인데, 이미 민팅된 NFT를 걱정할 필요가 없기 때문입니다. spgNftContract를 만들거나 기본값을 사용하여 민팅을 대신합니다.
+- `request.licenseTokenIds`: 라이선스 토큰을 사용하여 파생물로 등록하려는 경우.
+- `request.derivData`: 라이선스 토큰을 직접 민팅하려는 경우.
+  - `request.derivData.parentIpIds`: 등록된 파생 IP에 연결할 부모 IP의 ID.
+  - `request.derivData.licenseTermsIds`: 연결에 사용할 라이선스 조건의 ID.
+- `request.royaltyShares`: 로열티 토큰을 배포하려는 경우.
+  - `request.royaltyShares.recipient`: 로열티 지분 수신자의 주소.
+  - `request.royaltyShares.percentage`: 로열티 지분의 백분율.
+- `request.maxRts`: 외부 로열티 정책에 배포될 수 있는 최대 로열티 토큰 수. 0과 100,000,000 사이여야 합니다. **단순성을 위해 권장: 100_000_000**
+- `request.ipMetadata`: IP Asset의 메타데이터
+  - `request.ipMetadata.ipMetadataURI`: IP의 메타데이터 URI.
+  - `request.ipMetadata.ipMetadataHash`: IP의 메타데이터 해시.
+  - `request.ipMetadata.nftMetadataURI`: NFT의 메타데이터 URI.
+  - `request.ipMetadata.nftMetadataHash`: IP NFT의 메타데이터 해시.
+- `request.deadline`: 서명의 마감 시간 (밀리초). **기본값은 1000**.
+
+<CodeGroup>
+
+```typescript Example
+import { toHex } from "viem";
+
+// an example of an SPG NFT contract address
+// you can create one via `client.nftClient.createNFTCollection`
+const spgNftContract = "0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc";
+
+// an example of a parent IP ID
+const parentIpId = "0x456...";
+
+// an example of a commercial remix license terms ID
+const commercialRemixLicenseTermsId = 5;
+
+const response = await client.ipAsset.registerDerivativeIpAsset({
+  nft: { type: "mint", spgNftContract },
+  derivData: {
+    parentIpIds: [parentIpId],
+    licenseTermsIds: [commercialRemixLicenseTermsId],
+  },
+  ipMetadata: {
+    ipMetadataURI:
+      "https://ipfs.io/ipfs/bafkreiardkgvkejqnnkdqp4pamkx2e5bs4lzus5trrw3hgmoa7dlbb6foe",
+    ipMetadataHash: toHex("test-metadata-hash", { size: 32 }),
+    nftMetadataURI:
+      "https://ipfs.io/ipfs/bafkreicexrvs2fqvwblmgl3gnwiwh76pfycvfs66ck7w4s5omluyhti2kq",
+    nftMetadataHash: toHex("test-nft-metadata-hash", { size: 32 }),
+  },
+  royaltyShares: [
+    {
+      recipient: "0x123...",
+      percentage: 10,
+    },
+  ],
+});
+
+console.log(
+  `Derivative IPA linked to parent at transaction hash ${response.txHash}`
+);
+```
+
+```typescript Request Type
+export type RegisterDerivativeIpRequest = {
+  nft: MintedNFT | MintNFT;
+  /** The IDs of the license tokens to be burned for linking the IP to parent IPs.
+   * Must be provided together with `maxRts`.
+   */
+  licenseTokenIds?: number[] | bigint[];
+  /**
+   * The derivative data containing parent IP information and licensing terms.
+   * This will be used to mint a license token for you.
+   * @remarks
+   * This should not be provided if you are using a license token to register as derivative.
+   * Because the license token is already minted.
+   */
+  derivData?: DerivativeDataInput;
+  /**
+   * Authors of the IP and their shares of the royalty tokens.
+   *
+   * @remarks
+   * Royalty shares can only be specified if `derivData` is also provided.
+   * This ensures that royalty distribution is always associated with derivative IP registration.
+   * The shares define how royalty tokens will be distributed among IP authors.
+   */
+  royaltyShares?: RoyaltyShare[];
+  ipMetadata?: {
+    ipMetadataURI: string;
+    ipMetadataHash: Hex;
+    nftMetadataURI: string;
+    nftMetadataHash: Hex;
+  };
+  /**
+   * The maximum number of royalty tokens that can be distributed to the external royalty policies (max: 100,000,000).
+   * Must be provided together with `licenseTokenIds`.
+   * Just use 100_000_000 for simplicity.
+   */
+  maxRts?: number;
+  /**
+   * The deadline for the signature in seconds.
+   * @default 1000
+   */
+  deadline?: number | bigint;
+};
+
+type MintedNFT = {
+  type: "minted";
+  /** The address of the NFT contract. */
+  nftContract: Address;
+  tokenId: number | bigint;
+};
+
+type MintNFT = {
+  type: "mint";
+  /**
+   * The address of the SPG NFT contract.
+   * You can create one via `client.nftClient.createNFTCollection`.
+   */
+  spgNftContract: Address;
+  /**
+   * The address to receive the NFT.
+   * Defaults to client's wallet address if not provided.
+   */
+  recipient?: Address;
+  /**
+   * Set to true to allow minting an NFT with a duplicate metadata hash.
+   * @default true
+   */
+  allowDuplicates?: boolean;
+};
+
+export type DerivativeDataInput = {
+  parentIpIds: Address[];
+  /** The IDs of the license terms that the parent IP supports. */
+  licenseTermsIds: bigint[] | number[];
+  /**
+   * The maximum minting fee that the caller is willing to pay. if set to 0 then no limit.
+   * @default 0
+   */
+  maxMintingFee?: bigint | number;
+  /**
+   *  The maximum number of royalty tokens that can be distributed to the external royalty policies (max: 100,000,000).
+   * @default 100_000_000
+   */
+  maxRts?: number;
+  /**
+   * The maximum revenue share percentage allowed for minting the License Tokens. Must be between 0 and 100 (where 100% represents 100_000_000).
+   * @default 100
+   */
+  maxRevenueShare?: number;
+  /**
+   * The address of the license template.
+   * @default Defaults to https://docs.datafdn.org/developers/deployed-smart-contracts
+   * PILicenseTemplate address if not provided.
+   */
+  licenseTemplate?: Address;
+};
+
+type RoyaltyShare = {
+  recipient: Address;
+  /**
+   * The percentage of the total royalty share. For example, a
+   * value of 10 represents 10% of max royalty shares, which is 10,000,000.
+   * @example 10
+   */
+  percentage: number | bigint;
+};
+```
+
+```typescript Response Type
+export type RegisterDerivativeIpResponse = {
+  txHash?: Hex;
+  ipId?: Address;
+};
+```
+
+</CodeGroup>
+
+### linkDerivative
+
+기존 파생 IP를 부모 IP에 연결합니다.
+
+| Method           | Type                                                                  |
+| ---------------- | --------------------------------------------------------------------- |
+| `linkDerivative` | `(request: LinkDerivativeRequest) => Promise<LinkDerivativeResponse>` |
+
+매개변수:
+
+<Tabs>
+  <Tab title="라이선스 토큰 없이">
+    - `request.childIpId`: 자식 IP의 ID.
+    - `request.licenseTermIds`: 연결에 사용할 라이선스 조건의 ID.
+    - `request.parentIpIds`: 부모 IP의 ID.
+
+    <CodeGroup>
+
+    ```typescript TypeScript
+    const response = await client.ipAsset.linkDerivative({
+      childIpId: "0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+      parentIpIds: ["0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba"],
+      licenseTermsIds: [5],
+    });
+
+    console.log(
+      `Derivative IPA linked to parent at transaction hash ${response.txHash}`
+    );
+    ```
+
+    ```typescript Request Type
+    export type LinkDerivativeRequest = {
+      parentIpIds: Address[];
+      childIpId: Address;
+      /** The IDs of the license terms that the parent IP supports. */
+      licenseTermsIds: number[] | bigint[];
+      /**
+      * The maximum minting fee that the caller is willing to pay. if set to 0 then no limit.
+      * @default 0
+      */
+      maxMintingFee?: bigint | number;
+      /**
+      *  The maximum number of royalty tokens that can be distributed to the external royalty policies (max: 100,000,000).
+      * @default 100_000_000
+      */
+      maxRts?: number;
+      /**
+      * The maximum revenue share percentage allowed for minting the License Tokens. Must be between 0 and 100 (where 100% represents 100_000_000).
+      * @default 100
+      */
+      maxRevenueShare?: number;
+      /**
+      * The address of the license template.
+      * Defaults to {@link https://docs.datafdn.org/docs/programmable-ip-license | License Template} address if not provided.
+      */
+      licenseTemplate?: Address;
+    };
+    ```
+
+    ```typescript Response Type
+    export type LinkDerivativeResponse = {
+      txHash?: Hex;
+    };
+    ```
+
+    </CodeGroup>
+
+  </Tab>
+
+  <Tab title="라이선스 토큰 사용">
+    - `request.childIpId`: 자식 IP의 ID.
+    - `request.licenseTokenIds`: 연결에 사용할 라이선스 토큰의 ID.
+
+    <CodeGroup>
+
+    ```typescript TypeScript
+    const response = await client.ipAsset.linkDerivative({
+      childIpId: "0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+      licenseTokenIds: [1115],
+    });
+
+    console.log(
+      `Derivative IPA linked to parent at transaction hash ${response.txHash}`
+    );
+    ```
+
+    ```typescript Request Type
+    export type LinkDerivativeRequest = {
+      /** The derivative IP ID. */
+      childIpId: Address;
+      /** The IDs of the license tokens. */
+      licenseTokenIds: number[] | bigint[];
+      /**
+      * The maximum number of royalty tokens that can be distributed to the external royalty policies (max: 100,000,000).
+      * @default 100_000_000
+      */
+      maxRts?: number;
+    };
+    ```
+
+    ```typescript Response Type
+    export type LinkDerivativeResponse = {
+      txHash?: Hex;
+    };
+    ```
+
+    </CodeGroup>
+
+  </Tab>
+</Tabs>

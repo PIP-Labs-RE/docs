@@ -1,0 +1,294 @@
+---
+title: Observer
+description: CDR 볼트 데이터, 수수료 및 DKG 상태를 쿼리하기 위한 읽기 전용 메서드.
+---
+
+## Observer
+
+`Observer` 하위 클라이언트는 `walletClient` 없이도 항상 사용할 수 있습니다. CDR 및 DKG 상태에 대한 읽기 전용 액세스를 제공합니다.
+
+```typescript
+const observer = client.observer;
+```
+
+Observer는 두 가지 백엔드에서 읽습니다: EVM `publicClient`를 통한 CDR 컨트랙트 상태 (볼트, 수수료,
+`maxEncryptedDataSize`, operational threshold), 그리고 `apiUrl`에 의해 구성된 DATA Foundation API REST 엔드포인트를 통한
+DKG 상태 (active round, global public key, threshold, 검증자, attestation).
+
+<Note>
+  Round-keyed DKG 스냅샷은 안정적인 Active 및 Ended 단계의 라운드에 대해 Observer의
+  수명 동안 캐시되며, 진행 중인 요청 중복 제거가 적용됩니다. `getActiveRound()`는
+  active round가 언제든지 전환될 수 있으므로 항상 다시 가져옵니다.
+</Note>
+
+### 메서드
+
+- getVault
+- getAllocateFee
+- getWriteFee
+- getReadFee
+- getMaxEncryptedDataSize
+- getOperationalThreshold
+- getActiveRound
+- getGlobalPubKey
+- getParticipantCount
+- getThreshold
+- getThresholdAt
+- getRegisteredValidators
+- getValidatorAttestations
+
+---
+
+### getVault
+
+UUID로 볼트의 온체인 데이터를 가져옵니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getVault` | `(uuid: number) => Promise<Vault>` |
+
+매개변수:
+
+- `uuid`: 볼트의 고유 식별자 (uint32)
+
+```typescript Example
+const vault = await client.observer.getVault(42);
+
+console.log(vault.uuid); // 42
+console.log(vault.updatable); // false
+console.log(vault.writeConditionAddr); // "0x..."
+console.log(vault.readConditionAddr); // "0x..."
+console.log(vault.encryptedData); // "0x..." (hex-encoded TDH2 ciphertext)
+```
+
+```typescript Vault
+interface Vault {
+  uuid: number;
+  updatable: boolean;
+  writeConditionAddr: `0x${string}`;
+  readConditionAddr: `0x${string}`;
+  writeConditionData: `0x${string}`;
+  readConditionData: `0x${string}`;
+  encryptedData: `0x${string}`;
+}
+```
+
+---
+
+### getAllocateFee
+
+새 볼트를 할당하는 데 필요한 현재 수수료(wei 단위)를 반환합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getAllocateFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getAllocateFee();
+console.log(`Allocate fee: ${fee} wei`);
+```
+
+---
+
+### getWriteFee
+
+볼트에 데이터를 쓰는 데 필요한 현재 수수료(wei 단위)를 반환합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getWriteFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getWriteFee();
+console.log(`Write fee: ${fee} wei`);
+```
+
+---
+
+### getReadFee
+
+읽기 요청을 제출하는 데 필요한 현재 수수료(wei 단위)를 반환합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getReadFee` | `() => Promise<bigint>` |
+
+```typescript Example
+const fee = await client.observer.getReadFee();
+console.log(`Read fee: ${fee} wei`);
+```
+
+---
+
+### getMaxEncryptedDataSize
+
+온체인 볼트 경로에서 지원되는 최대 암호화된 페이로드 크기(바이트 단위)를 반환합니다.
+CDR 컨트랙트는 이를 상수로 취급하므로, Observer의 수명 동안 캐시됩니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getMaxEncryptedDataSize` | `() => Promise<bigint>` |
+
+```typescript Example
+const maxSize = await client.observer.getMaxEncryptedDataSize();
+console.log(`Max encrypted payload size: ${maxSize} bytes`);
+```
+
+---
+
+### getOperationalThreshold
+
+DKG 컨트랙트에서 읽은 basis-points 상수로서의 DKG operational threshold를 반환합니다 (예: `667` = 66.7%).
+
+| Method | Type |
+| ------ | ---- |
+| `getOperationalThreshold` | `() => Promise<bigint>` |
+
+```typescript Example
+const threshold = await client.observer.getOperationalThreshold();
+console.log(`Threshold: ${Number(threshold) / 10}%`); // e.g. "66.7%"
+```
+
+---
+
+### getActiveRound
+
+현재 활성 DKG 라운드 번호를 반환합니다. active round가 언제든지 전환될 수 있으므로 항상
+DATA Foundation API REST 엔드포인트를 호출하므로, 캐시에서 제공되지 않습니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getActiveRound` | `() => Promise<number>` |
+
+```typescript Example
+const round = await client.observer.getActiveRound();
+console.log(`Active DKG round: ${round}`);
+```
+
+---
+
+### getGlobalPubKey
+
+활성 라운드의 DKG global public key를 반환하며, TDH2 암호화에 사용됩니다.
+이는 2바이트 곡선 코드 접두사(`0x043f`)가 있는 Ed25519 포인트로, 총 34바이트이므로,
+WASM TDH2 함수에 직접 전달할 수 있습니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getGlobalPubKey` | `() => Promise<Uint8Array>` |
+
+```typescript Example
+const globalPubKey = await client.observer.getGlobalPubKey();
+console.log(globalPubKey.length); // 34
+```
+
+---
+
+### getParticipantCount
+
+활성 DKG 라운드에 참여하도록 선택된 검증자 수를 반환합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getParticipantCount` | `() => Promise<number>` |
+
+```typescript Example
+const count = await client.observer.getParticipantCount();
+console.log(`Participating validators: ${count}`);
+```
+
+---
+
+### getThreshold
+
+현재 활성 DKG 라운드의 절대 임계값을 반환합니다: 결합에 필요한 부분 복호화의 최소
+수입니다. 클라이언트에 `minThresholdRatio`가 설정되어 있으면, 유효한 값은
+`max(network.threshold, ceil(participants * minThresholdRatio))`입니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getThreshold` | `() => Promise<number>` |
+
+```typescript Example
+const threshold = await client.observer.getThreshold();
+console.log(`Need ${threshold} partials to decrypt`);
+```
+
+<Note>
+  UI / 상태 표시에 이를 사용하세요. `collectPartials`에서 가져온 특정
+  부분 복호화 버킷을 검증하는 데는 사용하지 **마세요**. 버킷은 DKG 롤오버 중 활성 라운드와
+  다를 수 있는 자체 라운드를 가지고 있기 때문입니다. 그 경우에는
+  `getThresholdAt`을 사용하세요.
+</Note>
+
+---
+
+### getThresholdAt
+
+특정 DKG 라운드의 절대 임계값을 반환하며, 해당 라운드의 자체 참가자 총수에 대해
+계산됩니다. `collectPartials`에서 내부적으로 사용되어 폴링 중간의 DKG 롤오버가
+버킷을 잘못된 라운드와 비교하지 않도록 합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getThresholdAt` | `(round: number) => Promise<number>` |
+
+매개변수:
+
+- `round`: 임계값을 계산할 DKG 라운드 번호
+
+```typescript Example
+const threshold = await client.observer.getThresholdAt(4);
+console.log(`Round 4 threshold: ${threshold}`);
+```
+
+---
+
+### getRegisteredValidators
+
+지정된 DKG 라운드(기본값은 활성 라운드)에 대한 검증자 주소 → `commPubKey` 바이트 맵을 반환합니다.
+`Finalized` 상태의 검증자만 포함합니다. `commPubKey`는 검증자의 TEE가 부분 복호화 응답에
+서명하는 데 사용하는 secp256k1 공개 키입니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getRegisteredValidators` | `(params?: { round?: number }) => Promise<Map<string, Uint8Array>>` |
+
+매개변수:
+
+- `params.round` *(선택)*: DKG 라운드 번호. 기본값은 활성 라운드입니다.
+
+```typescript Example
+const validators = await client.observer.getRegisteredValidators();
+for (const [address, commPubKey] of validators) {
+  console.log(address, commPubKey.length);
+}
+```
+
+---
+
+### getValidatorAttestations
+
+지정된 DKG 라운드(기본값은 활성 라운드)에 대한 검증자 주소 → `enclaveReport` (원시 SGX quote 바이트)
+맵을 반환합니다. `Finalized` 상태의 검증자만 포함합니다. `getRegisteredValidators`와 라운드별 캐시를
+공유합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `getValidatorAttestations` | `(params?: { round?: number }) => Promise<Map<string, Uint8Array>>` |
+
+매개변수:
+
+- `params.round` *(선택)*: DKG 라운드 번호. 기본값은 활성 라운드입니다.
+
+```typescript Example
+const attestations = await client.observer.getValidatorAttestations();
+for (const [address, enclaveReport] of attestations) {
+  console.log(address, enclaveReport.length);
+}
+```
+
+<Note>
+  부분 복호화를 신뢰하기 전에 각 검증자의 TEE enclave를 검증하려면 `verifyAttestation()`과
+  함께 사용하세요.
+</Note>

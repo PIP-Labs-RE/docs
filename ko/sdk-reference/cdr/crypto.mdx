@@ -1,0 +1,268 @@
+---
+title: Crypto 유틸리티
+description: CDR SDK에서 사용되는 저수준 TDH2 및 ECIES 암호 기본 요소.
+---
+
+## Crypto 유틸리티
+
+이는 CDR SDK 내부적으로 사용되는 저수준 암호화 함수입니다. 일반적으로 커스텀 복호화 흐름을 빌드하는 경우가 아니라면 이를 직접 호출할 필요가 없습니다.
+
+<Note>
+  모든 crypto 함수는 먼저 `initWasm()`을 통해 WASM이 초기화되어야 합니다.
+</Note>
+
+<Note>
+  현재 Aeneid 릴리즈에는 검증자 attestation을 예상 enclave 측정값 및 security
+  version 값과 비교하여 확인하기 위한 `verifyAttestation()`을 포함한 SGX
+  attestation 검증 유틸리티도 포함되어 있습니다.
+</Note>
+
+### 함수
+
+- initWasm
+- tdh2Encrypt
+- tdh2Verify
+- tdh2Combine
+- decryptPartial
+- parseSgxQuote
+- verifyAttestation
+- uuidToLabel
+
+---
+
+### initWasm
+
+모든 TDH2 암호화 연산에 필요한 WebAssembly 모듈을 초기화합니다. 다른 crypto 함수보다 먼저 한 번 호출되어야 합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `initWasm` | `() => Promise<void>` |
+
+```typescript Example
+import { initWasm } from "@piplabs/cdr-sdk";
+
+await initWasm();
+// Now TDH2 functions are ready to use
+```
+
+<Warning>
+  `initWasm()`이 완료되기 전에 TDH2 함수를 호출하면 `WasmNotInitializedError`를 던집니다.
+</Warning>
+
+---
+
+### tdh2Encrypt
+
+DKG global public key에 대해 TDH2 threshold encryption을 사용하여 평문을 암호화합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Encrypt` | `(params: TDH2EncryptParams) => Promise<TDH2Ciphertext>` |
+
+매개변수:
+
+- `params.plaintext`: `Uint8Array` - 암호화할 데이터
+- `params.globalPubKey`: `Uint8Array` - DKG global public key (Ed25519 접두사 포함 34 bytes)
+- `params.label`: `Uint8Array` - 특정 볼트에 ciphertext를 바인딩하는 32바이트 label
+
+```typescript Example
+import { tdh2Encrypt, uuidToLabel } from "@piplabs/cdr-sdk";
+
+const ciphertext = await tdh2Encrypt({
+  plaintext: new TextEncoder().encode("secret"),
+  globalPubKey,
+  label: uuidToLabel(42),
+});
+```
+
+```typescript TDH2Ciphertext
+interface TDH2Ciphertext {
+  raw: Uint8Array;   // serialized ciphertext (cb-mpc format)
+  label: Uint8Array; // 32-byte context binding
+}
+```
+
+---
+
+### tdh2Verify
+
+복호화 없이 TDH2 ciphertext를 검증합니다. 무결성 검사에 유용합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Verify` | `(params: TDH2VerifyParams) => Promise<boolean>` |
+
+매개변수:
+
+- `params.ciphertext`: `Uint8Array` - 원시 ciphertext 바이트
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.label`: `Uint8Array` - 암호화 중에 사용된 32바이트 label
+
+```typescript Example
+import { tdh2Verify } from "@piplabs/cdr-sdk";
+
+const isValid = await tdh2Verify({
+  ciphertext: ciphertext.raw,
+  globalPubKey,
+  label: uuidToLabel(42),
+});
+
+console.log(`Ciphertext valid: ${isValid}`);
+```
+
+---
+
+### tdh2Combine
+
+threshold 부분 복호화를 결합하여 원본 평문을 복구합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `tdh2Combine` | `(params: TDH2CombineParams) => Promise<Uint8Array>` |
+
+매개변수:
+
+- `params.ciphertext`: `TDH2Ciphertext` - 암호화된 데이터 (`{ raw, label }`)
+- `params.partials`: `DecryptedPartial[]` - 복호화된 부분 복호화 배열 (`>= threshold`가 있어야 함)
+- `params.globalPubKey`: `Uint8Array` - DKG global public key
+- `params.label`: `Uint8Array` - 32바이트 label
+- `params.threshold`: `number` - 필요한 부분 복호화의 최소 개수
+
+```typescript Example
+import { tdh2Combine } from "@piplabs/cdr-sdk";
+
+const plaintext = await tdh2Combine({
+  ciphertext,
+  partials: decryptedPartials,
+  globalPubKey,
+  label: uuidToLabel(42),
+  threshold: 2,
+});
+```
+
+```typescript DecryptedPartial
+interface DecryptedPartial {
+  name: string;         // validator name: key in the access structure
+  pubShare: Uint8Array; // 34 bytes (Ed25519 with 0x043f prefix)
+  partial: Uint8Array;  // raw decrypted partial bytes
+}
+```
+
+---
+
+### decryptPartial
+
+ECIES (ECDH + HKDF + AES-256-GCM)를 사용하여 검증자로부터의 단일 암호화된 부분 복호화를 복호화합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `decryptPartial` | `(params: DecryptPartialParams) => Promise<Uint8Array>` |
+
+매개변수:
+
+- `params.encryptedPartial`: `Uint8Array` - 암호화된 부분 복호화 (nonce &#124;&#124; ciphertext &#124;&#124; tag)
+- `params.ephemeralPubKey`: `Uint8Array` - 검증자의 일회용 공개 키 (65 bytes, 압축되지 않은 secp256k1)
+- `params.recipientPrivKey`: `Uint8Array` - 본인의 일회용 개인 키 (32 bytes, secp256k1)
+
+```typescript Example
+import { decryptPartial } from "@piplabs/cdr-sdk";
+
+const rawPartial = await decryptPartial({
+  encryptedPartial: partialBytes,
+  ephemeralPubKey: validatorEphemeralPubKey,
+  recipientPrivKey: myEphemeralPrivKey,
+});
+```
+
+**ECIES 프로토콜:**
+1. ECDH: `sharedPoint = secp256k1(recipientPrivKey, ephemeralPubKey)`
+2. HKDF-SHA256: `aesKey = hkdf(sha256, sharedSecret, info="dkg-tdh2-partial", 32)`
+3. AES-256-GCM: 암호화된 부분 복호화의 12바이트 nonce로 복호화
+
+---
+
+### verifyAttestation
+
+검증자의 SGX attestation 문서를 예상되는 enclave 측정값 및 최소 security
+version 검사와 비교하여 검증합니다. 애플리케이션에서 명시적인 `MRENCLAVE`,
+`MRSIGNER`, `SVN` 신뢰 검사를 원할 때
+`observer.getValidatorAttestations()`에서 반환된 데이터와 함께 사용하세요.
+
+매개변수:
+
+- `report`: `Uint8Array` - 원시 SGX DCAP Quote v3 바이트
+- `config.expectedMrEnclave` *(선택)*: `` `0x${string}` `` - 예상되는 enclave 측정값
+- `config.expectedMrSigner` *(선택)*: `` `0x${string}` `` - 예상되는 signer 측정값
+- `config.minSecurityVersion` *(선택)*: `number` - 허용되는 최소 ISV SVN
+
+```typescript Example
+import { verifyAttestation } from "@piplabs/cdr-sdk";
+
+const result = await verifyAttestation(report, {
+  expectedMrEnclave: "0x51c08cf3...",
+  expectedMrSigner: "0xa6f9d44c...",
+  minSecurityVersion: 1,
+});
+
+if (!result.valid) {
+  console.error(result.error);
+}
+```
+
+<Note>
+  `verifyAttestation()`은 클라이언트 측 필드 검사를 수행합니다. quote 서명 체인
+  자체는 온체인에서 검증되며, 이 헬퍼는 SDK 사용자를 위한 추가적인 허용 목록 /
+  정책 검사입니다.
+</Note>
+
+---
+
+### parseSgxQuote
+
+정책을 적용하지 않고 SGX DCAP Quote v3에서 주요 필드를 파싱합니다.
+
+| Function | Type |
+| -------- | ---- |
+| `parseSgxQuote` | `(report: Uint8Array) => { mrEnclave, mrSigner, securityVersion }` |
+
+매개변수:
+
+- `report`: `Uint8Array` - 원시 SGX DCAP Quote v3 바이트
+
+반환값:
+
+- `mrEnclave`: `` `0x${string}` `` - 파싱된 enclave 측정값
+- `mrSigner`: `` `0x${string}` `` - 파싱된 signer 측정값
+- `securityVersion`: `number` - 파싱된 ISV SVN
+
+```typescript Example
+import { parseSgxQuote } from "@piplabs/cdr-sdk";
+
+const fields = parseSgxQuote(report);
+console.log(fields.mrEnclave);
+console.log(fields.mrSigner);
+console.log(fields.securityVersion);
+```
+
+---
+
+### uuidToLabel
+
+볼트 UUID로부터 결정적인 32바이트 label을 파생합니다. 특정 볼트에 ciphertext를 바인딩하는 데 사용됩니다.
+
+| Function | Type |
+| -------- | ---- |
+| `uuidToLabel` | `(uuid: number) => Uint8Array` |
+
+매개변수:
+
+- `uuid`: `number` - 볼트 UUID (uint32)
+
+28개의 영(zero) 바이트 뒤에 4바이트 빅 엔디안 UUID가 오는 32바이트 `Uint8Array`를 반환합니다.
+
+```typescript Example
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+const label = uuidToLabel(42);
+// Uint8Array(32) [0, 0, ..., 0, 0, 0, 0, 42]
+```

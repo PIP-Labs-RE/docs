@@ -1,0 +1,238 @@
+---
+title: CDR SDK 개요
+description: CDR SDK를 사용하여 Confidential Data Rails(CDR)를 애플리케이션에 통합하는 방법을 알아봅니다.
+---
+
+<Note>
+  이 문서는 npm에서 사용 가능한 `@piplabs/cdr-sdk`의 Aeneid 릴리스(`v0.2.1`)를
+  추적합니다.
+</Note>
+
+<CardGroup cols={2}>
+  <Card
+    title="AI 에이전트로 빌드 중이신가요? CDR Skill을 설치하세요"
+    icon="robot"
+    href="https://github.com/jacob-tucker/cdr-skill"
+  >
+    Claude 및 기타 에이전트를 위한 드롭인 스킬과, 온체인 비밀, 암호화된 파일,
+    IP 게이트 흐름을 다루는 세 가지 엔드 투 엔드 예제를 제공합니다. 작동하는
+    CDR 통합을 얻는 가장 빠른 방법입니다.
+  </Card>
+  <Card
+    title="CDR 백서"
+    icon="file-lines"
+    href="https://www.story.foundation/confidentialdatarails.pdf"
+  >
+    Confidential Data Rails의 전체 설계: 암호학, 검증자 프로토콜 및 위협 모델.
+  </Card>
+</CardGroup>
+
+## CDR이란 무엇인가요?
+
+**Confidential Data Rails (CDR)**는 DATA Foundation L1에서 임계값 암호화된 데이터를 위한
+DATA Foundation의 애플리케이션 계층입니다. 내부적으로 검증자 네트워크의 DKG 생성 공개 키를
+사용하여 어떤 단일 당사자도 전체 복호화 키를 보유하지 않도록 비밀을 암호화할 수
+있습니다. 데이터는 임계값 수의 검증자가 집합적으로 부분 복호화를 제공할 때만
+복호화될 수 있으며, 접근 제어는 스마트 컨트랙트를 통해 온체인에서 시행됩니다.
+검증자 측 DKG 및 부분 복호화 흐름은 `story-kernel` TEE(Intel SGX 엔클레이브)
+내부에서 실행됩니다.
+
+CDR은 다음과 같은 강력한 사용 사례를 가능하게 합니다:
+
+- **비밀 공유** - 특정 지갑만 복호화할 수 있는 비밀을 암호화하고 공유합니다
+- **암호화된 파일 전달** - 큰 파일은 오프체인에 보관하면서 암호화된 파일 키는 온체인에 저장합니다
+- **데이터 마켓플레이스** - 온체인 결제 시행과 함께 암호화된 데이터에 대한 접근권을 판매합니다
+- **IP 게이트 콘텐츠** - 암호화된 데이터를 IP Asset에 묶고 복호화에 라이선스 토큰을 요구합니다
+
+## 보안 및 신뢰 모델
+
+- **기밀성** - 볼트 페이로드는 임계값 수의 검증자가 복호화에 참여하고 읽기
+  조건이 통과될 때까지 암호화된 상태로 유지됩니다.
+- **메타데이터 가시성** - 볼트 UUID, 조건 주소, 트랜잭션 및 공개하는 모든
+  오프체인 스토리지 포인터는 CDR에 의해 숨겨지지 않습니다.
+- **가용성** - 충분한 검증자가 타임아웃 전에 응답하지 않으면 읽기가 실패할 수
+  있습니다. 그런 경우 읽기 요청을 재시도하거나 `timeoutMs`를 늘리세요.
+- **순방향 비밀성 / 폐기** - CDR 암호문은 암호화 시점에 적용된 접근 규칙 및
+  검증자 세트에 묶여 있는 것으로 취급하세요. 접근 모델이 변경되면 애플리케이션
+  계층에서 콘텐츠를 회전하거나 재암호화하세요.
+- **릴리스 자세** - 현재 공개 릴리스는 Aeneid 테스트넷에서 실행됩니다. 그곳에서
+  통합을 빌드 및 테스트하되, 프로덕션 기밀성 환경으로 취급하지 마세요.
+
+## Aeneid 릴리스의 제공 내용
+
+현재 SDK 표면은 두 가지 워크플로를 중심으로 합니다:
+
+- 온체인에 직접 저장되는 작은 비밀을 위한 `uploadCDR` / `accessCDR`을 통한 **데이터 키 볼트**
+- 온체인 키 관리와 함께 오프체인 콘텐츠를 위한 `uploadFile` / `downloadFile`을 통한 **암호화된 파일**
+
+Aeneid 릴리스에는 또한 다음이 포함됩니다:
+
+- `observer`, `uploader` 및 `consumer` 서브 클라이언트
+- DATA Foundation API REST 엔드포인트(`apiUrl`)를 통한 DKG 상태 읽기
+- Helia, 게이트웨이 기반 IPFS, Storacha 및 Synapse를 위한 스토리지 프로바이더
+- 검증자 등록, 증명 조회 및 SGX 증명 검증 유틸리티
+
+## 작동 방식
+
+CDR은 **볼트**를 중심으로 회전합니다. 각 볼트는 암호화된 데이터를 저장하고 두 개의 구성 가능한 접근 제어 조건을 가집니다:
+
+- **쓰기 조건(Write Condition)** - 누가 암호화된 데이터를 볼트에 저장할 수 있는지 결정합니다
+- **읽기 조건(Read Condition)** - 누가 볼트 데이터의 복호화를 요청할 수 있는지 결정합니다
+
+<Note>
+  `msg.sender`가 구성된 조건 주소와 같을 때 CDR 컨트랙트는 조건 검사를 건너뛰므로,
+  자신의 지갑 주소를 조건으로 설정하면 볼트가 소유자 전용이 됩니다(다른 호출자는
+  되돌려지는데, EOA가 `checkWriteCondition` / `checkReadCondition`을 구현하지
+  않기 때문입니다). SDK는 기본적으로 조건 주소를 검증합니다; 의도적으로 이 방식으로
+  EOA를 사용할 때는 `skipConditionValidation: true`로 `allocate()`를 호출하세요.
+</Note>
+
+볼트를 사용하는 일반적인 두 가지 방법이 있습니다:
+
+- **온체인 비밀**: 암호화된 바이트를 볼트에 직접 저장합니다
+- **오프체인 파일**: 스토리지 백엔드에 암호화된 파일을 저장하고, 암호화된 AES 키와
+  콘텐츠 포인터를 볼트에 보관합니다
+
+### 데이터 키 볼트 흐름
+
+1. 원하는 읽기/쓰기 조건으로 온체인에서 볼트를 **할당**합니다
+2. 검증자 네트워크에서 DKG 글로벌 공개 키를 **가져옵니다**
+3. TDH2 임계값 암호화를 사용하여 로컬에서 데이터를 **암호화**합니다
+4. 암호화된 암호문을 온체인 볼트에 **씁니다**
+
+자세한 과정:
+[비밀 암호화하기](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
+
+### 암호화된 파일 흐름
+
+**업로드 (데이터 소유자):**
+
+1. AES 키로 로컬에서 파일을 **암호화**합니다
+2. 암호화된 파일을 IPFS와 같은 스토리지 백엔드에 **업로드**합니다
+3. AES 키와 CID를 CDR을 통해 **암호화**하고 결과 볼트 페이로드를 씁니다
+
+**다운로드 (권한이 있는 독자):**
+
+1. 임계값 복호화를 통해 볼트를 **읽고** AES 키 페이로드를 복구합니다
+2. 스토리지에서 암호화된 파일을 **다운로드**합니다
+3. 복구된 AES 키로 클라이언트 측에서 파일을 **복호화**합니다
+
+자세한 과정:
+[파일 암호화 및 다운로드](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
+
+### 복호화 흐름
+
+1. 복호화 세션을 위한 일회용 키 쌍을 **생성**합니다
+2. 온체인에서 읽기 요청을 **제출**합니다 (읽기 조건에 대해 검증됨)
+3. 임계값을 충족할 때까지 검증자로부터 부분 복호화를 **수집**합니다
+4. 원본 데이터 키를 복구하기 위해 부분 복호화를 클라이언트 측에서 **결합**합니다
+
+평문 암호화와 최종 복호화는 **클라이언트 측에서** 발생합니다. 검증자는 TEE에 갇힌 부분 복호화만 생성하며, CDR 컨트랙트나 검증자 모두 평문 데이터를 보지 못합니다.
+
+## 접근 제어 패턴
+
+### 지갑 주소 (간단)
+
+지갑 주소를 읽기/쓰기 조건으로 설정합니다. 본인만 암호화/복호화할 수 있습니다.
+
+```typescript
+await uploader.allocate({
+  updatable: false,
+  writeConditionAddr: userAddress, // only you can write
+  readConditionAddr: userAddress, // only you can read
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
+});
+```
+
+엔드 투 엔드 예제는
+[비밀 암호화하기](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret)를 참조하세요.
+
+<Note>
+  이 EOA 단축키는 `allocate()`와 함께 사용할 때 가장 유용합니다. 고수준
+  `uploadCDR()` / `uploadFile()` 헬퍼는 조건 컨트랙트를 검증하므로 예제에서는
+  배포된 소유자 전용 조건 컨트랙트를 사용합니다.
+</Note>
+
+### 라이선스 토큰 (IP 게이트)
+
+Aeneid에 배포된 `LicenseReadCondition` 컨트랙트를 사용하고
+`abi.encode(licenseTokenAddress, ipId)`를 `readConditionData`로 인코딩합니다.
+볼트 작성자는 일반적으로 업로더만 쓸 수 있도록 배포된 `OwnerWriteCondition`
+컨트랙트를 사용하며, 독자는 `accessAuxData`에서 유효한 DATA Foundation 라이선스
+토큰 ID를 제시해야 합니다.
+
+기술적 가이드:
+[DATA Foundation 라이선스 읽기 패턴이 작동하는 방식](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
+
+### 사용자 정의 조건 컨트랙트
+
+다음과 같은 고급 접근 제어를 위해 `checkReadCondition` 및 `checkWriteCondition`을 구현하는 자체 조건 컨트랙트를 배포하세요:
+
+- **고정 수수료** - 읽기 접근 잠금 해제를 위해 일회성 수수료 지불
+- **시간 기반** - 특정 시간 창에서만 접근
+- **마켓플레이스** - 리스팅 소유자가 쓰기를 제어하고 구매자가 읽을 수 있음
+
+### 조건 헬퍼
+
+SDK에는 일반적인 접근 패턴을 위한 헬퍼 인코더가 포함되어 있습니다:
+
+```typescript
+import { conditions } from "@piplabs/cdr-sdk";
+
+conditions.ownerOnly({ address: conditionAddr, owner: "0x..." });
+conditions.custom({ address: conditionAddr, conditionData: "0x..." });
+conditions.open({ address: conditionAddr });
+conditions.tokenGate({ address: conditionAddr, token: "0x...", minBalance: 1n });
+conditions.merkle({ address: conditionAddr, root: "0x..." });
+```
+
+<Note>
+  Aeneid에서는 오늘날 `ownerOnly()` 및 `custom()`이 실용적인 내장 패턴입니다.
+  `open()`, `tokenGate()` 및 `merkle()`은 조건 데이터를 인코딩하는 데 도움이
+  되지만, 여전히 매칭되는 조건 컨트랙트를 직접 배포해야 합니다.
+  `conditions.storyLicense()`는 아직 사용할 수 없습니다.
+</Note>
+
+배포된 DATA Foundation 라이선스 게이트 패턴은
+[DATA Foundation 라이선스 읽기 패턴이 작동하는 방식](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works)을 참조하세요.
+
+## 다음 단계
+
+<CardGroup cols={2}>
+  <Card title="설정" icon="gear" href="/developers/cdr-sdk/setup">
+    npm에서 SDK를 설치하고 Aeneid용 클라이언트를 초기화합니다.
+  </Card>
+  <Card
+    title="런타임 구성"
+    icon="sliders"
+    href="/developers/cdr-sdk/advanced-configuration"
+  >
+    DKG 백엔드, 검증 RPC, 시스템 주소 및 릴리스 노트.
+  </Card>
+  <Card
+    title="암호화 및 복호화"
+    icon="lock"
+    href="/developers/cdr-sdk/encrypt-and-decrypt"
+  >
+    온체인 비밀과 암호화된 파일 워크플로 모두를 사용합니다.
+  </Card>
+  <Card
+    title="IP Asset Vaults"
+    icon="certificate"
+    href="/developers/cdr-sdk/ip-asset-vaults"
+  >
+    Aeneid에서 DATA Foundation 라이선스 토큰으로 라이선스 게이트 읽기를 구성합니다.
+  </Card>
+  <Card title="SDK 참조" icon="book" href="/sdk-reference/cdr/overview">
+    모든 CDR SDK 메서드에 대한 전체 API 참조.
+  </Card>
+  <Card
+    title="CDR Skill 및 예제"
+    icon="robot"
+    href="https://github.com/jacob-tucker/cdr-skill"
+  >
+    AI 에이전트용 CDR 스킬을 설치하고 세 가지 엔드 투 엔드 예제를 살펴봅니다.
+  </Card>
+</CardGroup>

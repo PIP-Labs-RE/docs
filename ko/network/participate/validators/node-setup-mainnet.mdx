@@ -1,0 +1,501 @@
+---
+title: Full Node
+description: 메인넷용 DATA Foundation 노드 설정 가이드
+---
+
+이 섹션은 메인넷용 DATA Foundation 노드를 설정하는 방법을 안내합니다. DATA Foundation은 실행 클라이언트와 합의 클라이언트를 분리한다는 점에서 ETH PoS에서 영감을 얻었습니다. 실행 클라이언트 `story-geth`는 Engine API를 통해 EVM 블록을 `story` 합의 클라이언트로 전달하며, ABCI++ 어댑터를 사용하여 EVM 상태를 CometBFT의 상태와 호환되도록 합니다. 이 아키텍처를 통해 합의 효율성은 더 이상 실행 트랜잭션 처리량에 의해 병목이 발생하지 않습니다.
+
+DATA Foundation 노드를 운영하는 데 필요한 클라이언트인 `story`와 `geth` 바이너리는 최신 `release` 페이지에서 사용할 수 있습니다:
+
+| 네트워크 | story-geth        | story            |
+| ------- | ----------------- | ---------------- |
+| Mainnet | v1.2.0 (Yasunari) | v1.4.2 (Terence) |
+| Aeneid  | v1.2.0 (Yasunari) | v1.4.2 (Terence) |
+
+- **`story-geth` 실행 클라이언트:**
+  - 릴리스 링크: [**여기 클릭**](https://github.com/piplabs/story-geth/releases)
+  - 최신 안정 바이너리 (v1.2.0): [**여기 클릭**](https://github.com/piplabs/story-geth/releases/tag/v1.2.0)
+- **`story-geth` 실행 클라이언트:** (Aeneid 테스트넷용)
+  - 릴리스 링크: [**여기 클릭**](https://github.com/piplabs/story-geth/releases)
+  - 최신 안정 바이너리 (v1.2.0): [**여기 클릭**](https://github.com/piplabs/story-geth/releases/tag/v1.2.0)
+- **`story` 합의 클라이언트:**
+  - 릴리스 링크: [**여기 클릭**](https://github.com/piplabs/story/releases)
+  - 최신 안정 바이너리 (v1.4.2): [**여기 클릭**](https://github.com/piplabs/story/releases/tag/v1.4.2)
+- **`story` 합의 클라이언트:** (Aeneid 테스트넷용)
+  - 릴리스 링크: [**여기 클릭**](https://github.com/piplabs/story/releases)
+  - 최신 안정 바이너리 (v1.4.2): [**여기 클릭**](https://github.com/piplabs/story/releases/tag/v1.4.2)
+
+
+# DATA Foundation 노드 설치 가이드
+
+## 설치 전 체크리스트
+
+- [ ] 시스템이 하드웨어 요구사항을 충족하는지 확인
+- [ ] 운영 체제: Ubuntu 22.04 LTS
+- [ ] 필요한 포트가 사용 가능한지 확인
+- [ ] 충분한 디스크 공간 확보
+- [ ] Root 또는 sudo 액세스
+
+## 빠른 참조
+
+- 설치 시간: 약 30분
+- 네트워크: DATA Foundation Mainnet 또는 DATA Foundation Aeneid Testnet
+- 필수 버전:
+  - 최신 릴리스 확인
+
+## 1. 시스템 준비
+
+### 1.1 시스템 요구사항
+
+최적의 성능과 안정성을 위해, 다음 중 하나에서 노드를 실행하는 것을 권장합니다:
+
+- Virtual Private Server (VPS)
+- 전용 Linux 기반 머신
+
+### 시스템 사양
+
+| 하드웨어   | 최소 요구사항       |
+| --------- | ------------------- |
+| CPU       | 전용 8 코어         |
+| RAM       | 32 GB               |
+| 디스크    | 500 GB NVMe 드라이브 |
+| 대역폭    | 25 MBit/s           |
+
+### 1.2 필요한 포트
+
+_노드 기능에 필요한 모든 포트가 아래에 설명된 대로 필요한지 확인하세요_
+
+- `story-geth`
+  - 8545
+    - 노드가 HTTP를 통해 JSON-RPC API로 인터페이스하기를 원하는 경우 필요
+  - 8546
+    - WebSocket 상호 작용에 필요
+  - 30303 (TCP + API)
+    - p2p 통신을 위해 반드시 열려 있어야 함
+- `story`
+  - 26656
+    - 합의 p2p 통신을 위해 반드시 열려 있어야 함
+  - 26657
+    - 노드가 Tendermint RPC에 인터페이스하기를 원하는 경우 필요
+  - 26660
+    - prometheus 메트릭을 노출하려는 경우 필요
+
+### 1.3 의존성 설치
+
+```bash
+# 시스템 업데이트
+sudo apt update && sudo apt-get update
+
+# 필수 패키지 설치
+sudo apt install -y \
+  curl \
+  git \
+  make \
+  jq \
+  build-essential \
+  gcc \
+  unzip \
+  wget \
+  lz4 \
+  aria2 \
+  gh
+```
+
+### 1.4 Go 설치
+
+Odyssey의 경우 Go 1.22.0을 설치해야 합니다
+
+```bash
+# Go 1.22.0 다운로드 및 설치
+cd $HOME
+
+# Go 버전 설정
+GO_VERSION="1.22.0"
+
+# Go 바이너리 다운로드
+wget "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+
+# 기존 Go 설치 제거 및 새 버전 압축 해제
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
+
+# 다운로드한 아카이브 정리
+rm "go${GO_VERSION}.linux-amd64.tar.gz"
+
+# Go를 PATH에 추가
+echo "export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.bash_profile
+source ~/.bash_profile
+
+# 설치 확인
+go version
+```
+
+## 2. DATA Foundation 노드 설치
+
+### 2.1 Story-Geth 설치
+
+1. 바이너리 다운로드 및 설정
+
+```bash
+cd $HOME
+wget https://github.com/piplabs/story-geth/releases/download/v1.2.0/geth-linux-amd64
+sudo mv ./geth-linux-amd64 story-geth
+sudo chmod +x story-geth
+sudo mv ./story-geth $HOME/go/bin/
+source $HOME/.bashrc
+
+# 설치 확인
+story-geth version
+```
+
+geth 바이너리 버전이 표시됩니다.
+
+```
+Geth
+version: 1.2.0-stable
+```
+
+(Mac OS X 전용) OS X 바이너리는 아직 빌드 프로세스에서 서명되지 않았으므로, 수동으로 격리 해제해야 할 수 있습니다:
+
+```bash
+sudo xattr -rd com.apple.quarantine ./geth
+```
+
+2. 서비스 구성 및 시작
+
+<Tabs>
+  <Tab title="Mainnet">
+    ```bash
+           # systemd 서비스 설정
+    sudo tee /etc/systemd/system/story-geth.service > /dev/null <<EOF
+    [Unit]
+    Description=Story Geth Client
+    After=network.target
+
+    [Service]
+    User=${user}
+    ExecStart=${path_to_geth_binary} --story --syncmode full
+    Restart=on-failure
+    RestartSec=3
+    LimitNOFILE=4096
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    # 서비스 시작
+    sudo systemctl daemon-reload
+    sudo systemctl enable story-geth
+    sudo systemctl start story-geth
+
+    # 서비스 상태 확인
+    sudo systemctl status story-geth
+    ```
+
+  </Tab>
+
+  <Tab title="Aeneid testnet">
+    ```bash
+    # systemd 서비스 설정
+    sudo tee /etc/systemd/system/story-geth.service > /dev/null <<EOF
+    [Unit]
+    Description=Story Geth Client
+    After=network.target
+
+    [Service]
+    User=${user}
+    ExecStart=${path_to_geth_binary} --aeneid --syncmode full
+    Restart=on-failure
+    RestartSec=3
+    LimitNOFILE=4096
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    # 서비스 시작
+    sudo systemctl daemon-reload
+    sudo systemctl enable story-geth
+    sudo systemctl start story-geth
+
+    # 서비스 상태 확인
+    sudo systemctl status story-geth
+    ```
+
+  </Tab>
+</Tabs>
+
+### 2.2 DATA Foundation 합의 클라이언트 설치
+
+#### Cosmovisor 설치
+
+story 클라이언트 업데이트를 위해 Cosmovisor 사용을 권장합니다.
+
+1. Cosmovisor 설치
+
+```bash
+go install cosmossdk.io/tools/cosmovisor/cmd/cosmovisor@v1.6.0
+cosmovisor version
+```
+
+2. Cosmovisor 구성
+
+```bash
+# 데몬 구성 설정
+export DAEMON_NAME=story
+export DAEMON_HOME=$HOME/.story/story
+export DAEMON_DATA_BACKUP_DIR=${DAEMON_HOME}/cosmovisor/backup
+sudo mkdir -p \
+  $DAEMON_HOME/cosmovisor/backup \
+  $DAEMON_HOME/data
+
+
+# 구성 영구 저장
+echo "export DAEMON_NAME=story" >> $HOME/.bash_profile
+echo "export DAEMON_HOME=$HOME/.story/story" >> $HOME/.bash_profile
+echo "export DAEMON_DATA_BACKUP_DIR=${DAEMON_HOME}/cosmovisor/backup" >> $HOME/.bash_profile
+echo "export DAEMON_ALLOW_DOWNLOAD_BINARIES=false" >> $HOME/.bash_profile
+```
+
+#### Story 클라이언트 설치
+
+```bash
+cd $HOME
+wget https://github.com/piplabs/story/releases/download/v1.4.2/story-linux-amd64
+sudo mv story-linux-amd64 story
+sudo chmod +x story
+sudo mv ./story $HOME/go/bin/
+source $HOME/.bashrc
+story version
+```
+
+> 버전 1.4.2-stable이 표시되어야 합니다
+
+(Mac OS X 전용) OS X 바이너리는 아직 빌드 프로세스에서 서명되지 않았으므로, 수동으로 격리 해제해야 할 수 있습니다:
+
+```bash
+sudo xattr -rd com.apple.quarantine ./story
+```
+
+#### Cosmovisor로 DATA Foundation 초기화
+
+<Tabs>
+  <Tab title="Mainnet">
+    ```bash
+    cosmovisor init ./story
+    cosmovisor run init --network story --moniker ${moniker_name}
+    cosmovisor version
+    ```
+  </Tab>
+
+  <Tab title="Aeneid testnet">
+    ```bash
+    cosmovisor init ./story
+    cosmovisor run init --network aeneid --moniker ${moniker_name}
+    cosmovisor version
+    ```
+  </Tab>
+</Tabs>
+
+#### 사용자 정의 구성
+
+자신의 노드 설정을 재정의하려면 다음과 같이 할 수 있습니다:
+
+- `${DATAFDN_DATA_ROOT}/config/config.toml`을 수정하여 네트워크 및 합의 설정 변경
+- `${DATAFDN_DATA_ROOT}/config/story.toml`로 다양한 클라이언트 구성 업데이트
+- `${DATAFDN_DATA_ROOT}/priv_validator_key.json`은 Validator 키를 포함하는 민감한 파일이지만, 자신의 것으로 교체 가능
+
+#### 사용자 정의 자동화
+
+아래에 Linux에서 사용할 수 있는 샘플 `Systemd` 구성을 나열합니다
+
+<Note>DATA Foundation API 엔드포인트(`--api-address`)는 환경 또는 사용 사례에 따라 필요에 따라 수정할 수 있습니다.</Note>
+
+```bash
+# story
+sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
+[Unit]
+Description=Story Cosmovisor
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=$GROUP
+ExecStart=/usr/local/bin/cosmovisor run run \
+--api-enable \
+--api-address=127.0.0.1:1317
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65535
+Environment="DAEMON_NAME=$DAEMON_NAME"
+Environment="DAEMON_HOME=$DAEMON_HOME"
+Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=false"
+Environment="DAEMON_RESTART_AFTER_UPGRADE=true"
+Environment="DAEMON_DATA_BACKUP_DIR=$DAEMON_HOME/cosmovisor/backup"
+WorkingDirectory=$DAEMON_HOME
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+```
+
+<Tabs>
+  <Tab title="Cosmovisor 사용">
+    ```bash
+    # story
+    sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
+    [Unit]
+    Description=Story Cosmovisor
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=${USER}
+    Group=${GROUP}
+    ExecStart=${path_to_story_binary} run run \
+    --api-enable \
+    --api-address=127.0.0.1:1317
+    Restart=on-failure
+    RestartSec=5s
+    LimitNOFILE=65535
+    Environment="DAEMON_NAME=$DAEMON_NAME"
+    Environment="DAEMON_HOME=$DAEMON_HOME"
+    Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=false"
+    Environment="DAEMON_RESTART_AFTER_UPGRADE=true"
+    Environment="DAEMON_DATA_BACKUP_DIR=$DAEMON_HOME/cosmovisor/backup"
+    WorkingDirectory=$DAEMON_HOME
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    ```
+
+  </Tab>
+
+  <Tab title="Cosmovisor 미사용">
+    ```bash
+    # story
+    sudo tee /etc/systemd/system/story.service > /dev/null <<EOF
+    [Unit]
+    Description=Story Cosmovisor
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=${USER}
+    Group=${GROUP}
+    ExecStart=${path_to_story_binary} run
+    Restart=on-failure
+    RestartSec=5s
+    LimitNOFILE=65535
+    WorkingDirectory=$HOME/.story/story
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    ```
+
+  </Tab>
+</Tabs>
+
+#### 서비스 시작
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable story
+sudo systemctl start story
+
+# 로그 모니터링
+journalctl -u cosmovisor -f -o cat
+```
+
+#### 디버깅
+
+`story`가 실행 중인 동안 상태를 확인하려면 내부 JSONRPC/HTTP 엔드포인트를 쿼리하는 것이 유용합니다. 실행할 수 있는 몇 가지 유용한 명령은 다음과 같습니다:
+
+- `curl localhost:26657/net_info | jq '.result.peers[].node_info.moniker'`
+  - 노드와 동기화된 합의 피어 목록을 moniker별로 제공합니다
+- `curl localhost:26657/health`
+  - 노드가 정상인지 알려줍니다 - `{}`는 정상임을 의미합니다
+
+## 3. 설치 검증
+
+### 3.1 Geth 상태 확인
+
+```bash
+# 동기화 상태 확인
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' \
+  http://localhost:8545
+
+```
+
+### 3.2 합의 클라이언트 확인
+
+```bash
+# 노드 상태 확인
+curl localhost:26657/status
+
+# 피어 연결 확인
+curl localhost:26657/net_info | jq '.result.peers[].node_info.moniker'
+```
+
+## 상태 초기화
+
+문제가 발생하여 초기화된 상태에서 네트워크에 다시 참여하려면 다음을 실행하세요:
+
+### Geth
+
+<Tabs>
+  <Tab title="Mainnet">
+    ```bash
+    rm -rf ${GETH_DATA_ROOT} && ./geth --story --syncmode full
+    ```
+
+    Mac OS X: `rm -rf ~/Library/Story/geth/* && ./geth --story    --syncmode full`
+
+    Linux: `rm -rf ~/.story/geth/* && ./geth --story --syncmode full`
+
+  </Tab>
+
+  <Tab title="Aeneid Testnet">
+    ```bash
+    rm -rf ${GETH_DATA_ROOT} && ./geth --aeneid --syncmode full
+    ```
+
+    Mac OS X: `rm -rf ~/Library/Story/geth/* && ./geth --aeneid    --syncmode full`
+
+    Linux: `rm -rf ~/.story/geth/* && ./geth --aeneid --syncmode full`
+
+  </Tab>
+</Tabs>
+
+### DATA Foundation
+
+<Tabs>
+  <Tab title="Mainnet">
+    ```bash
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network story && ./story run
+    ```
+
+    Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network story && ./story run`
+
+    Linux: `rm -rf ~/.story/story/* && ./story init --network story && ./story run`
+
+  </Tab>
+
+  <Tab title="Aeneid Testnet">
+    ```bash
+    rm -rf ${DATAFDN_DATA_ROOT} && ./story init --network aeneid && ./story run
+    ```
+
+    Mac OS X: `rm -rf ~/Library/Story/story/* && ./story init --network aeneid && ./story run`
+
+    Linux: `rm -rf ~/.story/story/* && ./story init --network aeneid && ./story run`
+
+  </Tab>
+</Tabs>

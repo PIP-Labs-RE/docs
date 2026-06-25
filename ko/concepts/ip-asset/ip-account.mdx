@@ -1,0 +1,30 @@
+---
+title: ⚙️ IP Account
+sidebarTitle: IP Account
+description: IP Asset에 바인딩된 수정된 ERC-6551 구현
+---
+
+<Note>
+빠르게 살펴보기
+
+[여기](https://twitter.com/jacobmtucker/status/1787603252198134234)에서 IP Accounts에 대한 2분짜리 빠른 개요를 확인하세요.
+
+</Note>
+
+[🧩 IP Asset](/concepts/ip-asset/overview)이 등록되면, 관련된 **IP Account**가 부여됩니다. IP Account는 수정된 ERC-6551(Token Bound Account) 구현입니다. 이는 IP Asset에 바인딩된 별도의 컨트랙트로, DATA Foundation 모듈과의 상호 작용에 대한 권한을 제어하거나 IP의 관련 데이터를 저장하는 역할을 합니다. 등록 시 IP Asset에는 고유 ID가 할당됩니다. 이 ID가 IP Asset에 바인딩된 IP Account의 주소입니다.
+
+<img src="/images/concepts/ip-account.png" alt="IP Account Diagram" />
+
+IP Account는 주로 두 가지 일을 합니다:
+
+1. IP에서 생성된 License Tokens 또는 Royalty Tokens와 같은 관련 asset의 메타데이터와 소유권 세부 정보를 포함한 포괄적인 IP 관련 데이터를 저장합니다.
+2. 다양한 모듈에 의한 이 데이터의 활용을 용이하게 합니다. 이러한 모듈은 IP Account와 상호 작용하고 데이터를 생성 및 저장합니다. 예를 들어, 라이선싱, 수익/로열티 공유, 리믹스, IP 분쟁 제기 및 기타 모듈은 IP Account의 프로그래밍 가능성 덕분에 가능합니다.
+
+<Note>
+기본 NFT가 전송되면, 새 소유자가 자동으로 관련 IP Asset 및 IP Account의 소유자가 됩니다.
+
+</Note>
+
+## `execute` 및 `executeWithSig`
+
+IP Account의 핵심 기능은 인코딩된 바이트 데이터를 통해 DATA Foundation 내의 임의 모듈을 호출할 수 있는 일반(`execute()`) 함수입니다(따라서 향후 모듈에도 확장 가능합니다). 또한 사용자가 트랜잭션에 서명하고 다른 사람이 대신 실행하도록 하여 매끄러운 UX를 제공하는 `executeWithSig()` 함수도 있습니다.

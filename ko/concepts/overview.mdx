@@ -1,0 +1,50 @@
+---
+title: 개요
+description: DATA Foundation의 "Proof-of-Creativity" 프로토콜에 대한 전반적인 개요.
+icon: magnifying-glass
+---
+
+지적 재산은 [🧩 IP 자산](/concepts/ip-asset)과 그에 연결된 [⚙️ IP Account](/concepts/ip-asset/ip-account)로 표현되며, 후자는 각 IP의 핵심 정체성을 담당하도록 설계된 스마트 컨트랙트입니다. 또한, IP가 어떻게 사용될 수 있는지를 규율하는 라이선스 약관을 부착하는 등의 기능을 IP 자산에 추가하는 [📜 Licensing Module](/concepts/licensing-module)도 있습니다.
+
+<Note>
+  IP와 라이선싱은 DATA Foundation의 데이터에 대한 **권리 계층**입니다. 여기서 정의하는
+  라이선스 약관은 [Confidential Data Rails
+  (CDR)](/developers/cdr-sdk/overview)이 기밀 데이터에 대한 접근을 통제하는 데 사용됩니다.
+</Note>
+
+<Frame>
+  <img src="/images/concepts/story-architecture.png" />
+</Frame>
+
+위 다이어그램에 언급된 각 계층을 간략히 소개하겠습니다:
+
+## [🧩 IP 자산](/concepts/ip-asset)
+
+IP를 온체인에 올리고 싶을 때, ERC-721 NFT를 민팅합니다. 이 NFT는 당신의 IP에 대한 **소유권**을 나타냅니다.
+
+그런 다음, IP Asset Registry를 통해 NFT를 우리 프로토콜에 **등록**합니다. 이로 인해 [⚙️ IP Account](/concepts/ip-asset/ip-account)가 배포되며, 사실상 "IP 자산"이 생성됩니다. 해당 컨트랙트의 주소가 IP 자산의 식별자(`ipId`)입니다.
+
+기본 NFT는 다른 NFT처럼 거래/판매될 수 있으며, 새 소유자가 IP 자산과 그와 연관된 모든 수익을 소유하게 됩니다.
+
+## [⚙️ IP Account](/concepts/ip-asset/ip-account)
+
+IP Account는 IP 자산에 연결된 스마트 컨트랙트로, 다음 두 가지 주요 기능을 수행합니다:
+
+1. 연결된 IP 자산의 데이터(예: IP에서 생성된 관련 라이선스 및 로열티)를 저장합니다.
+2. 다양한 모듈이 이 데이터를 활용할 수 있도록 합니다. 예를 들어, 라이선싱, 수익/로열티 공유, 리믹싱 등의 핵심 기능들이 IP Account의 프로그래밍 가능성 덕분에 가능해집니다.
+
+IP Account의 주소가 IP 자산의 식별자(`ipId`)입니다.
+
+## [📜 Licensing Module](/concepts/licensing-module)
+
+Licensing Module은 IP Account의 기능을 확장하는 핵심 모듈입니다. IP 자산에 라이선스 약관을 부착하고, 그로부터 **라이선스 토큰**을 민팅할 수 있게 해줍니다. 이러한 약관과 그 아래에서 민팅된 토큰은 누가 IP를 사용할 수 있는지를 정의하며, [CDR](/developers/cdr-sdk/overview)을 통해 그 뒤에 게이팅된 데이터를 누가 복호화할 수 있는지도 결정합니다.
+
+## Registry
+
+프로토콜의 레지스트리는 프로토콜의 전역 상태에 대한 주요 디렉터리/저장소 역할을 합니다. 특정 IP의 상태를 관리하는 IP Account와 달리, 레지스트리는 프로토콜의 더 광범위한 상태를 관리합니다. 예를 들어, IP Asset Registry는 등록된 모든 IP 자산을 추적합니다.
+
+## [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
+
+PIL은 IP 자산이 어떻게 합법적으로 라이선스될 수 있는지에 대한 특정 **라이선스 약관**을 정의하는 실제 오프체인 법적 계약입니다. 예를 들어, IP 자산이 어떻게 상업화되고, 리믹스되고, 귀속되는지, 누가 어떤 조건에서 그렇게 할 수 있는지를 정의합니다.
+
+우리는 이러한 동일한 약관을 온체인에 매핑해, 다른 사람들이 자연스럽고 투명하게 당신의 IP에 라이선스를 부여받을 수 있도록 약관을 IP 자산에 손쉽게 부착할 수 있게 했습니다.

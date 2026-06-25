@@ -1,0 +1,79 @@
+---
+title: React에서 SDK 사용하기
+description: SDK 설정을 완료한 뒤 React에서 SDK를 사용하는 방법을 알아보세요.
+---
+
+React에서 SDK를 설정하고 나면, [TypeScript SDK 가이드](/developers/typescript-sdk/overview)에서 설명한 것과 동일한 방식으로 사용할 수 있습니다.
+
+<CardGroup cols={2}>
+  <Card
+    title="React 빠른 시작"
+    href="https://github.com/storyprotocol/react-quickstart"
+    icon="thumbs-up"
+  >
+    Next.js/React에서 TypeScript SDK 함수를 설정하고 호출하는 방법을 보여주는 동작하는 예제 코드입니다.
+  </Card>
+
+  <Card
+    title="SDK 레퍼런스"
+    href="/sdk-reference"
+    icon="books"
+    
+    
+  >
+    SDK에 포함된 모든 함수의 예제와 타입을 보여주는 전체 SDK 레퍼런스를 확인하세요.
+  </Card>
+</CardGroup>
+
+## 사전 준비
+
+1. [React에서 SDK 설정](/developers/react-guide/setup/overview)을 완료하세요.
+
+## 예제
+
+다음은 React에서 SDK 함수를 호출하는 예제이며, 사용하는 함수가 무엇이든 동일한 형태로 사용됩니다:
+
+```jsx TestComponent.tsx
+import { custom, toHex } from 'viem';
+import { useWalletClient } from "wagmi";
+import { StoryClient, StoryConfig } from "@story-protocol/core-sdk";
+
+// example of how you would now use the fully setup sdk
+
+export default function TestComponent() {
+  const { data: wallet } = useWalletClient();
+
+  async function setupStoryClient(): Promise<StoryClient> {
+    const config: StoryConfig = {
+      wallet: wallet,
+      transport: custom(wallet!.transport),
+      chainId: "aeneid",
+    };
+    const client = StoryClient.newClient(config);
+    return client;
+  }
+
+  async function registerIp() {
+    const client = await setupStoryClient();
+    const response = await client.ipAsset.registerIpAsset({
+      nft: {
+        type: 'mint',
+        spgNftContract: '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc',
+      },
+      ipMetadata: {
+        ipMetadataURI: "test-metadata-uri",
+        ipMetadataHash: toHex("test-metadata-hash", { size: 32 }),
+        nftMetadataURI: "test-nft-metadata-uri",
+        nftMetadataHash: toHex("test-nft-metadata-hash", { size: 32 }),
+      }
+    });
+    console.log(
+      `Root IPA created at tx hash ${response.txHash}, IPA ID: ${response.ipId}`
+    );
+  }
+
+  return (
+    {/* */}
+  )
+}
+```

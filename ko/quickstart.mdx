@@ -1,0 +1,188 @@
+---
+title: "빠른 시작"
+description: "DATA Foundation에서 빠르게 빌드를 시작하세요."
+icon: flag-checkered
+---
+
+DATA Foundation에서 빠르게 빌드를 시작하고 싶으신가요... 그럼 바로 시작해 봅시다!
+
+<Frame>
+  <img src="/images/df-banner.png" alt="The DATA Foundation" />
+</Frame>
+
+---
+
+## 네트워크 추가
+
+지갑에서 DATA Foundation의 메인넷 또는 테스트넷을 활성화하세요.
+
+<CardGroup cols={2}>
+  <Card
+    title="DATA Foundation 메인넷 추가"
+    icon="globe"
+    href="https://chainid.network/chain/1514/"
+  >
+    DATA Foundation의 메인넷에 지갑을 연결하세요.
+  </Card>
+  <Card
+    title="DATA Foundation 'Aeneid' 테스트넷 추가"
+    icon="globe"
+    href="https://chainid.network/chain/1315/"
+  >
+    DATA Foundation의 'Aeneid' 테스트넷에 지갑을 연결하세요.
+  </Card>
+</CardGroup>
+
+## 모든 것을 건너뛰고 코드로 바로 이동.
+
+<CardGroup cols={3}>
+  <Card
+    title="TypeScript 코드 예제"
+    icon="screwdriver-wrench"
+    href="https://github.com/storyprotocol/typescript-tutorial/tree/main"
+  >
+    이는 확인해 볼 수 있는 클론 가능한 빠른 시작입니다. 직접 클론하여
+    관련 README를 따라 진행할 수 있습니다.
+  </Card>
+  <Card
+    title="React 빠른 시작"
+    icon="react"
+    href="https://github.com/storyprotocol/react-quickstart"
+  >
+    이는 확인해 볼 수 있는 클론 가능한 빠른 시작입니다. 직접 클론하여
+    관련 README를 따라 진행할 수 있습니다.
+  </Card>
+  <Card
+    title="스마트 컨트랙트 코드 예제"
+    icon="scroll"
+    href="https://github.com/storyprotocol/story-protocol-boilerplate"
+  >
+    이는 확인해 볼 수 있는 보일러플레이트입니다. 직접 클론하여 예제 스마트 컨트랙트를
+    살펴보고, 관련 README를 따라 테스트를 실행할 수 있습니다.
+  </Card>
+</CardGroup>
+
+## DATA 네트워크 인프라
+
+모든 RPC, 익스플로러 및 포셋 정보는 [네트워크 정보](/network/overview)를 참조하세요.
+
+## SDK 사용
+
+기밀 데이터의 경우, [🔒 Confidential Data Rails (CDR)](/developers/cdr-sdk/overview)은 DATA Foundation에서 데이터를 암호화하고, 저장하고, 액세스를 게이트하는 주요 방법입니다. [CDR SDK 가이드](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`)부터 시작하세요.
+
+IP 및 라이선싱의 경우, 🛠️ **TypeScript SDK** (React에서도 사용 가능)와 🐍 **Python SDK**의 모든 함수에 대한 설명과 예제를 보려면 전체 [SDK 레퍼런스](/sdk-reference)를 확인하세요. 또한 IP 등록 및 라이선스 첨부를 위한 단계별 가이드인 [🛠️ TypeScript SDK 가이드](/developers/typescript-sdk)도 마련되어 있습니다.
+
+## 배포된 스마트 컨트랙트
+
+배포된 스마트 컨트랙트의 주소를 [여기](/developers/deployed-smart-contracts)에서 확인하세요. 두 가지 종류의 컨트랙트가 있다는 점에 유의하세요:
+
+- [DATA Foundation Core](https://github.com/storyprotocol/protocol-core-v1) - 이 저장소에는 얇은 IP 레지스트리(IP Asset Registry), [📜 Licensing](/concepts/licensing-module)을 둘러싼 로직을 정의하는 모듈 세트, 그리고 모듈 및 사용자 액세스 제어를 관리하는 모듈 매니저로 구성된 핵심 프로토콜 로직이 포함되어 있습니다.
+- [DATA Foundation Periphery](https://github.com/storyprotocol/protocol-periphery-v1) - 코어 컨트랙트가 기본 프로토콜 로직을 다루는 반면, 페리페리(periphery) 컨트랙트는 UX를 크게 향상시키고 IPA 관리를 단순화하는 프로토콜 확장을 다룹니다. 이는 주로 [📦 SPG](/concepts/spg)를 통해 처리됩니다.
+
+## API 사용
+
+API 사용법을 익히려면 전체 [API 레퍼런스](/api-reference)를 확인하세요. 가스 가격, 평균 블록 시간, 시가 총액, 토큰 가격 등 일반적인 항목 조회를 위해서는 [Blockscout API](/api-reference/blockscout-api)를 확인하세요.
+
+## DATA Foundation에 IP 등록
+
+가장 기본적인 질문부터 시작해 봅시다: _"내 앱에서 DATA Foundation에 IP를 등록하려면 무엇이 필요할까? 어떻게 하지?"_
+
+DATA Foundation에 IP를 등록하려면 먼저 NFT가 필요합니다. IP가 ERC-721 NFT(예: DATA Foundation의 Azuki 또는 Pudgy Penguin)인 경우, 이미 준비가 된 상태입니다. 그렇지 않다면 오프체인 IP를 나타내는 NFT를 민팅해야 합니다. 걱정 마세요. 다음 튜토리얼에서 이를 도와드릴 것입니다.
+
+그 다음으로 해당 NFT를 DATA Foundation에 등록하여 최종적으로 [🧩 IP Asset](/concepts/ip-asset)을 생성합니다. "IP Asset"은 DATA Foundation에 등록된 IP로, 다음과 같은 기능이 부여됩니다:
+
+- DATA Foundation의 [📜 Licensing Module](/concepts/licensing-module)을 통한 투명한 온체인 라이선싱
+- [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)을 통한 IP 보호
+- 그로부터 민팅된 라이선스에 [기밀 데이터 (CDR)](/developers/cdr-sdk/overview)를 게이트할 수 있는 기능
+
+DATA Foundation에 IP를 등록하려면 아래 튜토리얼을 따르세요:
+
+<CardGroup cols={2}>
+  <Card
+    title="SDK 사용"
+    icon="thumbs-up"
+    href="/developers/typescript-sdk/register-ip-asset"
+  >
+    TypeScript SDK를 사용하여 DATA Foundation에 IP를 등록하는 방법을 배웁니다.
+  </Card>
+  <Card
+    title="스마트 컨트랙트 사용"
+    icon="thumbs-up"
+    href="/developers/smart-contracts-guide/register-ip-asset"
+  >
+    스마트 컨트랙트를 사용하여 DATA Foundation에 IP를 등록하는 방법을 배웁니다.
+  </Card>
+</CardGroup>
+
+### IP 메타데이터와 NFT 메타데이터의 차이
+
+DATA Foundation에 IP를 등록하면서 개발자들에게서 자주 듣는 질문은: _"NFT와 IP Asset에 각각 어떤 메타데이터를 첨부해야 하나요?"_
+
+이 질문에 대한 답변은 [NFT vs. IP Metadata](/concepts/ip-asset/overview#nft-vs-ip-metadata)를 참조하세요.
+
+## IP 라이선싱
+
+_"DATA Foundation의 온체인 라이선싱을 어떻게 활용하지? 등록된 내 IP에 라이선스가 준비되어 있도록 어떻게 보장하지?"_ 라고 궁금해할 수 있습니다.
+
+[🧩 IP Asset](/concepts/ip-asset)에 어떤 종류의 라이선스나 라이선스 조건을 첨부하기 전에, [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)이 실제로 무엇인지 먼저 이해하는 것이 좋습니다. 이 "PIL"은 DATA Foundation에서 사용 가능한 [License Terms](/concepts/licensing-module/license-terms)를 정의하며, 이는 IP Asset에 첨부되었을 때 다른 사람들이 해당 IP Asset을 어떻게 사용할 수 있는지(상업적 사용, 파생물 생성 등)를 정의합니다.
+
+튜토리얼에서는 IP Asset에 라이선스 조건을 첨부하는 방법을 정확히 보여드립니다:
+
+<CardGroup cols={2}>
+  <Card
+    title="SDK 사용"
+    icon="thumbs-up"
+    href="/developers/typescript-sdk/attach-terms"
+  >
+    TypeScript SDK를 사용하여 DATA Foundation의 IP에 라이선스 조건을 첨부하는 방법을
+    배웁니다.
+  </Card>
+  <Card
+    title="스마트 컨트랙트 사용"
+    icon="thumbs-up"
+    href="/developers/smart-contracts-guide/attach-terms"
+  >
+    스마트 컨트랙트를 사용하여 DATA Foundation의 IP에 라이선스 조건을 첨부하는 방법을
+    배웁니다.
+  </Card>
+</CardGroup>
+
+<Note>
+
+라이선싱 및 관련 용어에 대한 자세한 내용은 [📜 Licensing Module](/concepts/licensing-module)을 참조하세요.
+
+</Note>
+
+## 기밀 데이터에 라이선스 토큰 게이팅하기
+
+위에서 민팅한 라이선스 토큰은 CDR이 **IP 게이트 콘텐츠**에 사용하는 핵심 기본 요소입니다. [Confidential Data Rails (CDR)](/developers/cdr-sdk/overview)로 데이터를 암호화하고, 복호화가 가능하려면 지갑이 특정 IP Asset에 대한 라이선스 토큰을 보유하도록 요구할 수 있습니다. 이를 통해 기밀 데이터를 사용자가 정의한 온체인 라이선싱 조건에 직접 연결할 수 있습니다.
+
+<CardGroup cols={2}>
+  <Card
+    title="CDR로 IP 게이트 데이터 사용"
+    icon="lock"
+    href="/developers/cdr-sdk/ip-asset-vaults"
+  >
+    데이터를 암호화하고 라이선스 토큰 보유 여부에 따라 복호화를 게이트합니다.
+  </Card>
+  <Card
+    title="CDR SDK 설정"
+    icon="screwdriver-wrench"
+    href="/developers/cdr-sdk/setup"
+  >
+    CDR SDK를 설치하고 첫 번째 암호화/복호화 흐름을 실행하세요.
+  </Card>
+</CardGroup>
+
+## Trace로 데이터 출처 증명하기
+
+데이터 제공자라면, [Trace](/trace/overview)는 간단한 REST 통합을 통해 처리하는 데이터에 대한 검증 가능하고 제공자 표준화된 출처(콘텐츠 해시, 기여자 동의, KYC 신호 및 공개 감사 뷰)를 제공합니다.
+
+<CardGroup cols={2}>
+  <Card title="Trace 개요" icon="fingerprint" href="/trace/overview">
+    Trace가 데이터 출처를 기록하고 감사하는 방법을 이해합니다.
+  </Card>
+  <Card title="Trace 통합 가이드" icon="plug" href="/trace/integration">
+    제공자를 위한 전체 쓰기, 읽기 및 검색 API.
+  </Card>
+</CardGroup>

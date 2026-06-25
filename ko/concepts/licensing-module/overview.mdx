@@ -1,0 +1,53 @@
+---
+title: 📜 Licensing Module
+sidebarTitle: 개요
+description: DATA Foundation에서 IP에 실제 법적 라이선스를 생성하고 부착하는 방법을 알아보세요
+---
+
+<Accordion title="간단히 보기 - 1분 요약" icon="circle-info">
+  
+Licensing Module은 **License Template**([Programmable IP License (PIL💊)](/concepts/programmable-ip-license/overview))로부터 실제 법적 라이선스를 생성하고 이를 IP 자산에 부착할 수 있게 해줍니다. 이 라이선스와, 이를 정의하는 **라이선스 약관**은 다른 사람들이 당신의 IP를 어떻게 사용하고, 상업화하고, 리믹스할 수 있는지를 제한합니다.
+
+라이선스 약관이 IP 자산에 부착되어 있으면, 누구나 그로부터 **라이선스 토큰**(ERC-721 NFT)을 민팅할 수 있으며, 이 토큰은 약관에 정의된 조건에 따라 해당 작품을 사용할 수 있는 라이선스 역할을 합니다. 이 토큰은 파생 작품을 등록하기 위해 소각될 수 있습니다. 이를 통해 자산 간의 부모-자식 관계가 성립됩니다.
+
+</Accordion>
+
+IP 자산의 소유자는 파생물 생성, 상업적 활용, 다양한 플랫폼에서의 재생산과 같은 지적 재산권을 보유합니다.
+
+IP 자산은 [라이선스 토큰](/concepts/licensing-module/license-token)(ERC-721 NFT)을 통해, 어느 정도의 자율성을 가지고 사용자들이 이러한 권리를 행사할 수 있도록 프로그래밍 방식으로 권한을 부여할 수 있습니다. 라이선스 토큰은 [라이선스 약관](/concepts/licensing-module/license-terms)이라고 알려진 특정 조건 집합을 가리킵니다.
+
+<Frame caption="파란색: 프로토콜에 내장된 컨트랙트. 흰색: 커뮤니티 또는 제3자 벤더가 개발한 컨트랙트.">
+  <img
+    src="/images/concepts/licensing-module-diagram.png"
+    alt="The contracts in blue are built into the protocol. The contracts in white can be developed by the community or 3rd party vendor."
+  />
+</Frame>
+
+## LicensingModule
+
+<CardGroup cols={1}>
+  <Card
+    title="LicensingModule.sol"
+    href="https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/modules/licensing/LicensingModule.sol"
+    icon="scroll"
+    color="#ccb092"
+  >
+    License Module의 스마트 컨트랙트를 살펴보세요.
+  </Card>
+</CardGroup>
+
+`LicensingModule.sol` 컨트랙트는 라이선싱 시스템의 주요 진입점입니다. 다음과 같은 역할을 담당합니다:
+
+- IP 자산에 라이선스 약관 부착
+- 라이선스 토큰 민팅
+- 파생물 등록
+- License Config 설정
+
+## 추가 자료
+
+다음 문서들은 위에 표시된 Licensing Module의 모든 주요 구성 요소를 안내합니다:
+
+- [License Template](/concepts/licensing-module/license-template)
+- [라이선스 약관](/concepts/licensing-module/license-terms)
+- [라이선스 토큰](/concepts/licensing-module/license-token)
+- [License Config](/concepts/licensing-module/license-config)

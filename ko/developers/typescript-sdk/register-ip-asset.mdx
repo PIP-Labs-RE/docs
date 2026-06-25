@@ -1,0 +1,291 @@
+---
+title: IP Asset 등록
+description: TypeScript에서 NFT를 IP Asset으로 등록하는 방법을 알아봅니다.
+---
+
+<CardGroup cols={1}>
+  <Card
+    title="완성된 코드"
+    href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts"
+    icon="thumbs-up"
+  >
+    완성된 코드를 끝까지 따라가세요.
+  </Card>
+</CardGroup>
+
+오프체인 IP(예: 책, 캐릭터, 그림 등)가 있다고 가정해 봅시다. 이 IP를 DATA Foundation에 등록하려면 먼저 NFT를 민팅해야 합니다. 이 NFT는 IP에 대한 **소유권**을 의미합니다. 그런 다음 그 NFT를 DATA Foundation에 **등록**하면 [IP Asset](/concepts/ip-asset)이 됩니다. 아래 튜토리얼에서는 이를 수행하는 방법을 안내합니다.
+
+### 사전 준비 사항
+
+튜토리얼을 시작하기 전에 완료해야 할 몇 가지 단계가 있습니다.
+
+1. [TypeScript SDK 설정](/developers/typescript-sdk/setup) 완료
+2. \[선택 사항] [Pinata](https://pinata.cloud/)로 이동하여 새 API 키를 만듭니다. JWT를 `.env` 파일에 추가하세요:
+
+```text .env
+PINATA_JWT=<YOUR_PINATA_JWT>
+```
+
+3. \[선택 사항] `pinata-web3` 의존성을 설치합니다:
+
+```bash Terminal
+npm install pinata-web3
+```
+
+## 1. IP 메타데이터 설정
+
+NFT와 IP에 메타데이터를 설정할 수 있지만, _꼭 그럴 필요는 없습니다_. 그러기 위해 [IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard)를 확인하고 NFT와 IP에 대한 메타데이터를 구성하세요.
+
+```typescript main.ts
+// you should already have a client set up (prerequisite)
+import { client } from "./utils";
+
+async function main() {
+  const ipMetadata = {
+    title: "Ippy",
+    description: "Official mascot of the DATA Foundation.",
+    image:
+      "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
+    imageHash:
+      "0x21937ba9d821cb0306c7f1a1a2cc5a257509f228ea6abccc9af1a67dd754af6e",
+    mediaUrl:
+      "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
+    mediaHash:
+      "0x21937ba9d821cb0306c7f1a1a2cc5a257509f228ea6abccc9af1a67dd754af6e",
+    mediaType: "image/png",
+    creators: [
+      {
+        name: "The DATA Foundation",
+        address: "0x67ee74EE04A0E6d14Ca6C27428B27F3EFd5CD084",
+        description: "The World's IP Blockchain",
+        contributionPercent: 100,
+        socialMedia: [
+          {
+            platform: "Twitter",
+            url: "https://x.com/DataFDN",
+          },
+          {
+            platform: "Website",
+            url: "https://datafdn.org",
+          },
+        ],
+      },
+    ],
+  };
+}
+
+main();
+```
+
+## 2. NFT 메타데이터 설정
+
+NFT 메타데이터는 [ERC-721 Metadata Standard](https://eips.ethereum.org/EIPS/eip-721)를 따릅니다.
+
+```typescript main.ts
+import { IpMetadata } from "@story-protocol/core-sdk";
+import { client } from "./utils";
+
+async function main() {
+  // previous code here ...
+
+  const nftMetadata = {
+    name: "Ownership NFT",
+    description: "This is an NFT representing owernship of our IP Asset.",
+    image: "https://picsum.photos/200",
+  };
+}
+
+main();
+```
+
+## 3. IP 및 NFT 메타데이터를 IPFS에 업로드
+
+별도의 `uploadToIpfs` 파일에서 IP 및 NFT 메타데이터 객체를 IPFS에 업로드하는 함수를 만듭니다:
+
+```typescript uploadToIpfs.ts
+import { PinataSDK } from "pinata-web3";
+
+const pinata = new PinataSDK({
+  pinataJwt: process.env.PINATA_JWT,
+});
+
+export async function uploadJSONToIPFS(jsonMetadata: any): Promise<string> {
+  const { IpfsHash } = await pinata.upload.json(jsonMetadata);
+  return IpfsHash;
+}
+```
+
+그런 다음 아래와 같이 그 함수를 사용해 메타데이터를 업로드할 수 있습니다:
+
+```typescript main.ts
+import { IpMetadata } from "@story-protocol/core-sdk";
+import { client } from "./utils";
+import { uploadJSONToIPFS } from "./uploadToIpfs";
+import { createHash } from "crypto";
+
+async function main() {
+  // previous code here ...
+
+  const ipIpfsHash = await uploadJSONToIPFS(ipMetadata);
+  const ipHash = createHash("sha256")
+    .update(JSON.stringify(ipMetadata))
+    .digest("hex");
+  const nftIpfsHash = await uploadJSONToIPFS(nftMetadata);
+  const nftHash = createHash("sha256")
+    .update(JSON.stringify(nftMetadata))
+    .digest("hex");
+}
+
+main();
+```
+
+## 4. NFT를 IP Asset으로 등록
+
+새 IP를 등록하려면 먼저 NFT를 민팅해야 한다는 점을 기억하세요. 이 NFT는 IP의 기초 소유권을 나타냅니다. 그런 다음 이 NFT를 "등록"하면 [IP Asset](/concepts/ip-asset)이 됩니다.
+
+다행히도, 동일한 트랜잭션에서 NFT를 민팅하고 IP Asset으로 등록하기 위해 `registerIpAsset` 함수를 사용할 수 있습니다.
+
+이 함수는 민팅할 SPG NFT Contract가 필요합니다.
+
+### 4a. 어떤 SPG NFT 컨트랙트 주소를 사용해야 하나요?
+
+간편함을 위해 Aeneid 테스트넷에 미리 만들어둔 공용 컬렉션을 사용할 수 있습니다: `0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc`. 메인넷에서, 또는 Aeneid에서 실제 시나리오를 테스트할 때에도, 아래의 "커스텀 ERC-721 컨트랙트 사용하기" 섹션에서 설명하는 대로 **자체** 컨트랙트를 만들어야 합니다.
+
+<Accordion title="커스텀 ERC-721 컨트랙트 사용하기" icon="info">
+  우리가 제공하는 공용 컬렉션을 사용하는 것은 괜찮지만, 실제로 진행할 때에는 IP를 위한 자체 NFT 컬렉션을 만들어야 합니다. 이를 위해 두 가지 방법이 있습니다:
+
+1. [ISPGNFT](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) 인터페이스를 구현하는 컨트랙트를 배포하거나, SDK의 [createNFTCollection](/sdk-reference/nftclient#createnftcollection) 함수(아래 예시)를 사용해 대신 처리하게 합니다. 그러면 본인만 민팅할 수 있는 자체 SPG NFT Collection이 생깁니다.
+
+```typescript createSpgNftCollection.ts
+import { zeroAddress } from "viem";
+import { client } from "./utils";
+
+async function createSpgNftCollection() {
+  const newCollection = await client.nftClient.createNFTCollection({
+    name: "Test NFTs",
+    symbol: "TEST",
+    isPublicMinting: false,
+    mintOpen: true,
+    mintFeeRecipient: zeroAddress,
+    contractURI: "",
+  });
+
+  console.log("New collection created:", {
+    "SPG NFT Contract Address": newCollection.spgNftContract,
+    "Transaction Hash": newCollection.txHash,
+  });
+}
+
+createSpgNftCollection();
+```
+
+2. 자체적으로 커스텀 ERC-721 NFT 컬렉션을 생성합니다. 작동하는 코드 예제는 [여기](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/registerCustom.ts)에서 확인할 수 있습니다. **본인만의 커스텀 로직을 가진 커스텀 NFT 컨트랙트가 이미 있거나, IP 자체가 NFT인 경우에 유용합니다.**
+
+</Accordion>
+
+다음은 IP를 등록하는 코드입니다:
+
+<Info>
+  관련 문서:
+  [ipAsset.registerIpAsset](/sdk-reference/ipasset#registeripasset)
+</Info>
+
+```typescript main.ts
+import { IpMetadata } from "@story-protocol/core-sdk";
+import { client } from "./utils";
+import { uploadJSONToIPFS } from "./uploadToIpfs";
+import { createHash } from "crypto";
+import { Address } from "viem";
+
+async function main() {
+  // previous code here ...
+
+  const response = await client.ipAsset.registerIpAsset({
+    nft: {
+      type: "mint",
+      spgNftContract: "0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc",
+    },
+    ipMetadata: {
+      ipMetadataURI: `https://ipfs.io/ipfs/${ipIpfsHash}`,
+      ipMetadataHash: `0x${ipHash}`,
+      nftMetadataURI: `https://ipfs.io/ipfs/${nftIpfsHash}`,
+      nftMetadataHash: `0x${nftHash}`,
+    },
+  });
+
+  console.log(
+    `Root IPA created at transaction hash ${response.txHash}, IPA ID: ${response.ipId}`
+  );
+  console.log(
+    `View on the explorer: https://aeneid.explorer.datafdn.org/ipa/${response.ipId}`
+  );
+}
+
+main();
+```
+
+## 5. IP에 License Terms 추가
+
+등록 과정 중에 IP에 [License Terms](/concepts/licensing-module/license-terms)를 첨부할 수 있습니다. 그러면 다른 사용자가 라이선스를 민팅하고 약관에 따라 제한된 방식으로 IP를 사용할 수 있게 됩니다.
+
+```typescript main.ts
+import {
+  IpMetadata,
+  PILFlavor,
+  WIP_TOKEN_ADDRESS,
+} from "@story-protocol/core-sdk";
+import { client } from "./utils";
+import { uploadJSONToIPFS } from "./uploadToIpfs";
+import { createHash } from "crypto";
+import { Address, parseEther } from "viem";
+
+async function main() {
+  // previous code here ...
+
+  const response = await client.ipAsset.registerIpAsset({
+    nft: {
+      type: "mint",
+      spgNftContract: "0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc",
+    },
+    // [!code ++:9]
+    licenseTermsData: [
+      {
+        terms: PILFlavor.commercialRemix({
+          commercialRevShare: 5,
+          defaultMintingFee: parseEther("1"), // 1 $DATA
+          currency: WIP_TOKEN_ADDRESS,
+        }),
+      },
+    ],
+    ipMetadata: {
+      ipMetadataURI: `https://ipfs.io/ipfs/${ipIpfsHash}`,
+      ipMetadataHash: `0x${ipHash}`,
+      nftMetadataURI: `https://ipfs.io/ipfs/${nftIpfsHash}`,
+      nftMetadataHash: `0x${nftHash}`,
+    },
+  });
+
+  console.log(
+    `Root IPA created at transaction hash ${response.txHash}, IPA ID: ${response.ipId}`
+  );
+  console.log(
+    `View on the explorer: https://aeneid.explorer.datafdn.org/ipa/${response.ipId}`
+  );
+}
+
+main();
+```
+
+## 6. 완성된 코드 보기
+
+축하합니다, IP를 등록하고 license terms를 첨부했습니다!
+
+<CardGroup cols={1}>
+  <Card
+    title="완성된 코드"
+    href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts"
+    icon="thumbs-up"
+  >
+    완성된 코드를 끝까지 따라가세요.
+  </Card>
+</CardGroup>

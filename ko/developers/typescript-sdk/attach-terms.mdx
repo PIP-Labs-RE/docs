@@ -1,0 +1,191 @@
+---
+title: IPA에 약관 첨부
+description: TypeScript에서 IP Asset에 라이선스 약관을 첨부하는 방법을 알아봅니다.
+---
+
+이 섹션에서는 [License Terms](/concepts/licensing-module/license-terms)를 [IP Asset](/concepts/ip-asset)에 첨부하는 방법을 보여줍니다. 약관을 첨부하면 사용자가 해당 IP에서 그 약관이 적용된 [License Token](/concepts/licensing-module/license-token)(온체인 "라이선스")을 공개적으로 민팅할 수 있습니다.
+
+### 사전 준비 사항
+
+튜토리얼을 시작하기 전에 완료해야 할 몇 가지 단계가 있습니다.
+
+1. [TypeScript SDK 설정](/developers/typescript-sdk/setup) 완료
+
+## 1. 시작하기 전에
+
+약관을 첨부하기 위해 기존 IP Asset이 필요하지 않다는 점을 말씀드립니다. 이전 섹션에서 본 것처럼, 동일한 트랜잭션에서 IP Asset을 등록하고 약관을 첨부할 수 있습니다.
+
+## 2. License Terms 등록
+
+IP Asset에 약관을 첨부하려면 먼저 약관을 만들어야 합니다!
+
+[License Terms](/concepts/licensing-module/license-terms)는 해당 약관을 가진 IP에서 민팅되는 라이선스에 대한 제한 사항을 정의하는 구성 가능한 값들의 집합입니다. 예를 들면 "이 라이선스를 민팅하면 수익의 50%를 저에게 공유해야 합니다."와 같은 것입니다. 약관의 전체 집합은 [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 확인할 수 있습니다.
+
+<Note>
+
+생성하려는 동일한 파라미터 집합에 대해 우리 프로토콜에 이미 License Terms가 존재한다면, 다시 만들 필요가 없으며, 함수는 단순히 기존 `licenseTermsId`와 undefined된 `txHash`를 반환합니다. License Terms는 프로토콜 전역적이므로, `licenseTermsId`를 통해 기존 License Terms를 사용할 수 있습니다.
+
+</Note>
+
+다음은 새 약관을 만드는 방법을 보여주는 코드 예제입니다:
+
+<Info>
+  관련 문서:
+  [license.registerPILTerms](/sdk-reference/license#registerpilterms)
+</Info>
+
+```typescript main.ts
+import { LicenseTerms } from "@story-protocol/core-sdk";
+import { zeroAddress } from "viem";
+// you should already have a client set up (prerequisite)
+import { client } from "./utils";
+
+async function main() {
+  const licenseTerms: LicenseTerms = {
+    defaultMintingFee: 0n,
+    // must be a whitelisted revenue token from https://docs.datafdn.org/developers/deployed-smart-contracts
+    // in this case, we use $WIP
+    currency: "0x1514000000000000000000000000000000000000",
+    // RoyaltyPolicyLAP address from https://docs.datafdn.org/developers/deployed-smart-contracts
+    royaltyPolicy: "0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E",
+    transferable: false,
+    expiration: 0n,
+    commercialUse: false,
+    commercialAttribution: false,
+    commercializerChecker: zeroAddress,
+    commercializerCheckerData: "0x",
+    commercialRevShare: 0,
+    commercialRevCeiling: 0n,
+    derivativesAllowed: false,
+    derivativesAttribution: false,
+    derivativesApproval: false,
+    derivativesReciprocal: false,
+    derivativeRevCeiling: 0n,
+    uri: "",
+  };
+
+  const response = await client.license.registerPILTerms({
+    ...licenseTerms,
+  });
+
+  console.log(
+    `PIL Terms registered at transaction hash ${response.txHash}, License Terms ID: ${response.licenseTermsId}`
+  );
+}
+
+main();
+```
+
+### 2a. PIL Flavors
+
+위에서 볼 수 있듯이, 많은 약관 중에서 선택해야 합니다.
+
+새 약관을 등록하는 데 도움이 되는 편의 함수를 제공합니다. 어떤 약관을 사용할지 결정하는 데 도움이 되도록 사전 구성된 인기 License Terms 조합인 [PIL Flavors](/concepts/programmable-ip-license/pil-flavors)를 만들었습니다. 해당 PIL Flavors를 보고 다음 편의 함수를 사용해 약관을 등록할 수 있습니다:
+
+<CardGroup cols={4}>
+  <Card
+    title="Non-Commercial Social Remixing"
+    href="/concepts/programmable-ip-license/pil-flavors#non-commercial-social-remixing"
+    icon="file"
+    
+    
+  >
+    출처 표기와 함께 자유로운 리믹스. 상업적 사용 불가.
+  </Card>
+
+{" "}
+
+<Card
+  title="Commercial Use"
+  href="/concepts/programmable-ip-license/pil-flavors#commercial-use"
+  icon="file"
+>
+  출처 표기와 함께 라이선스 사용료를 지불하지만 수익 공유는 필요 없음.
+</Card>
+
+{" "}
+
+<Card
+  title="Commercial Remix"
+  href="/concepts/programmable-ip-license/pil-flavors#commercial-remix"
+  icon="file"
+>
+  출처 표기와 함께 라이선스 사용료를 지불하고 발생한 수익의 일정 비율을 공유.
+</Card>
+
+  <Card
+    title="Creative Commons Attribution"
+    href="/concepts/programmable-ip-license/pil-flavors#creative-commons-attribution"
+    icon="file"
+    
+    
+  >
+    출처 표기와 함께 자유로운 리믹스 및 상업적 사용.
+  </Card>
+</CardGroup>
+
+다음과 같이 약관의 flavor를 쉽게 등록할 수 있습니다:
+
+```typescript main.ts
+import { PILFlavor, WIP_TOKEN_ADDRESS } from "@story-protocol/core-sdk";
+import { parseEther } from "viem";
+// you should already have a client set up (prerequisite)
+import { client } from "./utils";
+
+async function main() {
+  const response = await client.license.registerPILTerms(
+    PILFlavor.commercialRemix({
+      commercialRevShare: 5,
+      defaultMintingFee: parseEther("1"), // 1 $DATA
+      currency: WIP_TOKEN_ADDRESS,
+    })
+  );
+
+  console.log(
+    `PIL Terms registered at transaction hash ${response.txHash}, License Terms ID: ${response.licenseTermsId}`
+  );
+}
+
+main();
+```
+
+## 3. License Terms 첨부
+
+이제 약관을 만들었고 관련된 `licenseTermsId`를 얻었으므로, 다음과 같이 기존 IP Asset에 첨부할 수 있습니다:
+
+<Info>
+  관련 문서:
+  [license.attachLicenseTerms](/sdk-reference/license#attachlicenseterms)
+</Info>
+
+```typescript main.ts
+import { LicenseTerms } from "@story-protocol/core-sdk";
+import { zeroAddress } from "viem";
+// you should already have a client set up (prerequisite)
+import { client } from "./utils";
+
+async function main() {
+  // previous code here ...
+
+  const response = await client.license.attachLicenseTerms({
+    // insert your newly created license terms id here
+    licenseTermsId: LICENSE_TERMS_ID,
+    // insert the ipId you want to attach terms to here
+    ipId: "0x4c1f8c1035a8cE379dd4ed666758Fb29696CF721",
+  });
+
+  if (response.success) {
+    console.log(
+      `Attached License Terms to IPA at transaction hash ${response.txHash}.`
+    );
+  } else {
+    console.log(`License Terms already attached to this IPA.`);
+  }
+}
+
+main();
+```
+
+## 3. 라이선스 민팅
+
+이제 IP에 License Terms를 첨부했으므로, 다음 단계는 License Token을 민팅하는 것이며, 다음 페이지에서 다루겠습니다.

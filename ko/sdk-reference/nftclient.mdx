@@ -1,0 +1,205 @@
+---
+title: NFT Client
+description: DATA Foundation에서 사용할 새 SPG 컬렉션을 민팅하는 데 사용됩니다.
+---
+
+## NftClient
+
+### 메서드
+
+- createNFTCollection
+- getMintFeeToken
+- getMintFee
+- setTokenURI
+- getTokenURI
+
+### createNFTCollection
+
+새 SPG NFT 컬렉션을 생성합니다.
+
+| Method                | Type                                                                            |
+| --------------------- | ------------------------------------------------------------------------------- |
+| `createNFTCollection` | `(request: CreateNFTCollectionRequest) => Promise<CreateNFTCollectionResponse>` |
+
+매개변수:
+
+- `request.name`: 컬렉션의 이름.
+- `request.symbol`: 컬렉션의 심볼.
+- `request.isPublicMinting`: true이면 누구나 컬렉션에서 민팅할 수 있습니다. false이면 minter 역할을 가진 주소만 민팅할 수 있습니다.
+- `request.mintOpen`: 컬렉션이 생성 시 민팅을 위해 열려 있는지 여부.
+- `request.mintFeeRecipient`: 민팅 수수료를 받는 주소.
+- `request.contractURI`: 컬렉션의 컨트랙트 URI. ERC-7572 표준을 따릅니다. [여기](https://eips.ethereum.org/EIPS/eip-7572)를 참조하세요.
+- `request.baseURI`: \[선택] 컬렉션의 기본 URI. baseURI가 비어 있지 않으면, tokenURI는 baseURI + token ID(nftMetadataURI가 비어 있는 경우) 또는 baseURI + nftMetadataURI가 됩니다.
+- `request.maxSupply`: \[선택] 컬렉션의 최대 공급량.
+- `request.mintFee`: \[선택] 토큰을 민팅하는 데 드는 비용.
+- `request.mintFeeToken`: \[선택] 민팅할 토큰.
+- `request.owner`: \[선택] 컬렉션의 소유자.
+
+<CodeGroup>
+
+```typescript TypeScript
+import { zeroAddress } from "viem";
+
+// Create a new SPG NFT collection
+//
+// NOTE: Use this code to create a new SPG NFT collection. You can then use the
+// `newCollection.spgNftContract` address as the `spgNftContract` argument in
+// functions like `registerIpAsset` in the IPAsset Client.
+//
+// You will mostly only have to do this once. Once you get your nft contract address,
+// you can use it in SPG functions.
+//
+const newCollection = await client.nftClient.createNFTCollection({
+  name: "Test NFT",
+  symbol: "TEST",
+  isPublicMinting: true,
+  mintOpen: true,
+  mintFeeRecipient: zeroAddress,
+  contractURI: "",
+});
+
+console.log(
+  `New SPG NFT collection created at transaction hash ${newCollection.txHash}`
+);
+console.log(`NFT contract address: ${newCollection.spgNftContract}`);
+```
+
+```typescript Request Type
+export type CreateNFTCollectionRequest = {
+  name: string;
+  symbol: string;
+  isPublicMinting: boolean;
+  mintOpen: boolean;
+  mintFeeRecipient: Address;
+  contractURI: string;
+  baseURI?: string;
+  maxSupply?: number;
+  mintFee?: bigint;
+  mintFeeToken?: Hex;
+  owner?: Hex;
+};
+```
+
+```typescript Response Type
+export type CreateNFTCollectionResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  spgNftContract?: Address; // the address of the newly created contract
+};
+```
+
+</CodeGroup>
+
+### getMintFeeToken
+
+컬렉션의 현재 민팅 토큰을 반환합니다.
+
+| Method            | Type                                            |
+| ----------------- | ----------------------------------------------- |
+| `getMintFeeToken` | `(spgNftContract: Address) => Promise<Address>` |
+
+매개변수:
+
+- `spgNftContract`: NFT 컨트랙트의 주소.
+
+<CodeGroup>
+
+```typescript TypeScript
+const mintFeeToken = await client.nftClient.getMintFeeToken("0x01");
+```
+
+</CodeGroup>
+
+### getMintFee
+
+컬렉션의 현재 민팅 수수료를 반환합니다.
+
+| Method       | Type                                           |
+| ------------ | ---------------------------------------------- |
+| `getMintFee` | `(spgNftContract: Address) => Promise<bigint>` |
+
+매개변수:
+
+- `spgNftContract`: NFT 컨트랙트의 주소.
+
+<CodeGroup>
+
+```typescript TypeScript
+const mintFee = await client.nftClient.getMintFee("0x01");
+```
+
+</CodeGroup>
+
+### setTokenURI
+
+주어진 토큰에 대한 토큰 URI를 설정합니다.
+
+| Method        | Type                                                            |
+| ------------- | --------------------------------------------------------------- |
+| `setTokenURI` | `(request: SetTokenURIRequest) => Promise<TransactionResponse>` |
+
+매개변수:
+
+- `request.spgNftContract`: NFT 컨트랙트의 주소.
+- `request.tokenId`: 토큰의 ID.
+- `request.tokenURI`: 설정할 URI.
+
+<CodeGroup>
+
+```typescript TypeScript
+const response = await client.nftClient.setTokenURI({
+  spgNftContract: "0x01",
+  tokenId: 1,
+  tokenURI:
+    "https://ipfs.io/ipfs/QmX4zdp8VpzqvtKuEqMo6gfZPdoUx9TeHXCgzKLcFfSUbk",
+});
+```
+
+```typescript Request Type
+export type SetTokenURIRequest = {
+  spgNftContract: Address;
+  tokenId: bigint | number;
+  tokenURI: string;
+};
+```
+
+```typescript Response Type
+export type TransactionResponse = {
+  txHash: Hex;
+  /** Transaction receipt, only available if waitForTransaction is set to true */
+  receipt?: TransactionReceipt;
+};
+```
+
+</CodeGroup>
+
+### getTokenURI
+
+주어진 토큰에 대한 토큰 URI를 반환합니다.
+
+| Method        | Type                                               |
+| ------------- | -------------------------------------------------- |
+| `getTokenURI` | `(request: GetTokenURIRequest) => Promise<string>` |
+
+매개변수:
+
+- `request.spgNftContract`: SPG NFT 컨트랙트의 주소.
+- `request.tokenId`: 토큰의 ID.
+
+<CodeGroup>
+
+```typescript TypeScript
+const tokenURI = await client.nftClient.getTokenURI({
+  spgNftContract: "0x01",
+  tokenId: 1,
+});
+```
+
+</CodeGroup>
+
+```typescript Request Type
+export type GetTokenURIRequest = {
+  spgNftContract: Address;
+  tokenId: bigint | number;
+};
+```

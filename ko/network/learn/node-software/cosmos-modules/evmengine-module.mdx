@@ -1,0 +1,184 @@
+---
+title: EVM engine 모듈
+description: 합의 계층과 실행 계층 간의 통신을 담당하는 모듈
+---
+
+## 개요
+
+본 문서는 DATA Network의 내부 `x/evmengine` 모듈을 정의합니다.
+
+DATA Network는 Ethereum과 마찬가지로 합의 클라이언트와 실행 클라이언트를 분리하므로, 합의 클라이언트(CL)와 실행 클라이언트(EL)는 네트워크와 동기화하고, 적절한 EVM 블록을 제안하며, EVM에서 트리거된 EL 동작을 CL에서 실행하기 위해 서로 통신해야 합니다.
+
+이 모듈은 [Engine API](/network/node-architecture/engine-api)를 사용하여 CL과 EL 사이의 모든 통신을 — 스테이킹과 업그레이드부터 CL 및 EL의 블록 생성과 합의 진행에 이르기까지 — 촉진하기 위해 존재합니다.
+
+## 목차
+
+1. **[상태(State)](#state)**
+2. **[Prepare Proposal](#prepare-proposal)**
+3. **[Process Proposal](#process-proposal)**
+4. **[Post Finalize](#post-finalize)**
+5. **[메시지(Messages)](#messages)**
+6. **[UBI](#ubi)**
+7. **[업그레이드(Upgrades)](#upgrades)**
+
+## State
+
+### Build Delay
+
+타입: `time.Duration`
+
+Build delay는 `PrepareProposal` ABCI2 호출이 시작된 후, [Engine API](/network/node-architecture/engine-api)를 통해 EL로부터 제안할 다음 EVM 블록 데이터를 가져오기 전까지의 대기 시간을 결정합니다. 현재 제안자(proposer)에게만 적용됩니다. 노드가 이전에 옵티미스틱하게 빌드한 블록이 있는 경우, build delay는 사용되지 않습니다.
+
+### Build Optimistic
+
+타입: `bool`
+
+`true`인 경우 블록의 옵티미스틱 빌드를 활성화합니다. 노드는 현재 블록에서 자신이 다음 제안자임을 발견하면 결정론적으로 다음 블록을 빌드합니다. 옵티미스틱 빌드는 ABCI2의 `FinalizeBlock` 직후에 (다음 CL 블록을 위한) 다음 EVM 블록 데이터를 요청하면서 시작됩니다.
+
+### Head Table
+
+타입: `ExecutionHeadTable`
+
+Head table은 다른 validator로부터 수신한 EVM 블록의 부분 검증에 사용되는 최신 실행 헤드 데이터를 저장합니다. 체인이 초기화될 때, 실행 헤드는 `genesis.json`에서 로드된 제네시스 실행 해시로 채워집니다.
+
+다음과 같은 실행 헤드가 테이블에 저장됩니다.
+
+```protobuf protobuf
+message ExecutionHead {
+  option (cosmos.orm.v1.table) = {
+    id: 1;
+    primary_key: { fields: "id", auto_increment: true }
+  };
+
+  uint64 id               = 1; // Auto-incremented ID (always and only 1).
+  uint64 created_height   = 2; // Consensus chain height this execution block was created in.
+  uint64 block_height     = 3; // Execution block height.
+  bytes  block_hash       = 4; // Execution block hash.
+  uint64 block_time       = 5; // Execution block time.
+}
+```
+
+### Upgrade Contract
+
+타입: `*bindings.UpgradeEntrypoint`
+
+Upgrade contract는 EL의 업그레이드 관련 이벤트를 필터링하고 파싱하는 데 사용됩니다.
+
+### UBI Contract
+
+타입: `*bindings.UBIPool`
+
+UBI contract는 EL의 UBI 관련 이벤트를 필터링하고 파싱하는 데 사용됩니다.
+
+### Mutable Payload
+
+타입: struct
+
+Mutable payload는 옵티미스틱 빌드가 활성화된 경우 옵티미스틱하게 빌드된 블록을 저장합니다.
+
+#### Genesis State
+
+모듈의 `GenesisState`는 이전에 내보낸 높이에서 체인을 초기화하는 데 필요한 상태를 정의합니다.
+
+```protobuf protobuf
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message Params {
+  bytes execution_block_hash = 1 [
+    (gogoproto.moretags) = "yaml:\"execution_block_hash\""
+  ];
+}
+```
+
+## Prepare Proposal
+
+각 블록에서, 노드가 제안자라면 ABCI2가 `PrepareProposal`을 트리거하며 다음을 수행합니다:
+
+1. [evmstaking](/network/node-architecture/cosmos-modules/evmstaking-module) 모듈에서 스테이킹 및 보상 출금을 로드합니다.
+2. 유효한 EVM 블록을 빌드합니다.
+   - 옵티미스틱 빌드인 경우: 옵티미스틱하게 빌드된 블록을 로드합니다.
+   - 비옵티미스틱인 경우: EL에 EVM 블록을 요청하여 수신합니다.
+3. 이전/부모 블록의 EVM 로그를 수집합니다.
+4. 빌드된 EVM 블록과 이전 EVM 로그로 `MsgExecutionPayload`를 조립합니다.
+5. 조립된 `MsgExecutionPayload` 데이터를 포함하는 트랜잭션을 반환합니다.
+
+이 CL 블록은 이후 다른 모든 validator에게 전파됩니다.
+
+## Process Proposal
+
+각 블록에서, 노드가 제안자가 아닌 validator라면 ABCI2가 수신된 커밋(정상적인 경우 `MsgExecutionPayload` 데이터의 트랜잭션)과 함께 `ProcessProposal`을 트리거합니다.
+
+노드는 먼저 수신된 커밋이 2/3 이상의 투표가 커밋된 단 하나의 트랜잭션만 포함하는지 검증합니다. 그런 다음, 그 하나의 트랜잭션이 단 하나의 언마샬링된 `MsgExecutionPayload` 데이터만 포함하는지 검증합니다. 마지막으로, 노드는 수신된 데이터를 처리하고 네트워크에 제안 수락 의사를 브로드캐스트합니다. 검증 또는 처리 중 하나라도 실패하면 노드는 제안을 거부합니다.
+
+보다 구체적으로, 노드는 다음 방식으로 수신된 `MsgExecutionPayload` 데이터를 처리합니다:
+
+1. 수신된 `MsgExecutionPayload`의 필드를 검증합니다([Messages](#msgexecutionpayload)에 설명되어 있음).
+2. 로컬 스테이킹 & 보상 출금을 수신된 출금 데이터와 비교합니다.
+3. Engine API를 통해 수신된 실행 페이로드를 EL에 푸시하고 페이로드 검증을 대기합니다.
+4. EL forkchoice를 실행 페이로드의 블록 해시로 업데이트합니다.
+5. [evmstaking](/network/node-architecture/cosmos-modules/evmstaking-module) 모듈을 사용하여 스테이킹 이벤트를 처리합니다.
+6. 업그레이드 이벤트를 처리합니다.
+7. 실행 헤드를 실행 페이로드(파이널라이즈된 블록)로 업데이트합니다.
+
+## Post Finalize
+
+옵티미스틱 빌드가 활성화된 경우, `PostFinalize`는 커스텀 ABCI 콜백을 통해 설정된 `FinalizeBlock` 직후 트리거됩니다. 이 과정에서 노드는 evmstaking 모듈의 스테이킹 및 보상 큐를 미리 들여다보고, 현재 실행 헤드 위에 새로운 실행 페이로드를 빌드합니다. 다음 블록의 `PrepareProposal` 단계에서 사용할 옵티미스틱 블록을 설정하고, forkchoice 업데이트의 응답을 반환합니다.
+
+## 메시지
+
+이 섹션에서는 evmengine 메시지의 처리와 그에 대응하는 상태 업데이트를 설명합니다. 각 메시지에 의해 생성/수정되는 모든 상태 객체는 상태(state) 섹션에 정의되어 있습니다.
+
+### MsgExecutionPayload
+
+```protobuf protobuf
+message MsgExecutionPayload {
+  option (cosmos.msg.v1.signer) = "authority";
+  string            authority           = 1;
+  bytes             execution_payload   = 2;
+  repeated EVMEvent prev_payload_events = 3;
+}
+
+message EVMEvent {
+  bytes          address = 1;
+  repeated bytes topics  = 2;
+  bytes          data    = 3;
+  bytes          tx_hash = 4;
+}
+```
+
+이 메시지는 다음의 경우 실패할 것으로 예상됩니다:
+
+- authority가 유효하지 않은 경우(evmengine authority가 아님)
+- 유효하지 않은 필드 등으로 인해 execution payload를 [ExecutableData](https://github.com/piplabs/story/blob/c38b80c13579d3df7174ea10c3368ef0692f52da/client/x/evmengine/types/executable_data.go#L17-L35)로 언마샬할 수 없는 경우
+- execution payload의 블록 번호가 CL head의 블록 번호 + 1과 일치하지 않는 경우
+- execution payload의 부모 블록 해시가 CL head의 해시와 일치하지 않는 경우
+- execution payload의 타임스탬프가 유효하지 않은 경우
+- execution payload의 RANDAO가 CL head의 해시(즉, 부모 해시)와 일치하지 않는 경우
+- execution payload의 `Withdrawals`, `BlobGasUsed`, `ExcessBlobGas` 필드가 nil인 경우
+- execution payload의 `Withdrawals` 수가 로컬 노드의 디큐된 스테이킹 & 보상 출금 합계와 일치하지 않는 경우
+
+메시지는 이전 블록의 이벤트를 포함해야 하며, 이는 현재 CL 블록에서 처리됩니다(즉, EL 블록 n-1의 실행 이벤트는 CL 블록 n에서 처리됩니다). 향후, 이 메시지는 `prev_payload_events`를 제거하고 [Engine API](/network/node-architecture/engine-api)를 사용해 현재 파이널라이즈된 EL 블록의 이벤트를 가져오게 됩니다.
+
+또한 EVM 이벤트는 EL에서 생성된 순서대로 CL에서 처리됩니다.
+
+## UBI
+
+모든 UBI 관련 변경은 EVM 실행 계층의 표준(canonical) UBI 컨트랙트에서 트리거되어야 합니다. 이 모듈은 CL에서 해당 트리거의 실행 처리를 담당합니다. [validator를 위한 UBI](/network/tokenomics-staking#ubi-for-validators)에서 자세한 내용을 확인하세요.
+
+### Set UBI Distribution
+
+`UBIPool` 컨트랙트는 UBI 분배 설정 이벤트를 발행하며, 이는 모듈에 의해 파싱되어 distribution 모듈에서 UBI 비율을 설정합니다.
+
+## 업그레이드
+
+모든 체인 업그레이드 관련 로직은 EVM 실행 계층의 표준 업그레이드 컨트랙트에서 트리거되어야 합니다. 이 모듈은 CL에서 해당 트리거의 실행 처리를 담당합니다.
+
+### 소프트웨어 업그레이드
+
+`UpgradeEntrypoint` 컨트랙트는 소프트웨어 업그레이드 이벤트를 발행하며, 이는 모듈에 의해 파싱되어 주어진 바이너리 이름에 대해 주어진 높이에서 업그레이드가 예약됩니다. 현재 모든 업그레이드는 포크 또는 소프트웨어 업그레이드 이벤트로 설정되어야 하며, 후자의 프로세스는 멀티시그로 제어되며 향후 투표 기반 프로세스로 전환될 예정입니다.
+
+### 업그레이드 취소
+
+소프트웨어 업그레이드와 유사하게, 이 모듈은 이전 블록의 EVM 로그에서 업그레이드 취소 이벤트를 처리하여 기존 업그레이드 계획을 삭제합니다.

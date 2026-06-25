@@ -69,12 +69,16 @@
                   {
                     "group": "Provenance (Trace)",
                     "icon": "fingerprint",
-                    "pages": ["trace/overview"]
+                    "pages": [
+                      "trace/overview"
+                    ]
                   },
                   {
                     "group": "Confidentiality (CDR)",
                     "icon": "lock",
-                    "pages": ["cdr/overview"]
+                    "pages": [
+                      "cdr/overview"
+                    ]
                   },
                   {
                     "group": "Rights (IP & Licensing)",
@@ -201,7 +205,9 @@
               },
               {
                 "group": "Notices",
-                "pages": ["notices"]
+                "pages": [
+                  "notices"
+                ]
               }
             ]
           },
@@ -233,7 +239,9 @@
                   {
                     "group": "Trace",
                     "icon": "fingerprint",
-                    "pages": ["trace/integration"]
+                    "pages": [
+                      "trace/integration"
+                    ]
                   },
                   {
                     "group": "IP & Licensing",
@@ -287,7 +295,9 @@
               },
               {
                 "group": "Global Wallet",
-                "pages": ["developers/global-wallet/overview"]
+                "pages": [
+                  "developers/global-wallet/overview"
+                ]
               },
               {
                 "group": "Tutorials",
@@ -321,7 +331,9 @@
                 "groups": [
                   {
                     "group": "Get Started",
-                    "pages": ["sdk-reference/overview"]
+                    "pages": [
+                      "sdk-reference/overview"
+                    ]
                   },
                   {
                     "group": "CDR SDK",
@@ -352,7 +364,9 @@
                 "groups": [
                   {
                     "group": "Get Started",
-                    "pages": ["sdk-reference/python/overview"]
+                    "pages": [
+                      "sdk-reference/python/overview"
+                    ]
                   },
                   {
                     "group": "Protocol SDK (IP & Licensing)",
@@ -403,7 +417,9 @@
                 "groups": [
                   {
                     "group": "Consensus Client API Overview",
-                    "pages": ["api-reference/consensus-client/introduction"]
+                    "pages": [
+                      "api-reference/consensus-client/introduction"
+                    ]
                   },
                   {
                     "group": "Endpoints",
@@ -418,6 +434,402 @@
             "groups": [
               {
                 "group": "Overview",
+                "pages": [
+                  "foundation/governance",
+                  "foundation/disclaimer",
+                  "foundation/mica",
+                  "foundation/security-council"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "ko",
+        "tabs": [
+          {
+            "tab": "가이드",
+            "groups": [
+              {
+                "group": "시작하기",
+                "pages": [
+                  "introduction",
+                  "quickstart",
+                  "faq"
+                ]
+              },
+              {
+                "group": "데이터 스택",
+                "pages": [
+                  {
+                    "group": "출처 증명 (Trace)",
+                    "icon": "fingerprint",
+                    "pages": [
+                      "trace/overview"
+                    ]
+                  },
+                  {
+                    "group": "기밀성 (CDR)",
+                    "icon": "lock",
+                    "pages": [
+                      "cdr/overview"
+                    ]
+                  },
+                  {
+                    "group": "권리 (IP 및 라이선싱)",
+                    "icon": "scroll",
+                    "pages": [
+                      "concepts/overview",
+                      {
+                        "group": "IP 자산",
+                        "icon": "puzzle",
+                        "pages": [
+                          "concepts/ip-asset/overview",
+                          "concepts/ip-asset/ip-account",
+                          "concepts/ip-asset/ipa-modifications",
+                          "concepts/ip-asset/ipa-metadata-standard"
+                        ]
+                      },
+                      {
+                        "group": "라이선싱",
+                        "icon": "scroll",
+                        "pages": [
+                          "concepts/licensing-module/overview",
+                          "concepts/licensing-module/license-template",
+                          "concepts/licensing-module/license-terms",
+                          "concepts/licensing-module/license-token",
+                          "concepts/licensing-module/license-config"
+                        ]
+                      },
+                      {
+                        "group": "Programmable IP License",
+                        "icon": "file-certificate",
+                        "pages": [
+                          "concepts/programmable-ip-license/overview",
+                          "concepts/programmable-ip-license/pil-terms",
+                          "concepts/programmable-ip-license/pil-flavors"
+                        ]
+                      },
+                      "concepts/hooks",
+                      {
+                        "group": "SPG (Periphery)",
+                        "icon": "box-open",
+                        "pages": [
+                          "concepts/spg/overview",
+                          "concepts/spg/batch-spg-function-calls"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "DATA Network",
+                "pages": [
+                  "network/overview",
+                  {
+                    "group": "연결",
+                    "icon": "network-wired",
+                    "pages": [
+                      "network/connect/mainnet",
+                      "network/connect/aeneid"
+                    ]
+                  },
+                  {
+                    "group": "알아보기",
+                    "icon": "books",
+                    "pages": [
+                      "network/learn/overview",
+                      "network/learn/whitepaper",
+                      {
+                        "group": "노드 소프트웨어",
+                        "icon": "code",
+                        "pages": [
+                          "network/learn/node-software/overview",
+                          "network/learn/node-software/execution_layer",
+                          "network/learn/node-software/consensus_layer",
+                          "network/learn/node-software/engine_api",
+                          {
+                            "group": "Cosmos 모듈",
+                            "icon": "puzzle-piece-simple",
+                            "pages": [
+                              "network/learn/node-software/cosmos-modules/cosmos-module-overview",
+                              "network/learn/node-software/cosmos-modules/evmengine-module",
+                              "network/learn/node-software/cosmos-modules/evmstaking-module",
+                              "network/learn/node-software/cosmos-modules/mint-module",
+                              "network/learn/node-software/cosmos-modules/staking-module"
+                            ]
+                          },
+                          "network/learn/node-software/localnet",
+                          "network/learn/node-software/precompiled-contracts"
+                        ]
+                      },
+                      "network/learn/token-economy"
+                    ]
+                  },
+                  {
+                    "group": "참여하기",
+                    "icon": "handshake",
+                    "pages": [
+                      "network/participate/overview",
+                      {
+                        "group": "Become a Validator",
+                        "icon": "computer",
+                        "pages": [
+                          "network/participate/validators/overview",
+                          "network/participate/validators/node-setup-mainnet",
+                          "network/participate/validators/operate-your-node",
+                          "network/participate/validators/node-upgrade",
+                          {
+                            "group": "DKG",
+                            "pages": [
+                              "network/participate/validators/dkg/dkg-validator-guide",
+                              "network/participate/validators/dkg/kernel-upgrade"
+                            ]
+                          },
+                          "network/participate/validators/release-notes",
+                          "network/participate/validators/troubleshooting"
+                        ]
+                      },
+                      "network/participate/governance",
+                      "network/participate/forum",
+                      "network/participate/sip"
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "Notices",
+                "pages": [
+                  "notices"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "개발자",
+            "groups": [
+              {
+                "group": "시작하기",
+                "pages": [
+                  "developers/overview",
+                  "developers/deployed-smart-contracts",
+                  "developers/releases"
+                ]
+              },
+              {
+                "group": "Integration Guides",
+                "pages": [
+                  {
+                    "group": "CDR SDK",
+                    "icon": "lock",
+                    "pages": [
+                      "developers/cdr-sdk/overview",
+                      "developers/cdr-sdk/setup",
+                      "developers/cdr-sdk/encrypt-and-decrypt",
+                      "developers/cdr-sdk/ip-asset-vaults",
+                      "developers/cdr-sdk/advanced-configuration"
+                    ]
+                  },
+                  {
+                    "group": "Trace",
+                    "icon": "fingerprint",
+                    "pages": [
+                      "trace/integration"
+                    ]
+                  },
+                  {
+                    "group": "IP & Licensing",
+                    "icon": "scroll",
+                    "pages": [
+                      {
+                        "group": "TypeScript SDK",
+                        "icon": "screwdriver-wrench",
+                        "pages": [
+                          "developers/typescript-sdk/overview",
+                          "developers/typescript-sdk/setup",
+                          "developers/typescript-sdk/register-ip-asset",
+                          "developers/typescript-sdk/attach-terms",
+                          "developers/typescript-sdk/mint-license"
+                        ]
+                      },
+                      {
+                        "group": "React / Next.js",
+                        "icon": "atom",
+                        "pages": [
+                          "developers/react-guide/overview",
+                          {
+                            "group": "설정",
+                            "pages": [
+                              "developers/react-guide/setup/overview",
+                              "developers/react-guide/setup/dynamic-setup",
+                              "developers/react-guide/setup/rainbowkit-setup",
+                              "developers/react-guide/setup/reown-setup",
+                              "developers/react-guide/setup/tomo-setup"
+                            ]
+                          },
+                          "developers/react-guide/using-the-sdk-in-react"
+                        ]
+                      },
+                      {
+                        "group": "Smart Contracts",
+                        "icon": "file-contract",
+                        "pages": [
+                          "developers/smart-contracts-guide/overview",
+                          "developers/smart-contracts-guide/setup",
+                          "developers/smart-contracts-guide/register-ip-asset",
+                          "developers/smart-contracts-guide/register-terms",
+                          "developers/smart-contracts-guide/attach-terms",
+                          "developers/smart-contracts-guide/mint-license",
+                          "developers/smart-contracts-guide/example"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "group": "글로벌 지갑",
+                "pages": [
+                  "developers/global-wallet/overview"
+                ]
+              },
+              {
+                "group": "튜토리얼",
+                "pages": [
+                  {
+                    "group": "Registration",
+                    "icon": "file-certificate",
+                    "pages": [
+                      "developers/tutorials/how-to-register-ip",
+                      "developers/tutorials/how-to-register-music"
+                    ]
+                  },
+                  {
+                    "group": "Wallet-less & Onboarding",
+                    "icon": "wallet",
+                    "pages": [
+                      "developers/tutorials/privy-tutorial",
+                      "developers/tutorials/easy-ip-onboarding"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "SDK 레퍼런스",
+            "dropdowns": [
+              {
+                "dropdown": "TypeScript",
+                "icon": "screwdriver-wrench",
+                "groups": [
+                  {
+                    "group": "시작하기",
+                    "pages": [
+                      "sdk-reference/overview"
+                    ]
+                  },
+                  {
+                    "group": "CDR SDK",
+                    "pages": [
+                      "sdk-reference/cdr/overview",
+                      "sdk-reference/cdr/observer",
+                      "sdk-reference/cdr/uploader",
+                      "sdk-reference/cdr/consumer",
+                      "sdk-reference/cdr/crypto"
+                    ]
+                  },
+                  {
+                    "group": "Protocol SDK (IP & Licensing)",
+                    "pages": [
+                      "sdk-reference/ipasset",
+                      "sdk-reference/ipaccount",
+                      "sdk-reference/license",
+                      "sdk-reference/permissions",
+                      "sdk-reference/nftclient",
+                      "sdk-reference/wipclient"
+                    ]
+                  }
+                ]
+              },
+              {
+                "dropdown": "Python",
+                "icon": "python",
+                "groups": [
+                  {
+                    "group": "시작하기",
+                    "pages": [
+                      "sdk-reference/python/overview"
+                    ]
+                  },
+                  {
+                    "group": "Protocol SDK (IP & Licensing)",
+                    "pages": [
+                      "sdk-reference/python/ipasset",
+                      "sdk-reference/python/ipaccount",
+                      "sdk-reference/python/license",
+                      "sdk-reference/python/permissions",
+                      "sdk-reference/python/nftclient",
+                      "sdk-reference/python/wipclient"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 레퍼런스",
+            "dropdowns": [
+              {
+                "dropdown": "Protocol API (IP & Licensing)",
+                "icon": "link",
+                "groups": [
+                  {
+                    "group": "Protocol API Overview",
+                    "pages": [
+                      "api-reference/protocol/introduction",
+                      "api-reference/blockscout-api"
+                    ]
+                  },
+                  {
+                    "group": "Endpoints",
+                    "openapi": "https://api.dataapis.io/api/v4/openapi.json",
+                    "pages": [
+                      "POST /assets",
+                      "POST /assets/edges",
+                      "POST /collections",
+                      "POST /licenses/tokens",
+                      "api-reference/protocol/search",
+                      "api-reference/protocol/transactions"
+                    ]
+                  }
+                ]
+              },
+              {
+                "dropdown": "Consensus Client API",
+                "icon": "circle-nodes",
+                "groups": [
+                  {
+                    "group": "Consensus Client API Overview",
+                    "pages": [
+                      "api-reference/consensus-client/introduction"
+                    ]
+                  },
+                  {
+                    "group": "Endpoints",
+                    "openapi": "api-reference/consensus-client/consensus-client-api.json"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Foundation",
+            "groups": [
+              {
+                "group": "개요",
                 "pages": [
                   "foundation/governance",
                   "foundation/disclaimer",
@@ -813,6 +1225,11 @@
     }
   ],
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   }
 }

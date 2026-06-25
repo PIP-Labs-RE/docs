@@ -1,0 +1,231 @@
+---
+title: IP Asset 등록하기
+description: Solidity에서 NFT를 IP Asset으로 등록하는 방법을 알아보세요.
+---
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+오프체인 IP(예: 책, 캐릭터, 그림 등)를 가지고 있다고 가정해 봅시다. 그 IP를 DATA Foundation에 등록하려면, 먼저 NFT를 민팅해야 합니다. 이 NFT는 IP의 **소유권**을 나타냅니다. 그런 다음 그 NFT를 DATA Foundation에 **등록**하면 [IP Asset](/concepts/ip-asset/overview)으로 변환됩니다. 아래 튜토리얼에서 그 방법을 단계별로 안내합니다.
+
+## 사전 준비
+
+튜토리얼을 시작하기 전에 몇 가지 단계를 완료해야 합니다.
+
+1. [자체 프로젝트 설정하기](/developers/smart-contracts-guide/setup)를 완료하세요.
+
+## 시작하기 전에
+
+두 가지 시나리오가 있습니다:
+
+1. 이미 **커스텀** ERC-721 NFT 컨트랙트가 있고 거기서 민팅할 수 있는 경우
+2. 민팅을 대신 수행할 [SPG (Periphery)](/concepts/spg/overview) NFT 컨트랙트를 새로 만들고 싶은 경우
+
+## 시나리오 #1: 이미 커스텀 ERC-721 NFT 컨트랙트가 있고 거기서 민팅할 수 있는 경우
+
+이미 민팅된 NFT가 있거나 직접 만든 ERC-721 컨트랙트를 사용해 IP를 등록하고 싶다면, 이 섹션을 보세요.
+
+아래에서 볼 수 있듯이 등록 과정은 비교적 간단합니다. 예시로 `SimpleNFT`를 사용하지만, 본인의 ERC-721 컨트랙트로 대체할 수 있습니다.
+
+다음 인자들로 IP Asset Registry의 `register`를 호출하기만 하면 됩니다:
+
+- `chainid` - 그냥 `block.chainid`를 사용하면 됩니다.
+- `tokenContract` - NFT 컬렉션의 주소
+- `tokenId` - NFT의 ID
+
+`test/0_IPARegistrar.t.sol`에 테스트 파일을 만들어 동작 및 결과를 확인해 봅시다:
+
+<Note>
+**컨트랙트 주소**
+
+DATA Foundation 컨트랙트 주소를 미리 채워 두었습니다. 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서도 확인할 수 있습니다.
+
+테스트에 사용 중인 `SimpleNFT` 컨트랙트는 [여기](https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol)에서 볼 수 있습니다.
+
+</Note>
+
+<Info>
+
+테스트에 사용 중인 `SimpleNFT` 컨트랙트는 [여기](https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol)에서 볼 수 있습니다.
+
+</Info>
+
+```solidity test/0_IPARegistrar.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+
+// your own ERC-721 NFT contract
+import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
+contract IPARegistrarTest is Test {
+    address internal alice = address(0xa11ce);
+
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+    // Protocol Core - IPAssetRegistry
+    IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
+
+    SimpleNFT public SIMPLE_NFT;
+
+    function setUp() public {
+        // Create a new Simple NFT collection
+        SIMPLE_NFT = new SimpleNFT("Simple IP NFT", "SIM");
+    }
+
+    /// @notice Mint an NFT and then register it as an IP Asset.
+    function test_register() public {
+        uint256 expectedTokenId = SIMPLE_NFT.nextTokenId();
+        address expectedIpId = IP_ASSET_REGISTRY.ipId(block.chainid, address(SIMPLE_NFT), expectedTokenId);
+
+        uint256 tokenId = SIMPLE_NFT.mint(alice);
+        address ipId = IP_ASSET_REGISTRY.register(block.chainid, address(SIMPLE_NFT), tokenId);
+
+        assertEq(tokenId, expectedTokenId);
+        assertEq(ipId, expectedIpId);
+        assertEq(SIMPLE_NFT.ownerOf(tokenId), alice);
+    }
+}
+```
+
+## 시나리오 #2: 민팅을 대신 수행할 SPG NFT 컨트랙트를 만들고 싶은 경우
+
+자체 커스텀 NFT 컨트랙트가 없다면, 이 섹션을 보세요.
+
+이를 위해 여러 트랜잭션을 하나로 결합할 수 있는 유틸리티 컨트랙트인 [SPG](/concepts/spg/overview)를 사용합니다. 이번에는 NFT 민팅과 IP Asset 등록을 함께 수행하는 SPG의 `mintAndRegisterIp` 함수를 사용합니다.
+
+`mintAndRegisterIp`를 사용하려면 먼저 새 `SPGNFT` 컬렉션을 만들어야 합니다. `StoryProtocolGateway` 컨트랙트의 `createCollection`을 호출하면 간단히 만들 수 있습니다. 또는 어떤 이유로 자체 `SPGNFT`를 만들고 싶다면 [ISPGNFT](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) 컨트랙트 인터페이스를 구현할 수도 있습니다. 새 SPGNFT를 초기화할 때 사용할 수 있는 예시 파라미터는 아래 예제를 참고하세요.
+
+자체 SPGNFT가 준비되었다면, 다음 인자들로 `mintAndRegisterIp`를 호출하기만 하면 됩니다:
+
+- `spgNftContract` - SPGNFT 컨트랙트의 주소
+- `recipient` - NFT를 받게 될 주소이며, 따라서 새로 등록된 IP의 소유자가 됩니다. _참고: DATA Foundation에서 IP 등록은 퍼미션리스(permissionless)이므로, 다른 사람을 위해 IP를 등록(트랜잭션 비용은 본인이 지불)해 줄 수 있고 그래도 해당 IP Asset의 소유자는 여전히 그 사람이 됩니다._
+- `ipMetadata` - NFT 및 IP와 관련된 메타데이터. NFT 및 IP 메타데이터 설정에 대한 자세한 내용은 [이 섹션](/concepts/ip-asset/overview#nft-vs-ip-metadata)을 참고하세요.
+
+1. `touch test/0_IPARegistrar.t.sol`을 실행하여 `test/0_IPARegistrar.t.sol`에 테스트 파일을 생성하세요. 그런 다음 아래 코드를 붙여넣으세요:
+
+<Note>
+**컨트랙트 주소**
+
+DATA Foundation 컨트랙트 주소를 미리 채워 두었습니다. 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서도 확인할 수 있습니다.
+
+</Note>
+
+```solidity test/0_IPARegistrar.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+import { ISPGNFT } from "@storyprotocol/periphery/interfaces/ISPGNFT.sol";
+import { IRegistrationWorkflows } from "@storyprotocol/periphery/interfaces/workflows/IRegistrationWorkflows.sol";
+import { WorkflowStructs } from "@storyprotocol/periphery/lib/WorkflowStructs.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
+contract IPARegistrarTest is Test {
+    address internal alice = address(0xa11ce);
+
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+    // Protocol Core - IPAssetRegistry
+    IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
+    // Protocol Periphery - RegistrationWorkflows
+    IRegistrationWorkflows internal REGISTRATION_WORKFLOWS =
+        IRegistrationWorkflows(0xbe39E1C756e921BD25DF86e7AAa31106d1eb0424);
+
+    ISPGNFT public SPG_NFT;
+
+    function setUp() public {
+        // Create a new NFT collection via SPG
+        SPG_NFT = ISPGNFT(
+            REGISTRATION_WORKFLOWS.createCollection(
+                ISPGNFT.InitParams({
+                    name: "Test Collection",
+                    symbol: "TEST",
+                    baseURI: "",
+                    contractURI: "",
+                    maxSupply: 100,
+                    mintFee: 0,
+                    mintFeeToken: address(0),
+                    mintFeeRecipient: address(this),
+                    owner: address(this),
+                    mintOpen: true,
+                    isPublicMinting: false
+                })
+            )
+        );
+    }
+
+    /// @notice Mint an NFT and register it in the same call via the DATA Foundation Gateway.
+    /// @dev Requires the collection address that is passed into the `mintAndRegisterIp` function
+    /// to be created via SPG (createCollection), as done above. Or, a contract that
+    /// implements the `ISPGNFT` interface.
+    function test_mintAndRegisterIp() public {
+        uint256 expectedTokenId = SPG_NFT.totalSupply() + 1;
+        address expectedIpId = IP_ASSET_REGISTRY.ipId(block.chainid, address(SPG_NFT), expectedTokenId);
+
+        // Note: The caller of this function must be the owner of the SPG NFT Collection.
+        // In this case, the owner of the SPG NFT Collection is the contract itself
+        // because it deployed it in the `setup` function.
+        // We can make `alice` the recipient of the NFT though, which makes her the
+        // owner of not only the NFT, but therefore the IP Asset.
+        (address ipId, uint256 tokenId) = REGISTRATION_WORKFLOWS.mintAndRegisterIp(
+            address(SPG_NFT),
+            alice,
+            WorkflowStructs.IPMetadata({
+                ipMetadataURI: "https://ipfs.io/ipfs/QmZHfQdFA2cb3ASdmeGS5K6rZjz65osUddYMURDx21bT73",
+                ipMetadataHash: keccak256(
+                    abi.encodePacked(
+                        "{'title':'My IP Asset','description':'This is a test IP asset','createdAt':'','creators':[]}"
+                    )
+                ),
+                nftMetadataURI: "https://ipfs.io/ipfs/QmRL5PcK66J1mbtTZSw1nwVqrGxt98onStx6LgeHTDbEey",
+                nftMetadataHash: keccak256(
+                    abi.encodePacked(
+                        "{'name':'Test NFT','description':'This is a test NFT','image':'https://picsum.photos/200'}"
+                    )
+                )
+            }),
+            true
+        );
+
+        assertEq(ipId, expectedIpId);
+        assertEq(tokenId, expectedTokenId);
+        assertEq(SPG_NFT.ownerOf(tokenId), alice);
+    }
+}
+```
+
+## 테스트 실행 및 결과 확인
+
+2. `forge build`를 실행하세요. 모든 것이 정상이라면 명령이 성공적으로 컴파일되어야 합니다.
+
+3. 이제 다음 명령을 실행하여 테스트를 진행하세요:
+
+```bash
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/0_IPARegistrar.t.sol
+```
+
+## IP에 라이선스 약관 추가하기
+
+축하합니다, IP를 등록했습니다!
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이제 IP가 등록되었으니, [라이선스 약관(License Terms)](/concepts/licensing-module/license-terms)을 생성하여 첨부할 수 있습니다. 이를 통해 다른 사람들이 라이선스를 민팅하고 약관의 제한 안에서 여러분의 IP를 사용할 수 있게 됩니다.
+
+다음 페이지에서 이 내용을 다루겠습니다.

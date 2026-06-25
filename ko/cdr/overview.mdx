@@ -1,0 +1,76 @@
+---
+title: "CDR 개요"
+description: "DATA Foundation에 등록된 데이터를 위한 임계값 암호화 및 온체인 게이팅 기반의 기밀성."
+icon: "lock"
+---
+
+<Note>
+  CDR의 현재 공개 릴리스는 Aeneid 테스트넷에서 실행됩니다. 그곳에서 통합을
+  구축하고 테스트하되, 프로덕션 기밀성 환경으로 취급하지 마세요.
+</Note>
+
+## CDR이란?
+
+**Confidential Data Rails (CDR)**는 DATA Foundation의 기밀성 레이어입니다.
+어떤 단일 당사자도 전체 복호화 키를 보유하지 않도록 데이터를 암호화할 수 있게 해줍니다:
+비밀(secret)은 validator 네트워크의 DKG 기반 공개 키로 암호화되며,
+임계 수의 validator가 집합적으로 부분 복호화를 제공할 때에만 복원 가능합니다.
+접근은 스마트 컨트랙트 조건을 통해 **온체인에서** 강제되며, validator 측 흐름은
+`story-kernel` TEE(Intel SGX 엔클레이브) 내부에서 실행됩니다.
+
+그 결과, 데이터는 **저장 상태에서 기밀**을 유지하면서도 사용자가 정의한 정확한 지갑,
+라이선스 보유자 또는 사용자 정의 조건에 대해 **프로그래밍 방식으로 잠금 해제 가능**한
+상태로 유지됩니다.
+
+```text
+Data owner
+  -> encrypt locally against the DKG public key   (plaintext never leaves the client)
+  -> allocate a vault on-chain with read/write conditions
+  -> authorized reader requests decryption         (validated on-chain)
+  -> validators return TEE-confined partial decryptions; reader combines client-side
+```
+
+<Card title="CDR 백서" icon="file-lines" href="https://www.story.foundation/confidentialdatarails.pdf">
+  Confidential Data Rails의 전체 설계: 암호화, validator 프로토콜 및 위협 모델.
+</Card>
+
+## CDR의 위치
+
+<CardGroup cols={3}>
+  <Card title="Trace: 출처(provenance)" icon="fingerprint" href="/trace/overview">
+    프로바이더 정규화된 스키마와 공개 감사 뷰를 통해 데이터의 출처, 동의 및
+    계보를 증명합니다.
+  </Card>
+  <Card title="CDR: 기밀성" icon="lock">
+    온체인 접근 제어로 게이팅된 임계값 복호화를 통해 기본 데이터를 암호화된 상태로
+    유지합니다.
+  </Card>
+  <Card title="IP 및 라이선싱: 권리" icon="scroll" href="/concepts/ip-asset/overview">
+    데이터의 소유자와 사용할 수 있는 조건을 정의합니다.
+  </Card>
+</CardGroup>
+
+이들을 함께 사용하면 프로바이더가 **증명 가능하고**(Trace) **기밀이며**(CDR)
+**명확한 사용 권리에 의해 관리되는**(IP & Licensing) 데이터를 등록할 수 있습니다.
+
+## CDR이 가능하게 하는 것
+
+- **비밀 공유**: 특정 지갑만 복호화할 수 있는 비밀을 암호화하고 공유합니다.
+- **암호화된 파일 전달**: 대용량 파일을 오프체인에 유지하면서 암호화된 파일 키를 온체인에 저장합니다.
+- **데이터 마켓플레이스**: 온체인 결제 강제를 통해 암호화된 데이터에 대한 접근 권한을 판매합니다.
+- **IP 게이트 콘텐츠**: 암호화된 데이터를 IP Asset에 연결하고 복호화를 위해 라이선스 토큰을 요구합니다.
+
+## 개발자가 통합하는 방법
+
+CDR은 `@piplabs/cdr-sdk` TypeScript SDK로 제공됩니다. 현재 Aeneid 표면은 두 가지
+워크플로우를 중심으로 합니다: 작은 비밀을 온체인에 직접 저장하는 **data key vaults**와
+온체인 키 관리와 함께 오프체인 콘텐츠를 위한 **encrypted files**입니다.
+
+<CardGroup cols={2}>
+  <Card title="통합 가이드" icon="plug" href="/developers/cdr-sdk/overview">
+    SDK 설치, 볼트 할당, 온체인 비밀, 암호화된 파일 및 IP 게이트 흐름을 엔드 투 엔드로 실행합니다.
+  </Card>
+  <Card title="SDK 레퍼런스" icon="book" href="/sdk-reference/cdr/overview">
+    모든 CDR SDK 메서드에 대한 전체 API 레퍼런스.
+  </Card>
+</CardGroup>

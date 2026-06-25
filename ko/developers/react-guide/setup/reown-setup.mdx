@@ -1,0 +1,202 @@
+---
+title: Reown (WalletConnect) 설정
+description: DATA Foundation DApp에서 Reown (WalletConnect)을 설정하는 방법을 알아보세요.
+---
+
+<Note>
+**선택 사항: 공식 WalletConnect 문서**
+
+공식 Wagmi + Reown 설치 문서는 [여기](https://docs.walletconnect.com/appkit/next/core/installation)에서 확인할 수 있습니다.
+
+</Note>
+
+## 의존성 설치
+
+<CodeGroup>
+
+```bash npm
+npm install --save @story-protocol/core-sdk @reown/appkit @reown/appkit-adapter-wagmi wagmi viem @tanstack/react-query
+```
+
+```bash pnpm
+pnpm install @story-protocol/core-sdk viem
+```
+
+```bash yarn
+yarn add @story-protocol/core-sdk viem
+```
+
+</CodeGroup>
+
+## 설정
+
+예제로 들어가기 전에 두 가지를 먼저 설정해 두세요:
+
+1. `.env` 파일에 `NEXT_PUBLIC_RPC_PROVIDER_URL`이 설정되어 있는지 확인하세요.
+   - 공개 기본 RPC(`https://aeneid.datarpc.io`)를 사용하거나, [여기](/network/network-info/aeneid#rpcs)에서 다른 RPC를 사용할 수 있습니다.
+2. `.env` 파일에 `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`가 설정되어 있는지 확인하세요. [Reown (이전 WalletConnect)](https://reown.com/)에 로그인하여 프로젝트를 생성하면 됩니다.
+
+<CodeGroup>
+
+```jsx config/index.tsx
+import { cookieStorage, createStorage, http } from "@wagmi/core";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+import { mainnet, arbitrum } from "@reown/appkit/networks";
+import { aeneid } from "@story-protocol/core-sdk";
+
+// Get projectId from https://cloud.reown.com
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+
+if (!projectId) {
+  throw new Error("Project ID is not defined");
+}
+
+export const networks = [aeneid];
+
+//Set up the Wagmi Adapter (Config)
+export const wagmiAdapter = new WagmiAdapter({
+  storage: createStorage({
+    storage: cookieStorage,
+  }),
+  ssr: true,
+  projectId,
+  networks,
+});
+
+export const config = wagmiAdapter.wagmiConfig;
+```
+
+```jsx context/index.tsx
+'use client'
+
+import { wagmiAdapter, projectId } from '@/config'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createAppKit } from '@reown/appkit/react'
+import { mainnet, arbitrum } from '@reown/appkit/networks'
+import React, { type ReactNode } from 'react'
+import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
+
+// Set up queryClient
+const queryClient = new QueryClient()
+
+if (!projectId) {
+  throw new Error('Project ID is not defined')
+}
+
+// Set up metadata
+const metadata = {
+  name: 'appkit-example',
+  description: 'AppKit Example',
+  url: 'https://appkitexampleapp.com', // origin must match your domain & subdomain
+  icons: ['https://avatars.githubusercontent.com/u/179229932']
+}
+
+// Create the modal
+const modal = createAppKit({
+  adapters: [wagmiAdapter],
+  projectId,
+  networks: [mainnet, arbitrum],
+  defaultNetwork: mainnet,
+  metadata: metadata,
+  features: {
+    analytics: true // Optional - defaults to your Cloud configuration
+  }
+})
+
+function ContextProvider({ children, cookies }: { children: ReactNode; cookies: string | null }) {
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies)
+
+  return (
+    <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </WagmiProvider>
+  )
+}
+
+export default ContextProvider
+```
+
+```jsx app/layout.tsx
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
+
+import { headers } from 'next/headers' // added
+import ContextProvider from '@/context'
+
+export const metadata: Metadata = {
+  title: 'AppKit Example App',
+  description: 'Powered by Reown'
+}
+
+export default function RootLayout({
+  children
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+
+  const headersObj = await headers();
+  const cookies = headersObj.get('cookie')
+
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <ContextProvider cookies={cookies}>
+          <appkit-button />
+          {children}
+        </ContextProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+```jsx TestComponent.tsx
+import { custom, toHex } from 'viem';
+import { useWalletClient } from "wagmi";
+import { StoryClient, StoryConfig } from "@story-protocol/core-sdk";
+
+// example of how you would now use the fully setup sdk
+
+export default function TestComponent() {
+  const { data: wallet } = useWalletClient();
+
+  async function setupStoryClient(): Promise<StoryClient> {
+    const config: StoryConfig = {
+      wallet: wallet,
+      transport: custom(wallet!.transport),
+      chainId: "aeneid",
+    };
+    const client = StoryClient.newClient(config);
+    return client;
+  }
+
+  async function registerIp() {
+    const client = await setupStoryClient();
+    const response = await client.ipAsset.registerIpAsset({
+      nft: {
+        type: 'minted',
+        nftContract: '0x01...',
+        tokenId: '1',
+      }
+      ipMetadata: {
+        ipMetadataURI: "test-metadata-uri",
+        ipMetadataHash: toHex("test-metadata-hash", { size: 32 }),
+        nftMetadataURI: "test-nft-metadata-uri",
+        nftMetadataHash: toHex("test-nft-metadata-hash", { size: 32 }),
+      }
+    });
+    console.log(
+      `Root IPA created at tx hash ${response.txHash}, IPA ID: ${response.ipId}`
+    );
+  }
+
+  return (
+    {/* */}
+  )
+}
+```
+
+</CodeGroup>

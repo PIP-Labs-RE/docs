@@ -1,0 +1,334 @@
+---
+title: 예제 사용하기
+description: 지금까지의 모든 튜토리얼을 실용적인 예제 하나로 결합해 봅시다.
+---
+
+<CardGroup cols={2}>
+  <Card
+    title="완성된 코드"
+    href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/Example.sol"
+    icon="thumbs-up"
+    
+  >
+    완성된 코드를 확인하세요.
+  </Card>
+
+  <Card
+    title="영상 가이드"
+    href="https://www.youtube.com/watch?v=X421IuZENqM"
+    icon="video"
+    
+  >
+    이 튜토리얼의 영상 가이드를 확인해 보세요!
+  </Card>
+</CardGroup>
+
+# 스마트 컨트랙트 작성하기
+
+이제 개별 단계를 모두 살펴봤으니, 직접 스마트 컨트랙트를 작성하고 배포 및 검증해 봅시다.
+
+## IPA 등록, 라이선스 약관 등록, IPA에 첨부하기
+
+이번 첫 번째 섹션에서는 몇 가지 튜토리얼을 하나로 결합합니다. 새로운 IP Asset을 민팅 및 등록하고, 새로운 라이선스 약관을 등록한 뒤, 그 약관을 IP Asset에 첨부하는 `mintAndRegisterAndCreateTermsAndAttach`라는 함수를 만들 것입니다. 또한 새로 만든 IP Asset의 소유자가 될 `receiver` 필드도 받습니다.
+
+### 사전 준비
+
+- [IP Asset 등록하기](/developers/smart-contracts-guide/register-ip-asset) 완료
+- [라이선스 약관 등록하기](/developers/smart-contracts-guide/register-terms) 완료
+- [IPA에 약관 첨부하기](/developers/smart-contracts-guide/attach-terms) 완료
+
+### 컨트랙트 작성
+
+`./src/Example.sol` 경로에 새 파일을 만들고 다음 내용을 붙여넣으세요:
+
+<Note>
+**컨트랙트 주소**
+
+생성자에 전달할 컨트랙트 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서 확인할 수 있습니다.
+
+</Note>
+
+```solidity src/Example.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+import { ILicensingModule } from "@storyprotocol/core/interfaces/modules/licensing/ILicensingModule.sol";
+import { IPILicenseTemplate } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+import { PILFlavors } from "@storyprotocol/core/lib/PILFlavors.sol";
+
+import { SimpleNFT } from "./mocks/SimpleNFT.sol";
+
+import { ERC721Holder } from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+
+/// @notice An example contract that demonstrates how to mint an NFT, register it as an IP Asset,
+/// attach license terms to it, mint a license token from it, and register it as a derivative of the parent.
+contract Example is ERC721Holder {
+  IIPAssetRegistry public immutable IP_ASSET_REGISTRY;
+  ILicensingModule public immutable LICENSING_MODULE;
+  IPILicenseTemplate public immutable PIL_TEMPLATE;
+  address public immutable ROYALTY_POLICY_LAP;
+  address public immutable WIP;
+  SimpleNFT public immutable SIMPLE_NFT;
+
+  constructor(
+    address ipAssetRegistry,
+    address licensingModule,
+    address pilTemplate,
+    address royaltyPolicyLAP,
+    address wip
+  ) {
+    IP_ASSET_REGISTRY = IIPAssetRegistry(ipAssetRegistry);
+    LICENSING_MODULE = ILicensingModule(licensingModule);
+    PIL_TEMPLATE = IPILicenseTemplate(pilTemplate);
+    ROYALTY_POLICY_LAP = royaltyPolicyLAP;
+    WIP = wip;
+    // Create a new Simple NFT collection
+    SIMPLE_NFT = new SimpleNFT("Simple IP NFT", "SIM");
+  }
+
+  /// @notice Mint an NFT, register it as an IP Asset, and attach License Terms to it.
+  /// @param receiver The address that will receive the NFT/IPA.
+  /// @return tokenId The token ID of the NFT representing ownership of the IPA.
+  /// @return ipId The address of the IP Account.
+  /// @return licenseTermsId The ID of the license terms.
+  function mintAndRegisterAndCreateTermsAndAttach(
+    address receiver
+  ) external returns (uint256 tokenId, address ipId, uint256 licenseTermsId) {
+    // We mint to this contract so that it has permissions
+    // to attach license terms to the IP Asset.
+    // We will later transfer it to the intended `receiver`
+    tokenId = SIMPLE_NFT.mint(address(this));
+    ipId = IP_ASSET_REGISTRY.register(block.chainid, address(SIMPLE_NFT), tokenId);
+
+    // register license terms so we can attach them later
+    licenseTermsId = PIL_TEMPLATE.registerLicenseTerms(
+      PILFlavors.commercialRemix({
+        mintingFee: 0,
+        commercialRevShare: 10 * 10 ** 6, // 10%
+        royaltyPolicy: ROYALTY_POLICY_LAP,
+        currencyToken: WIP
+      })
+    );
+
+    // attach the license terms to the IP Asset
+    LICENSING_MODULE.attachLicenseTerms(ipId, address(PIL_TEMPLATE), licenseTermsId);
+
+    // transfer the NFT to the receiver so it owns the IPA
+    SIMPLE_NFT.transferFrom(address(this), receiver, tokenId);
+  }
+}
+```
+
+## 라이선스 토큰 민팅 및 파생물로 등록하기
+
+다음 섹션에서는 이후 튜토리얼 몇 가지를 하나로 결합합니다. 잠재적으로 다른 사용자가 자신의 "자식"(파생) IP Asset을 등록하고, "부모"(루트) IP Asset으로부터 라이선스 토큰을 민팅하며, 자식 IPA를 부모 IPA의 파생물로 등록할 수 있도록 하는 `mintLicenseTokenAndRegisterDerivative`라는 함수를 만들 것입니다. 다음과 같은 몇 가지 매개변수를 받습니다:
+
+1. `parentIpId`: 부모 IPA의 `ipId`
+2. `licenseTermsId`: 라이선스 토큰을 민팅하려는 라이선스 약관의 ID
+3. `receiver`: 자식 IPA의 소유자
+
+### 사전 준비
+
+- [라이선스 토큰 민팅하기](/developers/smart-contracts-guide/mint-license) 완료
+
+### 컨트랙트 작성
+
+`Example.sol` 컨트랙트의 맨 아래에 다음 함수를 추가하세요:
+
+```solidity src/Example.sol
+/// @notice Mint and register a new child IPA, mint a License Token
+/// from the parent, and register it as a derivative of the parent.
+/// @param parentIpId The ipId of the parent IPA.
+/// @param licenseTermsId The ID of the license terms you will
+/// mint a license token from.
+/// @param receiver The address that will receive the NFT/IPA.
+/// @return childTokenId The token ID of the NFT representing ownership of the child IPA.
+/// @return childIpId The address of the child IPA.
+function mintLicenseTokenAndRegisterDerivative(
+  address parentIpId,
+  uint256 licenseTermsId,
+  address receiver
+) external returns (uint256 childTokenId, address childIpId) {
+  // We mint to this contract so that it has permissions
+  // to register itself as a derivative of another
+  // IP Asset.
+  // We will later transfer it to the intended `receiver`
+  childTokenId = SIMPLE_NFT.mint(address(this));
+  childIpId = IP_ASSET_REGISTRY.register(block.chainid, address(SIMPLE_NFT), childTokenId);
+
+  // mint a license token from the parent
+  uint256 licenseTokenId = LICENSING_MODULE.mintLicenseTokens({
+    licensorIpId: parentIpId,
+    licenseTemplate: address(PIL_TEMPLATE),
+    licenseTermsId: licenseTermsId,
+    amount: 1,
+    // mint the license token to this contract so it can
+    // use it to register as a derivative of the parent
+    receiver: address(this),
+    royaltyContext: "", // for PIL, royaltyContext is empty string
+    maxMintingFee: 0,
+    maxRevenueShare: 0
+  });
+
+  uint256[] memory licenseTokenIds = new uint256[](1);
+  licenseTokenIds[0] = licenseTokenId;
+
+  // register the new child IPA as a derivative
+  // of the parent
+  LICENSING_MODULE.registerDerivativeWithLicenseTokens({
+    childIpId: childIpId,
+    licenseTokenIds: licenseTokenIds,
+    royaltyContext: "", // empty for PIL
+    maxRts: 0
+  });
+
+  // transfer the NFT to the receiver so it owns the child IPA
+  SIMPLE_NFT.transferFrom(address(this), receiver, childTokenId);
+}
+```
+
+# 컨트랙트 테스트하기
+
+`test/Example.t.sol` 경로에 또 다른 새 파일을 만들고 다음 내용을 붙여넣으세요:
+
+```solidity test/Example.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+// for testing purposes only
+import { MockIPGraph } from "@storyprotocol/test/mocks/MockIPGraph.sol";
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+import { ILicenseRegistry } from "@storyprotocol/core/interfaces/registries/ILicenseRegistry.sol";
+
+import { Example } from "../src/Example.sol";
+import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/Example.t.sol
+contract ExampleTest is Test {
+  address internal alice = address(0xa11ce);
+  address internal bob = address(0xb0b);
+
+  // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+  // Protocol Core - IPAssetRegistry
+  address internal ipAssetRegistry = 0x77319B4031e6eF1250907aa00018B8B1c67a244b;
+  // Protocol Core - LicenseRegistry
+  address internal licenseRegistry = 0x529a750E02d8E2f15649c13D69a465286a780e24;
+  // Protocol Core - LicensingModule
+  address internal licensingModule = 0x04fbd8a2e56dd85CFD5500A4A4DfA955B9f1dE6f;
+  // Protocol Core - PILicenseTemplate
+  address internal pilTemplate = 0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316;
+  // Protocol Core - RoyaltyPolicyLAP
+  address internal royaltyPolicyLAP = 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E;
+  // Revenue Token - WIP
+  address internal wip = 0x1514000000000000000000000000000000000000;
+
+  SimpleNFT public SIMPLE_NFT;
+  Example public EXAMPLE;
+
+  function setUp() public {
+    // this is only for testing purposes
+    // due to our IPGraph precompile not being
+    // deployed on the fork
+    vm.etch(address(0x0101), address(new MockIPGraph()).code);
+
+    EXAMPLE = new Example(ipAssetRegistry, licensingModule, pilTemplate, royaltyPolicyLAP, wip);
+    SIMPLE_NFT = SimpleNFT(EXAMPLE.SIMPLE_NFT());
+  }
+
+  function test_mintAndRegisterAndCreateTermsAndAttach() public {
+    ILicenseRegistry LICENSE_REGISTRY = ILicenseRegistry(licenseRegistry);
+    IIPAssetRegistry IP_ASSET_REGISTRY = IIPAssetRegistry(ipAssetRegistry);
+
+    uint256 expectedTokenId = SIMPLE_NFT.nextTokenId();
+    address expectedIpId = IP_ASSET_REGISTRY.ipId(block.chainid, address(SIMPLE_NFT), expectedTokenId);
+
+    (uint256 tokenId, address ipId, uint256 licenseTermsId) = EXAMPLE.mintAndRegisterAndCreateTermsAndAttach(alice);
+
+    assertEq(tokenId, expectedTokenId);
+    assertEq(ipId, expectedIpId);
+    assertEq(SIMPLE_NFT.ownerOf(tokenId), alice);
+
+    assertTrue(LICENSE_REGISTRY.hasIpAttachedLicenseTerms(ipId, pilTemplate, licenseTermsId));
+    assertEq(LICENSE_REGISTRY.getAttachedLicenseTermsCount(ipId), 1);
+    (address licenseTemplate, uint256 attachedLicenseTermsId) = LICENSE_REGISTRY.getAttachedLicenseTerms({
+      ipId: ipId,
+      index: 0
+    });
+    assertEq(licenseTemplate, pilTemplate);
+    assertEq(attachedLicenseTermsId, licenseTermsId);
+  }
+
+  function test_mintLicenseTokenAndRegisterDerivative() public {
+    ILicenseRegistry LICENSE_REGISTRY = ILicenseRegistry(licenseRegistry);
+    IIPAssetRegistry IP_ASSET_REGISTRY = IIPAssetRegistry(ipAssetRegistry);
+
+    (uint256 parentTokenId, address parentIpId, uint256 licenseTermsId) = EXAMPLE
+    .mintAndRegisterAndCreateTermsAndAttach(alice);
+
+    (uint256 childTokenId, address childIpId) = EXAMPLE.mintLicenseTokenAndRegisterDerivative(
+      parentIpId,
+      licenseTermsId,
+      bob
+    );
+
+    assertTrue(LICENSE_REGISTRY.hasDerivativeIps(parentIpId));
+    assertTrue(LICENSE_REGISTRY.isParentIp(parentIpId, childIpId));
+    assertTrue(LICENSE_REGISTRY.isDerivativeIp(childIpId));
+    assertEq(LICENSE_REGISTRY.getDerivativeIpCount(parentIpId), 1);
+    assertEq(LICENSE_REGISTRY.getParentIpCount(childIpId), 1);
+    assertEq(LICENSE_REGISTRY.getParentIp({ childIpId: childIpId, index: 0 }), parentIpId);
+    assertEq(LICENSE_REGISTRY.getDerivativeIp({ parentIpId: parentIpId, index: 0 }), childIpId);
+  }
+}
+```
+
+`forge build`를 실행하세요. 모든 것이 정상이라면 명령이 성공적으로 컴파일되어야 합니다.
+
+테스트하려면 다음 명령을 실행하세요:
+
+```bash
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/Example.t.sol
+```
+
+# Example 컨트랙트 배포 및 검증
+
+`--constructor-args`는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서 가져옵니다.
+
+```bash
+forge create \
+  --rpc-url https://aeneid.datarpc.io/ \
+  --private-key $PRIVATE_KEY \
+  ./src/Example.sol:Example \
+  --legacy \
+  --verify \
+  --verifier blockscout \
+  --verifier-url https://aeneid.datanetscan.io/api/ \
+  --constructor-args 0x77319B4031e6eF1250907aa00018B8B1c67a244b 0x04fbd8a2e56dd85CFD5500A4A4DfA955B9f1dE6f 0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E 0xF2104833d386a2734a4eB3B8ad6FC6812F29E38E
+```
+
+모든 것이 정상적으로 동작했다면, 콘솔에 `Deployed to: 0xfb0923D531C1ca54AB9ee10CB8364b23d0C7F47d` 같은 메시지가 보일 것입니다. 해당 주소를 [익스플로러](https://aeneid.datanetscan.io/)에 붙여넣어 검증된 컨트랙트를 확인하세요!
+
+# 훌륭합니다! :)
+
+<CardGroup cols={2}>
+  <Card
+    title="완성된 코드"
+    href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/Example.sol"
+    icon="thumbs-up"
+    
+  >
+    완성된 코드를 확인하세요.
+  </Card>
+
+  <Card
+    title="영상 가이드"
+    href="https://www.youtube.com/watch?v=X421IuZENqM"
+    icon="video"
+    
+  >
+    이 튜토리얼의 영상 가이드를 확인해 보세요!
+  </Card>
+</CardGroup>

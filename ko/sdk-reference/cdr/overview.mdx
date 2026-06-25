@@ -1,0 +1,103 @@
+---
+title: "CDR SDK 레퍼런스 개요"
+description: "CDR SDK의 모든 함수에 대한 자세한 설명"
+---
+
+<Note>
+  이 레퍼런스는 npm에서 사용 가능한 `@piplabs/cdr-sdk`의 Aeneid 릴리즈
+  (`v0.2.1`)를 추적합니다.
+</Note>
+
+CDR SDK (`@piplabs/cdr-sdk`)는 DATA Foundation의 Confidential Data Rails 시스템과 상호 작용하기 위한 TypeScript 클라이언트를 제공합니다. 임계값 암호화(threshold encryption), 볼트 관리 및 온체인 액세스 제어를 처리합니다.
+
+| Language                                                       | Package                                                                                         | GitHub                                                                                                 |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| <Icon icon="screwdriver-wrench" iconType="solid" /> TypeScript | <Icon icon="box-open" iconType="solid" /> [npm](https://www.npmjs.com/package/@piplabs/cdr-sdk) | <Icon icon="arrow-up-right-from-square" iconType="solid" /> [Code](https://github.com/piplabs/cdr-sdk) |
+
+---
+
+<Card title="단계별 가이드" icon="house" href="/developers/cdr-sdk">
+  CDR SDK 통합 가이드의 일련의 튜토리얼을 통해 CDR을 배워보세요.
+</Card>
+
+## CDRClient
+
+기본 진입점입니다. 세 가지 하위 클라이언트에 대한 액세스를 제공합니다:
+
+```typescript
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+const client = new CDRClient({
+  network: "testnet",
+  publicClient, // viem PublicClient
+  walletClient, // optional viem WalletClient
+  apiUrl: "http://172.192.41.96:1317", // DATA Foundation API REST endpoint
+  // minThresholdRatio: 0.67, // optional threshold override, in [0, 1]
+});
+
+client.observer; // read-only queries
+client.uploader; // encryption & vault allocation
+client.consumer; // decryption & read requests
+```
+
+## 현재 표면 영역(Surface Area)
+
+- `observer`: 볼트, 수수료, DKG 상태, 검증자 등록, 검증자
+  attestation
+- `uploader`: `uploadCDR`, `uploadFile`, `allocate`, `write`, 그리고
+  `encryptDataKey`
+- `consumer`: `accessCDR`, `downloadFile`, `read`, `collectPartials`, 그리고
+  `decryptDataKey`
+- `crypto`: 저수준 TDH2, ECIES, SGX attestation 검증 헬퍼
+
+클라이언트는 또한 고수준 별칭(alias)을 제공합니다:
+
+- `createVault`는 `uploadCDR`의 별칭
+- `readVault`는 `accessCDR`의 별칭
+- `createFileVault`는 `uploadFile`의 별칭
+- `readFileVault`는 `downloadFile`의 별칭
+
+## 상태 백엔드
+
+클라이언트는 두 가지 백엔드에서 읽어옵니다:
+
+| Backend | Configured by | Purpose |
+| ------- | ------------- | ------- |
+| EVM | `publicClient` | CDR 컨트랙트 상태: 볼트, 수수료, `maxEncryptedDataSize`, operational threshold |
+| DATA Foundation API REST | `apiUrl` | DKG 상태: active round, global public key, threshold, 검증자, attestation |
+
+`apiUrl`은 필수 매개변수입니다. 운영 가이드와 선택적 `minThresholdRatio` 재정의(override)에 대해서는
+[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-data-foundation-api-endpoint)을 참조하세요.
+
+## Attestation 유틸리티
+
+SDK는 또한 crypto 모듈에 SGX 헬퍼 함수를 제공합니다:
+
+- `parseSgxQuote()`는 quote에서 `MRENCLAVE`, `MRSIGNER`, `securityVersion`을
+  읽습니다
+- `verifyAttestation()`은 예상한 값에 대해 해당 필드들을 검증합니다
+
+애플리케이션에서 명시적인 검증자 enclave 허용 목록 검사를 원할 때
+`observer.getValidatorAttestations()`와 함께 사용하세요.
+
+## 하위 클라이언트
+
+<CardGroup cols={3}>
+  <Card title="Observer" icon="eye" href="/sdk-reference/cdr/observer">
+    볼트 데이터, 수수료, DKG 상태에 대한 읽기 전용 쿼리.
+  </Card>
+  <Card title="Uploader" icon="lock" href="/sdk-reference/cdr/uploader">
+    데이터 암호화, 암호화된 파일 업로드, CDR 볼트에 쓰기.
+  </Card>
+  <Card title="Consumer" icon="lock-open" href="/sdk-reference/cdr/consumer">
+    복호화 요청, 암호화된 파일 다운로드, 평문 복구.
+  </Card>
+</CardGroup>
+
+## Crypto 유틸리티
+
+<CardGroup cols={2}>
+  <Card title="Crypto" icon="key" href="/sdk-reference/cdr/crypto">
+    저수준 TDH2 및 ECIES 암호 기본 요소.
+  </Card>
+</CardGroup>

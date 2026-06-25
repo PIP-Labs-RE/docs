@@ -1,0 +1,122 @@
+---
+title: 손쉬운 $DATA 온보딩
+description: Halliday를 사용해 Apple Pay, Venmo, 직불 카드, 은행 등으로 $DATA를 구매하는 기능을 통합하는 예제입니다.
+"og:image": "https://orange-managing-gamefowl-150.mypinata.cloud/ipfs/bafybeig6ouvnydvxzdhrhgeieivz3k5psmlcooun6ugrgq2haayia6vr6m"
+---
+
+<CardGroup cols={1}>
+  <Card
+    title="완성된 코드 예제"
+    href="https://github.com/jacob-tucker/halliday-story-example"
+    icon="thumbs-up"
+  >
+    이 튜토리얼의 완성된 코드를 확인하세요.
+  </Card>
+</CardGroup>
+
+이 튜토리얼에서는 Halliday를 사용해 Apple Pay, Venmo, 직불 카드, 은행 등으로 $DATA를 구매하는 기능을 DApp에 통합하는 방법을 보여드립니다.
+
+<Note>
+
+**이 튜토리얼은 React/Next.js 튜토리얼입니다**. 또한 [Halliday Docs](https://docs.halliday.xyz/pages/index-page)를 기반으로 합니다.
+
+</Note>
+
+최종 결과는 다음과 같습니다:
+
+<Frame>
+  <img
+    src="/images/tutorials/halliday-payment.png"
+    alt="Halliday Payment End Result"
+    width={300}
+  />
+</Frame>
+
+## 지침
+
+<Steps>
+  <Step title="API 키 받기">
+
+Halliday를 사용하려면 API 키를 발급받아야 합니다. 현재 절차는 partnerships@halliday.xyz로 이메일을 보내는 것입니다. 다만 이 절차는 변경될 수 있으므로 최신 정보는 [Halliday Docs](https://docs.halliday.xyz/pages/payments-hello-world)에서 확인하는 것을 권장합니다.
+
+  </Step>
+  <Step title="Halliday 설치">
+
+다음으로, 프로젝트의 루트 폴더에 Halliday Payments SDK를 설치합니다.
+
+<CodeGroup>
+
+```bash npm
+npm install @halliday-sdk/payments
+```
+
+```bash yarn
+yarn add @halliday-sdk/payments
+```
+
+</CodeGroup>
+
+  </Step>
+
+  <Step title=".env 설정">
+
+`.env` 파일에 Halliday API 키를 추가합니다.
+
+```env
+NEXT_PUBLIC_HALLIDAY_PUBLIC_API_KEY=your-api-key
+```
+
+  </Step>
+
+  <Step title="Halliday 통합">
+
+마지막으로, 몇 줄의 코드만으로 Halliday Payments를 기존 애플리케이션에 통합합니다.
+
+<Note>
+
+이 예제에서는 Halliday 팝업이 `halliday-embed`라는 id의 div에 임베드되도록 설정합니다. 따라서 사용자가 페이지를 로드하면 이미 표시되어 있습니다. 다만, 사용자가 버튼을 클릭했을 때 팝업이 뜨도록 변경할 수도 있습니다. 자세한 내용은 [Halliday Docs](https://docs.halliday.xyz/pages/payments-widget)를 확인하세요.
+
+</Note>
+
+```tsx
+"use client";
+import { openHallidayPayments } from "@halliday-sdk/payments";
+import { useEffect } from "react";
+
+export default function Home() {
+  useEffect(() => {
+    openHallidayPayments({
+      apiKey: process.env.NEXT_PUBLIC_HALLIDAY_PUBLIC_API_KEY as string,
+      // $DATA on DATA Foundation
+      outputs: ["story:0x"],
+      // $USDC.e on DATA Foundation
+      // outputs: ["story:0xf1815bd50389c46847f0bda824ec8da914045d14"],
+      sandbox: false,
+      windowType: "EMBED",
+      targetElementId: "halliday-embed",
+    });
+  }, []);
+
+  return (
+    <div
+      className="flex items-center justify-center min-h-screen bg-white"
+      id="halliday-embed"
+    ></div>
+  );
+}
+```
+
+  </Step>
+</Steps>
+
+여기까지입니다! 이제 Halliday를 사용해 DATA Foundation에서 $DATA를 구매할 수 있습니다.
+
+<CardGroup cols={1}>
+  <Card
+    title="완성된 코드 예제"
+    href="https://github.com/jacob-tucker/halliday-story-example"
+    icon="thumbs-up"
+  >
+    이 튜토리얼의 완성된 코드를 확인하세요.
+  </Card>
+</CardGroup>

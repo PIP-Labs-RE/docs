@@ -1,0 +1,219 @@
+---
+title: 노드 업그레이드
+description: DATA Foundation 노드 클라이언트 업그레이드 가이드
+---
+
+업그레이드에는 세 가지 유형이 있습니다
+
+1. story geth 클라이언트 업그레이드
+2. story 클라이언트 수동 업그레이드
+3. Cosmovisor로 업그레이드 스케줄링
+
+### Story Geth 클라이언트 업그레이드
+
+```bash
+# 서비스 중지
+sudo systemctl stop story
+sudo systemctl stop story-geth
+
+# 새 바이너리 다운로드
+wget ${DATAFDN_GETH_BINARY_URL}
+sudo mv ./geth-linux-amd64 story-geth
+sudo chmod +x story-geth
+sudo mv ./story-geth $HOME/go/bin/story-geth
+source $HOME/.bashrc
+
+# 서비스 재시작
+sudo systemctl start story-geth
+sudo systemctl start story
+```
+
+### Story 클라이언트 수동 업그레이드
+
+```bash
+# 서비스 중지
+sudo systemctl stop story
+
+# 새 바이너리 다운로드
+wget ${DATAFDN_BINARY_URL}
+sudo mv story-linux-amd64 story
+sudo chmod +x story
+sudo mv ./story $HOME/go/bin/story
+
+# 업데이트 스케줄링
+sudo systemctl start story
+```
+
+### Cosmovisor로 업그레이드 스케줄링
+
+다음 단계는 Cosmovisor를 사용하여 업그레이드를 스케줄링하는 방법을 설명합니다:
+
+1. 업그레이드 디렉토리 생성 및 새 바이너리 다운로드
+
+```bash
+# 새 바이너리 다운로드
+wget ${DATAFDN_BINARY_URL}
+
+# 업그레이드 스케줄링
+source $HOME/.bash_profile
+cosmovisor add-upgrade ${UPGRADE_NAME} ${UPGRADE_PATH} \
+  --force \
+  --upgrade-height ${UPGRADE_HEIGHT}
+```
+
+2. 업그레이드 구성 검증
+
+```bash
+# 업그레이드 정보 확인
+cat $HOME/.story/story/data/upgrade-info.json
+```
+
+upgrade-info.json은 다음을 표시해야 합니다:
+
+```json
+{
+  "name": "v1.0.0",
+  "time": "2025-02-05T12:00:00Z",
+  "height": 858000
+}
+```
+
+3. 업그레이드 모니터링
+
+```bash
+# 업그레이드를 위한 노드 로그 확인
+journalctl -u story -f -o cat
+```
+
+참고: Cosmovisor는 지정된 블록 높이에 도달하면 자동으로 바이너리 전환을 처리합니다. 업그레이드 전에 노드가 완전히 동기화되었고 충분한 디스크 공간이 있는지 확인하세요.
+
+### DATA Foundation 노드 실행 중 Cosmovisor 사용
+
+이 가이드는 cosmovisor 없이 story를 실행 중이지만, 업그레이드를 스케줄링하기 위해 cosmovisor를 사용하려는 사람들을 위한 것입니다.
+
+1. Cosmovisor 설치
+
+```bash
+# Cosmovisor 설치
+go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@1.6.0
+
+cosmovisor version
+```
+
+cosmovisor 버전이 표시됩니다.
+
+```
+cosmovisor version: v1.6.0
+Error: failed to run version command: DAEMON_NAME is not set
+DAEMON_HOME is not set
+DAEMON_DATA_BACKUP_DIR must not be empty
+```
+
+2. 환경 변수 설정
+
+```bash
+# 데몬 구성 설정
+export DAEMON_NAME=story
+export DAEMON_HOME=$HOME/.story/story
+export DAEMON_DATA_BACKUP_DIR=${DAEMON_HOME}/cosmovisor/backup
+sudo mkdir -p $DAEMON_HOME/cosmovisor/backup $DAEMON_HOME/data
+
+
+# 구성 영구 저장
+echo "export DAEMON_NAME=story" >> $HOME/.bash_profile
+echo "export DAEMON_HOME=$HOME/.story/story" >> $HOME/.bash_profile
+echo "export DAEMON_DATA_BACKUP_DIR=${DAEMON_HOME}/cosmovisor/backup" >> $HOME/.bash_profile
+echo "export DAEMON_ALLOW_DOWNLOAD_BINARIES=false" >> $HOME/.bash_profile
+```
+
+권한 문제가 있는 경우 다음 명령을 실행하여 해결할 수 있습니다.
+
+```bash
+sudo chown -R $USER:$USER $HOME/.story
+```
+
+3. cosmovisor 설정
+
+```bash
+# cosmovisor 디렉토리 생성
+mkdir -p $HOME/.story/cosmovisor/genesis/bin
+
+# 새 바이너리를 cosmovisor 디렉토리로 복사
+cp $HOME/go/bin/story $HOME/.story/cosmovisor/genesis/bin/
+```
+
+4. cosmovisor를 systemd 서비스에 추가
+
+```bash
+sudo tee /etc/systemd/system/cosmovisor.service > /dev/null <<EOF
+[Unit]
+Description=Cosmovisor
+After=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=$GROUP
+ExecStart=${which cosmovisor} run run \
+--api-enable \
+--api-address=${API_ADDRESS}
+Restart=on-failure
+RestartSec=5s
+LimitNOFILE=65535
+Environment="DAEMON_NAME=$DAEMON_NAME"
+Environment="DAEMON_HOME=$DAEMON_HOME"
+Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=false"
+Environment="DAEMON_RESTART_AFTER_UPGRADE=true"
+Environment="DAEMON_DATA_BACKUP_DIR=$DAEMON_HOME/cosmovisor/backup"
+WorkingDirectory=$DAEMON_HOME
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+```bash
+# cosmovisor 서비스 활성화
+sudo systemctl enable cosmovisor
+sudo systemctl daemon-reload
+
+sudo systemctl stop story
+
+
+# cosmovisor 서비스 시작
+sudo systemctl start cosmovisor
+
+# cosmovisor 서비스 상태 확인
+sudo systemctl status cosmovisor
+
+sudo journalctl -u cosmovisor -f -o cat
+```
+
+cosmovisor 서비스 상태 확인
+
+```bash
+cosmovisor version
+```
+
+cosmovisor 버전이 표시됩니다.
+
+```bash
+cosmovisor version: v1.6.0
+12:16AM INF running app args=["version"] module=cosmovisor path=${DAEMON_HOME}/cosmovisor/genesis/bin/story
+Version       v1.1.3-stable
+Git Commit    38313e8
+Git Timestamp 2025-04-11T04:24:27Z
+```
+
+5. 업그레이드 스케줄링
+
+```bash
+# 새 바이너리 다운로드
+wget ${DATAFDN_BINARY_URL}
+
+# 업그레이드 스케줄링
+source $HOME/.bash_profile
+cosmovisor add-upgrade ${UPGRADE_NAME} ${UPGRADE_PATH} \
+  --force \
+  --upgrade-height ${UPGRADE_HEIGHT}
+```
