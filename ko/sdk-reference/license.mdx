@@ -151,7 +151,7 @@ export type MintLicenseTokensResponse = {
 
 매개변수:
 
-- 예상 매개변수: 여기에 모든 예상 매개변수를 나열하는 대신, [이 파일](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts)에서 `LicenseTerms` 타입을 참조하세요. 이들은 모두 [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 가져옵니다.
+- 예상 매개변수: 여기에 모든 예상 매개변수를 나열하는 대신, [이 파일](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts)에서 `LicenseTerms` 타입을 참조하세요. 이들은 모두 [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 가져옵니다.
 
 <CodeGroup>
 
@@ -282,8 +282,8 @@ Programmable IP License Terms을 등록하고(아직 등록되지 않은 경우)
 
 - `request.ipId`: IP의 ID.
 - `request.licenseTermsData[]`: 첨부할 라이선스 조건 배열.
-  - `request.licenseTermsData.terms`: [LicenseTerms type](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts#L26)을 참조하세요.
-  - `request.licenseTermsData.licensingConfig`: \[선택] [LicensingConfig type](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/common.ts#L15)을 참조하세요. 제공되지 않으면 [여기](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/utils/validateLicenseConfig.ts)에 표시된 기본값으로 설정됩니다.
+  - `request.licenseTermsData.terms`: [LicenseTerms type](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts#L26)을 참조하세요.
+  - `request.licenseTermsData.licensingConfig`: \[선택] [LicensingConfig type](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/common.ts#L15)을 참조하세요. 제공되지 않으면 [여기](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/utils/validateLicenseConfig.ts)에 표시된 기본값으로 설정됩니다.
 - `request.deadline`: \[선택] 서명의 마감 시간(밀리초). **기본값은 1000**.
 
 <CodeGroup>
@@ -749,7 +749,7 @@ export type LicensingConfig = {
 
 특정 라이선스에 대한 최대 라이선스 토큰 제한을 설정합니다.
 
-이 메서드는 현재 라이선싱 훅이 `TotalLicenseTokenLimitHook`로 설정되어 있지 않은 경우 [TotalLicenseTokenLimitHook](https://github.com/storyprotocol/protocol-periphery-v1/blob/release/1.3/contracts/hooks/TotalLicenseTokenLimitHook.sol) 컨트랙트를 사용하도록 라이선싱 훅을 자동으로 구성하고, 지정된 제한으로 최대 라이선스 토큰을 설정합니다.
+이 메서드는 현재 라이선싱 훅이 `TotalLicenseTokenLimitHook`로 설정되어 있지 않은 경우 [TotalLicenseTokenLimitHook](https://github.com/thedatafoundation/protocol-periphery-v1/blob/release/1.3/contracts/hooks/TotalLicenseTokenLimitHook.sol) 컨트랙트를 사용하도록 라이선싱 훅을 자동으로 구성하고, 지정된 제한으로 최대 라이선스 토큰을 설정합니다.
 
 | Method                | Type                                                                    |
 | --------------------- | ----------------------------------------------------------------------- |

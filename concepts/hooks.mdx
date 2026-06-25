@@ -20,7 +20,7 @@ Most importantly, a Licensing Hook implements a `beforeMintLicenseTokens` functi
 
 <Note>
   View the `ILicensingHook` smart contract
-  [here](https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/ILicensingHook.sol#L26).
+  [here](https://github.com/thedatafoundation/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/ILicensingHook.sol#L26).
 </Note>
 
 ```solidity ILicensingHook.sol
@@ -73,8 +73,8 @@ View the deployed addresses for these hooks [here](/developers/deployed-smart-co
 
 | Hook                       | Description                                                                            | Contract Code                                                                                                                   |
 | :------------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| LockLicenseHook            | Stop the minting of license tokens or registering new derivatives.                     | [View here ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/LockLicenseHook.sol)            |
-| TotalLicenseTokenLimitHook | Set a limit on the amount of license tokens that can be minted, updatable at any time. | [View here ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/TotalLicenseTokenLimitHook.sol) |
+| LockLicenseHook            | Stop the minting of license tokens or registering new derivatives.                     | [View here ↗️](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/hooks/LockLicenseHook.sol)            |
+| TotalLicenseTokenLimitHook | Set a limit on the amount of license tokens that can be minted, updatable at any time. | [View here ↗️](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/hooks/TotalLicenseTokenLimitHook.sol) |
 
 ### Implementing the Hooks
 
@@ -82,7 +82,7 @@ View the deployed addresses for these hooks [here](/developers/deployed-smart-co
 
 <Card
   title="SDK Code Example"
-  href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts"
+  href="https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts"
   icon="code"
 >
   A working TypeScript SDK code example that shows how to implement a licensing
@@ -91,7 +91,7 @@ View the deployed addresses for these hooks [here](/developers/deployed-smart-co
 
 <Card
   title="Solidity Code Example"
-  href="https://github.com/storyprotocol/protocol-periphery-v1/blob/main/test/hooks/TotalLicenseTokenLimitHook.t.sol"
+  href="https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/test/hooks/TotalLicenseTokenLimitHook.t.sol"
   icon="code"
 >
   A working Solidity code example that shows how to implement a licensing hook.
@@ -100,7 +100,7 @@ View the deployed addresses for these hooks [here](/developers/deployed-smart-co
 
 </CardGroup>
 
-Licensing Hooks are ultimately a smart contract that implements the `ILicensingHook` interface. You can view the interface [here](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ILicensingHook.sol). We have a few Licensing Hooks deployed already (view the chart above).
+Licensing Hooks are ultimately a smart contract that implements the `ILicensingHook` interface. You can view the interface [here](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/interfaces/ILicensingHook.sol). We have a few Licensing Hooks deployed already (view the chart above).
 
 In order to actually use a Licensing Hook, you must set it in the Licensing Config, which is basically a set of configurations that you set on License Terms when attaching terms to an IP Asset.
 
@@ -133,7 +133,7 @@ In order to actually use a Licensing Hook, you must set it in the Licensing Conf
   This code snippet requires a bit of setup, and it meant for developers who
   already understand how to setup the TypeScript SDK. If you want to learn more,
   check out the [working code
-  example](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts).
+  example](https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts).
 </Tip>
 
 <Note>
@@ -188,7 +188,7 @@ This uses the `registerIpAsset` method found [here](/sdk-reference/ipasset#regis
 
 Please follow the below process for creating a new licensing hook and getting it whitelisted into the DATA Foundation's protocol.
 
-1. **Develop your Hook**: You may fork [this template repository](https://github.com/storyprotocol/hook-dev-template) to bootstrap your development. It includes an example hook with tests against our Aeneid protocol, but using it is optional.
+1. **Develop your Hook**: You may fork [this template repository](https://github.com/thedatafoundation/hook-dev-template) to bootstrap your development. It includes an example hook with tests against our Aeneid protocol, but using it is optional.
 
    <Tip>
 
@@ -199,7 +199,7 @@ Please follow the below process for creating a new licensing hook and getting it
 
    </Tip>
 
-2. **Fork Registered Modules Repository**: Fork the [registered-modules repository](https://github.com/storyprotocol/registered-modules) to your own GitHub account.
+2. **Fork Registered Modules Repository**: Fork the [registered-modules repository](https://github.com/thedatafoundation/registered-modules) to your own GitHub account.
 
 3. **Update the Module List**: In your `registered-modules` repository, add your hook's details to the `hook-modules.json` file. Make sure to **deploy & verify on block explorer** your hook on both aeneid and mainnet. Ensure that you adhere to the following JSON structure:
 

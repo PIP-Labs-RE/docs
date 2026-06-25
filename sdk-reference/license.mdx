@@ -151,7 +151,7 @@ Registers new license terms and return the ID of the newly registered license te
 
 Parameters:
 
-- Expected Parameters: Instead of listing all of the expected parameters here, please see `LicenseTerms` type in [this](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts) file. They all come from the [PIL Terms](/concepts/programmable-ip-license/pil-terms).
+- Expected Parameters: Instead of listing all of the expected parameters here, please see `LicenseTerms` type in [this](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts) file. They all come from the [PIL Terms](/concepts/programmable-ip-license/pil-terms).
 
 <CodeGroup>
 
@@ -282,8 +282,8 @@ Parameters:
 
 - `request.ipId`: The ID of the IP.
 - `request.licenseTermsData[]`: The array of license terms to be attached.
-  - `request.licenseTermsData.terms`: See the [LicenseTerms type](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts#L26).
-  - `request.licenseTermsData.licensingConfig`: \[Optional] See the [LicensingConfig type](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/types/common.ts#L15). If none provided, it will default to the one shown [here](https://github.com/storyprotocol/sdk/blob/main/packages/core-sdk/src/utils/validateLicenseConfig.ts).
+  - `request.licenseTermsData.terms`: See the [LicenseTerms type](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/resources/license.ts#L26).
+  - `request.licenseTermsData.licensingConfig`: \[Optional] See the [LicensingConfig type](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/types/common.ts#L15). If none provided, it will default to the one shown [here](https://github.com/thedatafoundation/sdk/blob/main/packages/core-sdk/src/utils/validateLicenseConfig.ts).
 - `request.deadline`: \[Optional] The deadline for the signature in milliseconds. **Defaults to 1000**.
 
 <CodeGroup>
@@ -749,7 +749,7 @@ export type LicensingConfig = {
 
 Set the max license token limit for a specific license.
 
-This method automatically configures the licensing hook to use the [TotalLicenseTokenLimitHook](https://github.com/storyprotocol/protocol-periphery-v1/blob/release/1.3/contracts/hooks/TotalLicenseTokenLimitHook.sol) contract if the current licensing hook is not set to `TotalLicenseTokenLimitHook`, and sets the max license tokens to the specified limit.
+This method automatically configures the licensing hook to use the [TotalLicenseTokenLimitHook](https://github.com/thedatafoundation/protocol-periphery-v1/blob/release/1.3/contracts/hooks/TotalLicenseTokenLimitHook.sol) contract if the current licensing hook is not set to `TotalLicenseTokenLimitHook`, and sets the max license tokens to the specified limit.
 
 | Method                | Type                                                                    |
 | --------------------- | ----------------------------------------------------------------------- |

@@ -20,7 +20,7 @@ Hooks에는 두 가지 유형이 있습니다:
 
 <Note>
   `ILicensingHook` 스마트 컨트랙트는
-  [여기](https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/ILicensingHook.sol#L26)에서 확인하세요.
+  [여기](https://github.com/thedatafoundation/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/ILicensingHook.sol#L26)에서 확인하세요.
 </Note>
 
 ```solidity ILicensingHook.sol
@@ -73,8 +73,8 @@ function beforeMintLicenseTokens(
 
 | Hook                       | 설명                                                                                     | 컨트랙트 코드                                                                                                                     |
 | :------------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
-| LockLicenseHook            | 라이선스 토큰 발행 또는 새로운 파생물 등록을 중단합니다.                                          | [여기 보기 ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/LockLicenseHook.sol)            |
-| TotalLicenseTokenLimitHook | 발행 가능한 라이선스 토큰의 수에 제한을 설정하며, 언제든지 업데이트할 수 있습니다.                   | [여기 보기 ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/TotalLicenseTokenLimitHook.sol) |
+| LockLicenseHook            | 라이선스 토큰 발행 또는 새로운 파생물 등록을 중단합니다.                                          | [여기 보기 ↗️](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/hooks/LockLicenseHook.sol)            |
+| TotalLicenseTokenLimitHook | 발행 가능한 라이선스 토큰의 수에 제한을 설정하며, 언제든지 업데이트할 수 있습니다.                   | [여기 보기 ↗️](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/hooks/TotalLicenseTokenLimitHook.sol) |
 
 ### Hooks 구현하기
 
@@ -82,7 +82,7 @@ function beforeMintLicenseTokens(
 
 <Card
   title="SDK 코드 예제"
-  href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts"
+  href="https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts"
   icon="code"
 >
   licensing hook를 구현하는 방법을 보여주는 실제 작동하는 TypeScript SDK 코드 예제.
@@ -91,7 +91,7 @@ function beforeMintLicenseTokens(
 
 <Card
   title="Solidity 코드 예제"
-  href="https://github.com/storyprotocol/protocol-periphery-v1/blob/main/test/hooks/TotalLicenseTokenLimitHook.t.sol"
+  href="https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/test/hooks/TotalLicenseTokenLimitHook.t.sol"
   icon="code"
 >
   licensing hook를 구현하는 방법을 보여주는 실제 작동하는 Solidity 코드 예제.
@@ -100,7 +100,7 @@ function beforeMintLicenseTokens(
 
 </CardGroup>
 
-Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하는 스마트 컨트랙트입니다. 인터페이스는 [여기](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ILicensingHook.sol)에서 볼 수 있습니다. 이미 배포된 몇 가지 Licensing Hooks가 있습니다(위 차트 참조).
+Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하는 스마트 컨트랙트입니다. 인터페이스는 [여기](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/interfaces/ILicensingHook.sol)에서 볼 수 있습니다. 이미 배포된 몇 가지 Licensing Hooks가 있습니다(위 차트 참조).
 
 실제로 Licensing Hook를 사용하려면 Licensing Config에 설정해야 합니다. Licensing Config는 IP Asset에 조건을 첨부할 때 License Terms에 설정하는 일련의 구성입니다.
 
@@ -132,7 +132,7 @@ Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하
 <Tip>
   이 코드 스니펫은 약간의 설정이 필요하며, 이미 TypeScript SDK를 설정하는 방법을
   이해하고 있는 개발자를 위한 것입니다. 자세한 내용은 [실제 작동하는 코드
-  예제](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts)를 확인하세요.
+  예제](https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts)를 확인하세요.
 </Tip>
 
 <Note>
@@ -187,7 +187,7 @@ Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하
 
 새로운 licensing hook를 만들고 DATA Foundation 프로토콜에 화이트리스트로 등록하려면 아래 절차를 따르세요.
 
-1. **Hook 개발**: [이 템플릿 저장소](https://github.com/storyprotocol/hook-dev-template)를 포크하여 개발을 부트스트랩할 수 있습니다. 우리 Aeneid 프로토콜에 대한 테스트와 함께 예시 hook가 포함되어 있지만, 사용은 선택 사항입니다.
+1. **Hook 개발**: [이 템플릿 저장소](https://github.com/thedatafoundation/hook-dev-template)를 포크하여 개발을 부트스트랩할 수 있습니다. 우리 Aeneid 프로토콜에 대한 테스트와 함께 예시 hook가 포함되어 있지만, 사용은 선택 사항입니다.
 
    <Tip>
 
@@ -197,7 +197,7 @@ Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하
 
    </Tip>
 
-2. **Registered Modules 저장소 포크**: [registered-modules 저장소](https://github.com/storyprotocol/registered-modules)를 자신의 GitHub 계정으로 포크하세요.
+2. **Registered Modules 저장소 포크**: [registered-modules 저장소](https://github.com/thedatafoundation/registered-modules)를 자신의 GitHub 계정으로 포크하세요.
 
 3. **Module 목록 업데이트**: `registered-modules` 저장소에서 `hook-modules.json` 파일에 hook의 세부 정보를 추가하세요. aeneid 및 mainnet 모두에 hook를 **배포 및 블록 익스플로러에서 검증**해야 합니다. 다음 JSON 구조를 준수하는지 확인하세요:
 

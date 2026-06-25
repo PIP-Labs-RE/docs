@@ -47,4 +47,4 @@ Supports .md and .mdx files. Run from directory containing docs.json.
 
 - Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
 - Page loads as a 404 - Make sure you are running in a folder with `docs.json`
-- `Add It` script not working? Is Python 3 Installed? Is the path correct? Still not working? Please report an [issue](https://github.com/storyprotocol/docs/issues)
+- `Add It` script not working? Is Python 3 Installed? Is the path correct? Still not working? Please report an [issue](https://github.com/thedatafoundation/docs/issues)

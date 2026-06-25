@@ -5,7 +5,7 @@ description: Learn how to Register an NFT as an IP Asset in Solidity.
 
 <Card
   title="Completed Code"
-  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
+  href="https://github.com/thedatafoundation/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
   icon="thumbs-up"
 >
   Follow the completed code all the way through.
@@ -45,13 +45,13 @@ Let's create a test file under `test/0_IPARegistrar.t.sol` to see it work and ve
 
 We have filled in the addresses from the DATA Foundation contracts for you. However you can also find the addresses for them here: [Deployed Smart Contracts](/developers/deployed-smart-contracts)
 
-You can view the `SimpleNFT` contract we're using to test [here](https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol).
+You can view the `SimpleNFT` contract we're using to test [here](https://github.com/thedatafoundation/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol).
 
 </Note>
 
 <Info>
 
-You can view the `SimpleNFT` contract we're using to test [here](https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol).
+You can view the `SimpleNFT` contract we're using to test [here](https://github.com/thedatafoundation/story-protocol-boilerplate/blob/main/src/mocks/SimpleNFT.sol).
 
 </Info>
 
@@ -102,7 +102,7 @@ If you don't have your own custom NFT contract, this is the section for you.
 
 To achieve this, we will be using the [SPG](/concepts/spg/overview), which is a utility contract that allows us to combine multiple transactions into one. In this case, we'll be using the SPG's `mintAndRegisterIp` function which combines both minting an NFT and registering it as an IP Asset.
 
-In order to use `mintAndRegisterIp`, we first have to create a new `SPGNFT` collection. We can do this simply by calling `createCollection` on the `StoryProtocolGateway` contract. Or, if you want to create your own `SPGNFT` for some reason, you can implement the [ISPGNFT](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) contract interface. Follow the example below to see example parameters you can use to initialize a new SPGNFT.
+In order to use `mintAndRegisterIp`, we first have to create a new `SPGNFT` collection. We can do this simply by calling `createCollection` on the `StoryProtocolGateway` contract. Or, if you want to create your own `SPGNFT` for some reason, you can implement the [ISPGNFT](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) contract interface. Follow the example below to see example parameters you can use to initialize a new SPGNFT.
 
 Once you have your own SPGNFT, all you have to do is call `mintAndRegisterIp` with:
 
@@ -220,7 +220,7 @@ Congratulations, you registered an IP!
 
 <Card
   title="Completed Code"
-  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
+  href="https://github.com/thedatafoundation/story-protocol-boilerplate/blob/main/test/0_IPARegistrar.t.sol"
   icon="thumbs-up"
 >
   Follow the completed code all the way through.

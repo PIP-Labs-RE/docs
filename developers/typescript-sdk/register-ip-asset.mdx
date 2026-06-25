@@ -6,7 +6,7 @@ description: Learn how to Register an NFT as an IP Asset in TypeScript.
 <CardGroup cols={1}>
   <Card
     title="Completed Code"
-    href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts"
+    href="https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/registration/register.ts"
     icon="thumbs-up"
   >
     Follow the completed code all the way through.
@@ -154,7 +154,7 @@ For simplicity, you can use a public collection we have created for you on Aenei
 <Accordion title="Using a custom ERC-721 contract" icon="info">
   Using a public collection we provide for you is fine, but when you do this for real, you should make your own NFT Collection for your IPs. You can do this in 2 ways:
 
-1. Deploy a contract that implements the [ISPGNFT](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) interface, or use the SDK's [createNFTCollection](/sdk-reference/nftclient#createnftcollection) function (shown below) to do it for you. This will give you your own SPG NFT Collection that only you can mint from.
+1. Deploy a contract that implements the [ISPGNFT](https://github.com/thedatafoundation/protocol-periphery-v1/blob/main/contracts/interfaces/ISPGNFT.sol) interface, or use the SDK's [createNFTCollection](/sdk-reference/nftclient#createnftcollection) function (shown below) to do it for you. This will give you your own SPG NFT Collection that only you can mint from.
 
 ```typescript createSpgNftCollection.ts
 import { zeroAddress } from "viem";
@@ -179,7 +179,7 @@ async function createSpgNftCollection() {
 createSpgNftCollection();
 ```
 
-2. Create a custom ERC-721 NFT collection on your own. See a working code example [here](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/registerCustom.ts). This is helpful if you **already have a custom NFT contract that has your own custom logic, or if your IPs themselves are NFTs.**
+2. Create a custom ERC-721 NFT collection on your own. See a working code example [here](https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/registration/registerCustom.ts). This is helpful if you **already have a custom NFT contract that has your own custom logic, or if your IPs themselves are NFTs.**
 
 </Accordion>
 
@@ -283,7 +283,7 @@ Congratulations, you registered an IP and attached license terms to it!
 <CardGroup cols={1}>
   <Card
     title="Completed Code"
-    href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts"
+    href="https://github.com/thedatafoundation/typescript-tutorial/blob/main/scripts/registration/register.ts"
     icon="thumbs-up"
   >
     Follow the completed code all the way through.
