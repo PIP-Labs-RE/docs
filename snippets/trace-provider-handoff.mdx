@@ -1,6 +1,6 @@
-# Trace Provider Data Audit Staging Handoff
+# Trace Provider Data Audit — Staging Handoff & API Reference
 
-This document describes the current staging API shape for Trace data audit ingestion and reads. It reflects the latest Trace Schema.
+This is the single source of truth for the Trace data audit API. It serves both provider integrators (onboarding, auth, schema shape, field guidance, examples) and frontend/backend consumers (endpoints, limits, validation rules, search, stats, scoped groups).
 
 The API and Trace Schema described here are provider-agnostic — every provider integrates through the same endpoints, headers, and schema. The concrete examples below use Kled, a live provider, to make the request and response shapes easier to follow. Substitute your own provider identity (the `X-Provider` value, source IDs, URLs, and policy references) wherever Kled appears.
 
@@ -15,6 +15,20 @@ Base URL:
 ```text
 https://staging-api.storyprotocol.net
 ```
+
+## Versioning
+
+Current V1 version constants:
+
+| Version | Value | Purpose |
+| --- | --- | --- |
+| Trace schema | `trace-v1.0` | Normalized metadata shape expected in `initial_metadata_json` and `metadata_json`. |
+| Event hash | `event-hash-v1` | Version of Story's internal audit event hash envelope. |
+| Event hash canonicalization | `json-canonical-v1` | JSON is normalized before hashing so object key order does not affect the event hash. |
+| Search index schema | `index-v1` | Version embedded in search index partition keys and stored on index rows. |
+| Search shard schema | `shard-v1` | Version embedded in sharded index partition keys and stored on index rows. |
+
+These versions are stored with durable rows and index rows. Future schema/hash/shard changes should dual-write or dual-read versions during transition instead of mutating existing history in place.
 
 ## API Flow
 
@@ -784,15 +798,17 @@ If the group is still queued or processing, `profile.status` is `pending` or `pr
 
 Current staging limits:
 
-```text
-Max request body: 25 MiB
-Max serialized record: 350 KiB
-Max metadata updates per data_id: 100
-Max inline scoped-group body: 5 MiB
-Max inline scoped-group hashes: 10,000
-Max inline scoped-group source records: 10,000
-Max source_record_id length: 512 bytes
-```
+| Limit | Value |
+| --- | --- |
+| Max request body size | `25 MiB` |
+| Max SQS message chunk | `240 KiB` |
+| Max SQS batch payload | `256 KiB` |
+| Max serialized record size | `350 KiB` |
+| Max metadata updates per data ID | `100` |
+| Max inline scoped-group body | `5 MiB` |
+| Max inline scoped-group hashes | `10,000` |
+| Max inline scoped-group source records | `10,000` |
+| Max source_record_id length | `512 bytes` |
 
 Retry guidance:
 
@@ -802,3 +818,32 @@ Retry guidance:
 - Use `X-Ingestion-Source: backlog` only for backlog work; omit it for live work.
 - The write path is idempotent for the same `data_id`, event key, and event hash.
 - If the same `data_id` and event key are retried with different metadata, the record is treated as a conflict and rejected.
+
+## Validation Rules
+
+| Rule | Behavior |
+| --- | --- |
+| Missing `X-Provider` on write endpoints | Request is rejected. |
+| Invalid provider name | Request is rejected. |
+| Provider outside the configured allowlist | Write request is rejected. |
+| `WEBHOOK` key does not match `X-Provider` | Write request is rejected. |
+| Missing `X-Batch-Id` on write endpoints | Request is rejected. |
+| `X-Ingestion-Source` present with any value other than `backlog` | Request is rejected. |
+| Missing `source_record_id` on `/records:batch` | Request is rejected. |
+| Duplicate `source_record_id` inside one `/records:batch` request | Request is rejected. |
+| Existing `/records:batch` item with the same initial registration payload | Item returns `status: "duplicate"`. |
+| Existing `/records:batch` item with different initial registration payload | Item returns `status: "conflict"`. |
+| Non-UUID `data_id` on lower-level data ID and metadata update routes | Request is rejected. |
+| Missing `occurred_at` | Request is rejected. |
+| Invalid `occurred_at` timestamp | Request is rejected. |
+| Metadata `seq` outside `1` through `100` | Request is rejected. |
+| Missing, malformed, or zero required metadata root fields | Request is rejected. |
+
+## Notes
+
+- Delivery is at least once, so duplicate submissions may occur.
+- Duplicate submissions of the same event are treated idempotently.
+- Same `data_id`, same metadata sequence, and different event content is treated as a conflict.
+- Metadata updates may arrive before the initial data ID registration.
+- Audit data is durable and does not expire.
+- Event hashes are computed from canonicalized metadata JSON plus the event/hash/schema version fields.
