@@ -1,0 +1,429 @@
+---
+title: CDR 클라이언트 설정
+description: CDR SDK 설치 및 구성 방법을 알아봅니다.
+---
+
+<Note>
+  이 문서는 `@piplabs/cdr-sdk`의 Aeneid 릴리스(`v0.2.1`)를 추적합니다.
+</Note>
+
+### 사전 요구 사항
+
+- Node.js 18+ 및 npm 8+
+- `HeliaProvider`를 사용할 계획이라면 Node.js 22+
+- Aeneid 테스트넷의 자금이 충전된 지갑
+- 블록체인 상호 작용을 위한 [viem](https://www.npmjs.com/package/viem) (v2.21+)
+
+## 설치
+
+<CodeGroup>
+
+```bash npm
+npm install @piplabs/cdr-sdk viem
+```
+
+```bash pnpm
+pnpm add @piplabs/cdr-sdk viem
+```
+
+```bash yarn
+yarn add @piplabs/cdr-sdk viem
+```
+
+</CodeGroup>
+
+<Note>`viem` (v2.21+)은 필수 피어 종속성입니다.</Note>
+
+<Note>
+  스토리지 프로바이더는 선택 사항이며 자체 피어 종속성을 가져옵니다. 사용하는
+  백엔드에 대해서만 설치하세요: `HeliaProvider`의 경우 `helia`, `multiformats`
+  및 `@helia/unixfs`, `StorachaProvider`의 경우 `@storacha/client`, 또는
+  `SynapseProvider`의 경우 `@filoz/synapse-sdk`.
+</Note>
+
+<Note>
+  IP 게이트 흐름에서 DATA Foundation 라이선스 토큰을 발행할 계획이라면
+  `@story-protocol/core-sdk`도 설치하세요.
+</Note>
+
+## WASM 초기화
+
+CDR SDK는 임계값 암호학을 위해 WebAssembly 모듈을 사용합니다. 암호화 또는 복호화 작업을 수행하기 전에 한 번 초기화해야 합니다.
+
+```typescript
+import { initWasm } from "@piplabs/cdr-sdk";
+
+// Call once at application startup
+await initWasm();
+```
+
+<Note>
+  React 애플리케이션에서는 CDR 작업이 시도되기 전에 준비되도록 프로바이더
+  컴포넌트 또는 최상위 효과에서 WASM을 초기화하세요.
+</Note>
+
+## 브라우저 및 번들러 가이드
+
+- **Vite / webpack** - 일반 ESM 애플리케이션 코드에서 SDK를 가져오고 첫 번째
+  암호화 또는 복호화 전에 `initWasm()`을 호출하세요. SSR 빌드가 서버 측에서 SDK를
+  평가하려고 하면 클라이언트 전용 경계 뒤로 가져오기를 이동하세요.
+- **Next.js / SSR** - 브라우저 지갑 흐름을 `"use client"` 컴포넌트에 유지하세요.
+  CDR 암호학을 사용하는 라우트 핸들러 또는 스크립트는 Edge 대신 Node 런타임에서
+  실행하세요.
+- **Edge 런타임** - 현재 릴리스는 Edge 런타임용으로 문서화되지 않았습니다.
+  Aeneid에서는 브라우저 또는 Node.js 런타임을 선호하세요.
+- **TypeScript** - 최신 ESM 해석을 사용하세요. `moduleResolution: "Bundler"`는
+  브라우저 앱에 좋은 기본값이며; `moduleResolution: "NodeNext"`는 순수
+  Node ESM 프로젝트에 적합합니다.
+
+```typescript
+// Next.js route handlers / server actions
+export const runtime = "nodejs";
+```
+
+## DATA Foundation API REST 엔드포인트
+
+모든 `CDRClient`에는 `apiUrl`이 필요합니다: DATA Foundation API REST 엔드포인트의
+기본 URL입니다. SDK는 모든 DKG 상태(활성 라운드, 글로벌 공개 키, 임계값,
+참가자 수, 등록된 검증자 및 검증자 증명)를 이 REST API를 통해 읽습니다.
+볼트 및 수수료와 같은 컨트랙트 상태는 여전히 EVM `publicClient`를 통해
+읽습니다.
+
+| 네트워크 | DATA Foundation API REST URL | 비고                                       |
+| ------- | --------------------------- | ------------------------------------------- |
+| Aeneid  | `http://172.192.41.96:1317` | 일반 HTTP. 배포 간에 변경될 수 있습니다.    |
+
+<Note>
+  프로덕션 배포의 경우 공유 엔드포인트 대신 자체 Story 노드의 REST 게이트웨이를
+  `apiUrl`로 지정할 수 있습니다. 쉽게 교체할 수 있도록 환경 변수를 통해 구성하세요.
+</Note>
+
+## CDR 클라이언트 생성
+
+`CDRClient`는 세 가지 서브 클라이언트를 제공합니다:
+
+- **`observer`** - 읽기 전용 쿼리(수수료, 볼트 데이터, DKG 상태). 항상 사용 가능합니다.
+- **`uploader`** - 암호화 및 볼트 할당. `walletClient`가 필요합니다.
+- **`consumer`** - 복호화 및 읽기 요청. `walletClient`가 필요합니다.
+
+### React에서 (지갑 커넥터)
+
+React 앱에서는 일반적으로 Privy, RainbowKit 또는 wagmi와 같은 커넥터에서 지갑을 가져옵니다. 미리 읽기 전용 `CDRClient`를 생성하고, 지갑의 프로바이더에서 필요에 따라 쓰기 가능한 클라이언트를 빌드하세요.
+
+```typescript hooks/use-cdr-client.ts
+import { useMemo } from "react";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+// Example using Privy, adapt for your wallet connector
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+
+export function useCDRClient() {
+  const { authenticated } = usePrivy();
+  const { wallets } = useWallets();
+  const wallet = wallets[0];
+
+  // Read-only client, always available
+  const publicClient = useMemo(
+    () =>
+      createPublicClient({ transport: http(process.env.NEXT_PUBLIC_RPC_URL) }),
+    [],
+  );
+
+  const apiUrl = process.env.NEXT_PUBLIC_DATAFDN_API_URL!;
+
+  const client = useMemo(
+    () => new CDRClient({ network: "testnet", publicClient, apiUrl }),
+    [publicClient, apiUrl],
+  );
+
+  // Write client, created on demand from the wallet's provider
+  const getWriteClient = async () => {
+    if (!wallet) throw new Error("No wallet connected");
+    const provider = await wallet.getEthereumProvider();
+    const walletClient = createWalletClient({
+      transport: custom(provider),
+      account: wallet.address as `0x${string}`,
+    });
+    return new CDRClient({
+      network: "testnet",
+      publicClient,
+      walletClient,
+      apiUrl,
+    });
+  };
+
+  return { client, publicClient, getWriteClient, address: wallet?.address };
+}
+```
+
+그런 다음 컴포넌트에서:
+
+```typescript
+const { client, getWriteClient } = useCDRClient();
+
+// Read-only operations work immediately
+const vault = await client.observer.getVault(42);
+
+// Write operations: get a write client first
+const writeClient = await getWriteClient();
+await writeClient.uploader.write({ uuid, accessAuxData: "0x", encryptedData });
+```
+
+### 프라이빗 키 사용 (백엔드 / 스크립트)
+
+서버 측 코드, 스크립트 또는 CLI 도구의 경우 프라이빗 키를 직접 사용할 수 있습니다:
+
+```typescript
+import { createPublicClient, createWalletClient, http } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { CDRClient } from "@piplabs/cdr-sdk";
+
+const account = privateKeyToAccount(`0x${process.env.WALLET_PRIVATE_KEY}`);
+
+const publicClient = createPublicClient({
+  transport: http(process.env.RPC_PROVIDER_URL),
+});
+
+const walletClient = createWalletClient({
+  account,
+  transport: http(process.env.RPC_PROVIDER_URL),
+});
+
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+  apiUrl: process.env.DATAFDN_API_URL!,
+});
+```
+
+### 읽기 전용 (지갑 없이)
+
+볼트 데이터 또는 DKG 상태만 쿼리해야 하는 경우 `walletClient`를 생략할 수 있습니다:
+
+```typescript
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  apiUrl: process.env.DATAFDN_API_URL!,
+});
+
+// observer methods work without a wallet
+const vault = await client.observer.getVault(123);
+const allocateFee = await client.observer.getAllocateFee();
+```
+
+<Warning>
+  `walletClient` 없이 `client.uploader` 또는 `client.consumer`를 사용하려고
+  시도하면 `WalletClientRequiredError`가 발생합니다.
+</Warning>
+
+## 네트워크 구성
+
+### 지원되는 네트워크
+
+| 네트워크 | `network` 매개변수 | 기본 RPC URL                | DATA Foundation API REST URL  | 설명                  |
+| ------- | --------------- | ---------------------------- | --------------------------- | ------------------------- |
+| Aeneid  | `"testnet"`     | `https://aeneid.datarpc.io` | `http://172.192.41.96:1317` | 현재 지원되는 릴리스       |
+
+```typescript Testnet
+const publicClient = createPublicClient({
+  transport: http("https://aeneid.datarpc.io"),
+});
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  apiUrl: "http://172.192.41.96:1317",
+});
+```
+
+### 사용자 정의 RPC URL
+
+`http()` 전송 URL을 변경하여 SDK를 모든 Aeneid 호환 RPC 엔드포인트로 지정할
+수 있습니다. 이는 더 높은 속도 제한이 있는 타사 RPC 프로바이더에 유용합니다.
+`apiUrl`은 독립적으로 구성되며, 공유 DATA Foundation API 엔드포인트 또는
+자체 Story 노드의 REST 게이트웨이로 지정하세요.
+
+```typescript
+const publicClient = createPublicClient({
+  transport: http("https://your-aeneid-rpc.example.com"),
+});
+const walletClient = createWalletClient({
+  account,
+  transport: http("https://your-aeneid-rpc.example.com"),
+});
+
+// Use "testnet"
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+  apiUrl: "http://172.192.41.96:1317",
+});
+```
+
+### 환경 변수 사용
+
+일반적인 패턴은 환경 변수를 통해 네트워크를 구성하는 것입니다:
+
+```typescript config.ts
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
+const NETWORK = (process.env.NETWORK ?? "testnet") as "testnet";
+
+const publicClient = createPublicClient({ transport: http(RPC_URL) });
+const client = new CDRClient({
+  network: NETWORK,
+  publicClient,
+  apiUrl: DATAFDN_API_URL,
+});
+```
+
+```bash .env
+# Testnet (default)
+RPC_URL=https://aeneid.datarpc.io
+DATAFDN_API_URL=http://172.192.41.96:1317
+NETWORK=testnet
+
+# Alternate Aeneid RPC
+RPC_URL=https://your-aeneid-rpc.example.com
+DATAFDN_API_URL=http://your-data-node:1317
+NETWORK=testnet
+```
+
+## 빠른 시작: 엔드 투 엔드 비밀 예제
+
+아래 스크립트는 소유자 전용 볼트를 생성하고, 작은 비밀을 작성한 다음, 같은 지갑으로
+다시 읽어옵니다. `WALLET_PRIVATE_KEY`가 설정되면 완전히 실행 가능합니다.
+
+```typescript quickstart-cdr.ts
+import { CDRClient, initWasm, uuidToLabel } from "@piplabs/cdr-sdk";
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  toHex,
+} from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+
+const RPC_URL = process.env.RPC_URL ?? "https://aeneid.datarpc.io";
+const DATAFDN_API_URL = process.env.DATAFDN_API_URL ?? "http://172.192.41.96:1317";
+const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
+
+if (!PRIVATE_KEY) {
+  throw new Error("Set WALLET_PRIVATE_KEY before running this script.");
+}
+
+const account = privateKeyToAccount(PRIVATE_KEY);
+const publicClient = createPublicClient({ transport: http(RPC_URL) });
+const walletClient = createWalletClient({
+  account,
+  transport: http(RPC_URL),
+});
+
+await initWasm();
+
+const client = new CDRClient({
+  network: "testnet",
+  publicClient,
+  walletClient,
+  apiUrl: DATAFDN_API_URL,
+});
+
+// Use the wallet (EOA) address as both write and read condition. Only this
+// EOA can encrypt to or decrypt from the vault.
+const { uuid, txHash: allocateTx } = await client.uploader.allocate({
+  updatable: false,
+  writeConditionAddr: account.address,
+  readConditionAddr: account.address,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
+});
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const ciphertext = await client.uploader.encryptDataKey({
+  dataKey: new TextEncoder().encode("hello from CDR"),
+  globalPubKey,
+  label: uuidToLabel(uuid),
+});
+
+const { txHash: writeTx } = await client.uploader.write({
+  uuid,
+  accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
+});
+
+console.log("Vault UUID:", uuid);
+console.log("Allocate tx:", allocateTx);
+console.log("Write tx:", writeTx);
+
+const { dataKey, txHash } = await client.consumer.accessCDR({
+  uuid,
+  accessAuxData: "0x",
+  timeoutMs: 120_000,
+});
+
+console.log("Read tx:", txHash);
+console.log("Recovered secret:", new TextDecoder().decode(dataKey));
+```
+
+<Note>
+  이 예제는 총 세 개의 트랜잭션을 전송합니다: `allocate()`, `write()` 및
+  `read()`. 더 큰 페이로드의 경우 배포된 조건 컨트랙트와 함께 `uploadFile()` /
+  `downloadFile()`로 전환하세요(예: [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)의
+  DATA Foundation 라이선스 게이트 패턴).
+</Note>
+
+<Note>
+  어떤 EOA 주소든 쓰기 또는 읽기 조건으로 작동하며, 해당 EOA만이 매칭되는
+  동작을 수행할 수 있습니다. 고수준 `uploadCDR()` / `uploadFile()` 헬퍼는
+  조건 주소가 배포된 컨트랙트를 가리키는지 검증하므로, EOA 조건은
+  `skipConditionValidation: true`와 함께 저수준 `allocate()` 호출을 통해
+  진행됩니다.
+</Note>
+
+## 다음 단계
+
+- 네트워크 측 런타임 동작은
+  [런타임 구성](/developers/cdr-sdk/advanced-configuration)을 참조하세요.
+- 주요 통합 흐름은
+  [암호화 및 복호화](/developers/cdr-sdk/encrypt-and-decrypt)로 계속하세요.
+
+## 오류 처리
+
+SDK는 잡아서 처리할 수 있는 형식화된 오류를 던집니다:
+
+| 오류 클래스                      | 코드                         | 발생 시점                                                                  |
+| ------------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `CDRError`                      | 다양                         | 모든 SDK 특정 오류의 기본 클래스                                            |
+| `WalletClientRequiredError`     | `WALLET_CLIENT_REQUIRED`     | `walletClient` 없이 `uploader` 또는 `consumer`에 접근                       |
+| `InvalidParamsError`            | `INVALID_PARAMS`             | 잘못된 매개변수 조합(예: 키 쌍 매개변수 하나만 전달)                         |
+| `InvalidConditionContractError` | `INVALID_CONDITION_CONTRACT` | 조건 주소가 필요한 인터페이스를 구현하지 않음                               |
+| `LabelMismatchError`            | `LABEL_MISMATCH`             | 암호문 레이블이 볼트 UUID와 일치하지 않음                                   |
+| `ContentSizeExceededError`      | `CONTENT_SIZE_EXCEEDED`      | 암호화된 데이터가 `maxEncryptedDataSize`를 초과함                          |
+| `EmptyVaultError`               | `EMPTY_VAULT`                | 한 번도 쓰여진 적 없는 볼트를 읽음                                          |
+| `PartialCollectionTimeoutError` | `PARTIAL_COLLECTION_TIMEOUT` | `collectPartials` 또는 `accessCDR`이 검증자 응답 대기 중 타임아웃됨         |
+| `CidIntegrityError`             | `CID_INTEGRITY`              | 다운로드한 암호화 파일이 볼트 CID와 일치하지 않음                          |
+
+<Note>
+  온체인 트랜잭션 되돌리기(예: 실패한 조건 검사)는 CDR 특정 오류 클래스가
+  아닌 기본 `viem` 컨트랙트 오류로 나타납니다.
+</Note>
+
+모든 오류는 프로그래밍 처리를 위한 `code` 속성을 가진 `CDRError`를 확장합니다:
+
+```typescript
+import { CDRError, PartialCollectionTimeoutError } from "@piplabs/cdr-sdk";
+
+try {
+  const { dataKey } = await client.consumer.accessCDR({ ... });
+} catch (err) {
+  if (err instanceof PartialCollectionTimeoutError) {
+    console.error("Not enough validators responded in time. Try increasing timeoutMs.");
+  } else if (err instanceof CDRError) {
+    console.error(`CDR error [${err.code}]: ${err.message}`);
+  }
+}
+```

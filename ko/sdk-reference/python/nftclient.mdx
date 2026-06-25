@@ -1,0 +1,140 @@
+---
+title: NFT Client
+description: DATA Foundation에서 사용할 새로운 SPG 컬렉션을 발행하는 데 사용됩니다.
+---
+
+## NFTClient
+
+### Methods
+
+- create_nft_collection
+- get_mint_fee_token
+- get_mint_fee
+
+### create_nft_collection
+
+새로운 SPG NFT 컬렉션을 생성합니다.
+
+| Method                |
+| --------------------- |
+| `create_nft_collection` |
+
+Parameters:
+
+- `name`: 컬렉션의 이름입니다.
+- `symbol`: 컬렉션의 심볼입니다.
+- `is_public_minting`: true이면 누구나 컬렉션에서 발행할 수 있습니다. false이면 minter 역할이 있는 주소만 발행할 수 있습니다.
+- `mint_open`: 생성 시 컬렉션이 발행을 위해 열려 있는지 여부입니다.
+- `mint_fee_recipient`: 발행 수수료를 받을 주소입니다.
+- `contract_uri`: 컬렉션의 컨트랙트 URI입니다. ERC-7572 표준을 따릅니다. [여기](https://eips.ethereum.org/EIPS/eip-7572)를 참조하세요.
+- `base_uri`: [Optional] 컬렉션의 베이스 URI입니다. baseURI가 비어 있지 않으면, tokenURI는 baseURI + 토큰 ID (nftMetadataURI가 비어 있는 경우) 또는 baseURI + nftMetadataURI가 됩니다.
+- `max_supply`: [Optional] 컬렉션의 최대 공급량입니다.
+- `mint_fee`: [Optional] 토큰을 발행하는 비용입니다.
+- `mint_fee_token`: [Optional] 발행에 사용할 토큰입니다.
+- `owner`: [Optional] 컬렉션의 소유자입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+# Create a new SPG NFT collection
+#
+# NOTE: Use this code to create a new SPG NFT collection. You can then use the
+# `new_collection["nft_contract"]` address as the `nft_contract` argument in
+# functions like `mint_and_register_ip_asset_with_pil_terms` in the DATA Foundation SDK.
+#
+# You will mostly only have to do this once. Once you get your nft contract address,
+# you can use it in SPG functions.
+#
+new_collection = story_client.NFTClient.create_nft_collection(
+  name="Test NFT",
+  symbol="TEST",
+  is_public_minting=True,
+  mint_open=True,
+  mint_fee_recipient="0x0000000000000000000000000000000000000000",  # Zero address
+  contract_uri=""
+)
+
+print(f"New SPG NFT collection created at transaction hash {new_collection['tx_hash']}")
+print(f"NFT contract address: {new_collection['nft_contract']}")
+```
+
+```python Request Parameters
+name: str  # The name of the collection
+symbol: str  # The symbol of the collection
+is_public_minting: bool  # If true, anyone can mint from the collection
+mint_open: bool  # Whether the collection is open for minting on creation
+mint_fee_recipient: str  # The address to receive mint fees
+contract_uri: str  # The contract URI for the collection
+base_uri: str = ""  # Optional: The base URI for the collection
+max_supply: int = None  # Optional: The maximum supply of the collection
+mint_fee: int = None  # Optional: The cost to mint a token
+mint_fee_token: str = None  # Optional: The token to mint
+owner: str = None  # Optional: The owner of the collection
+tx_options: dict = None  # Optional: Transaction options dictionary
+```
+
+```python Response
+{
+  "tx_hash": str,  # The transaction hash
+  "nft_contract": str  # The address of the newly created contract
+}
+```
+
+</CodeGroup>
+
+### get_mint_fee_token
+
+컬렉션의 현재 발행 수수료 토큰을 반환합니다.
+
+| Method            |
+| ----------------- |
+| `get_mint_fee_token` |
+
+Parameters:
+
+- `nft_contract`: NFT 컨트랙트의 주소입니다.
+
+<CodeGroup>
+
+```python Python
+mint_fee_token = story_client.NFTClient.get_mint_fee_token("0x01")
+```
+
+```python Request Parameters
+nft_contract: str  # The address of the NFT contract
+```
+
+```python Response
+str  # The address of the mint fee token
+```
+
+</CodeGroup>
+
+### get_mint_fee
+
+컬렉션의 현재 발행 수수료를 반환합니다.
+
+| Method       |
+| ------------ |
+| `get_mint_fee` |
+
+Parameters:
+
+- `nft_contract`: NFT 컨트랙트의 주소입니다.
+
+<CodeGroup>
+
+```python Python
+mint_fee = story_client.NFTClient.get_mint_fee("0x01")
+```
+
+```python Request Parameters
+nft_contract: str  # The address of the NFT contract
+```
+
+```python Response
+int  # The mint fee amount.
+```
+
+</CodeGroup>

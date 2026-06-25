@@ -1,0 +1,69 @@
+---
+title: 🧩 IP Asset
+sidebarTitle: 개요
+description: DATA Foundation 위의 기초적인 프로그래밍 가능한 IP 메타데이터
+---
+
+<Note>
+빠르게 살펴보기
+
+[여기](https://twitter.com/jacobmtucker/status/1785765362744889410)에서 IP Asset에 대한 1분짜리 빠른 개요를 확인하세요.
+
+</Note>
+
+IP Asset은 DATA Foundation 위의 기초적인 프로그래밍 가능한 IP 메타데이터입니다. 각 IP Asset은 온체인 ERC-721 NFT(IP를 나타냄)입니다. IP가 오프체인에 있는 경우, 먼저 해당 IP를 나타내는 ERC-721 NFT를 발행한 다음 IP Asset으로 등록하면 됩니다.
+
+IP Asset이 생성되면, 관련된 [⚙️ IP Account](/concepts/ip-asset/ip-account)가 배포됩니다. 이는 수정된 ERC-6551(Token Bound Account) 구현입니다. IP Asset에 바인딩된 별도의 컨트랙트로, DATA Foundation 모듈과의 상호 작용에 대한 권한을 제어하거나 IP의 관련 데이터를 저장하는 역할을 합니다.
+
+## IP Asset 등록하기
+
+IP Asset은 ERC-721 NFT를 DATA Foundation의 글로벌 IP Asset Registry에 등록하여 생성됩니다.
+
+코드 예시/튜토리얼로 바로 가려면 [DATA Foundation에 IP를 등록하는 방법](/developers/tutorials/how-to-register-ip)을 참조하세요.
+
+## NFT 메타데이터 vs. IP 메타데이터
+
+DATA Foundation에서, 여러분의 IP는 프로토콜에 IP Asset으로 등록되는 NFT입니다. 그러나 NFT와 IP Asset 모두 설정할 수 있는 자체 메타데이터를 가지고 있는데, 그 차이는 무엇일까요?
+
+|         | 표준                                                                        | 무엇인가요?                                                                                                                                  |
+| :------ | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| **NFT** | [Opensea ERC721 표준](https://docs.opensea.io/docs/metadata-standards) | `name`, `description`, `image`, `attributes`, `animation_url` 등의 항목                                                             |
+| **IP**  | [📝 IPA 메타데이터 표준](/concepts/ip-asset/ipa-metadata-standard)       | DATA Foundation에 더 특화되어 있으며, 침해 검사를 위한 기본 콘텐츠에 대한 필요한 정보, 작품의 저자 등을 포함합니다 |
+
+IP Asset의 소유권, 법적, 경제적 세부 정보와 같은 모든 기타 메타데이터는 프로토콜에서 직접 처리합니다. 예를 들어, 프로토콜은 [📜 Licensing Module](/concepts/licensing-module/overview)을 통한 부모-자식 관계와 관련된 데이터를 저장하고, [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license/overview)을 통해 IP Asset의 법적 제약/권한을 저장합니다.
+
+### IP Asset에 NFT 및 IP 메타데이터 추가하기
+
+<CardGroup cols={2}>
+  <Card title="SDK 완성된 코드 예제" href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts" icon="computer">
+    코드로 바로 가서 IP Asset에 NFT 및 IP 메타데이터를 추가하는 완성된 코드 예제를 확인하세요
+  </Card>
+
+  <Card title="SDK 설명" href="/developers/typescript-sdk/register-ip-asset" icon="file">
+    단계별 설명으로 IP Asset에 메타데이터를 추가하는 방법을 알아보세요.
+  </Card>
+</CardGroup>
+
+실제로 SDK를 사용하든 우리의 스마트 컨트랙트를 직접 사용하든, 프로토콜은 4가지 매개변수를 제공하도록 요구합니다:
+
+- `WorkflowStructs.sol` 컨트랙트는 [여기](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/lib/WorkflowStructs.sol)에서 확인하세요.
+
+```solidity WorkflowStructs.sol
+/// @notice Struct for metadata for NFT minting and IP registration.
+/// @dev Leave the nftMetadataURI empty if not minting an NFT.
+/// @param ipMetadataURI The URI of the metadata for the IP.
+/// @param ipMetadataHash The hash of the metadata for the IP.
+/// @param nftMetadataURI The URI of the metadata for the NFT.
+/// @param nftMetadataHash The hash of the metadata for the IP NFT.
+struct IPMetadata {
+  string ipMetadataURI;
+  bytes32 ipMetadataHash;
+  string nftMetadataURI;
+  bytes32 nftMetadataHash;
+}
+```
+
+- `ipMetadataURI` - [📝 IPA 메타데이터 표준](/concepts/ip-asset/ipa-metadata-standard)을 따르는 JSON 객체를 가리키는 URI
+- `ipMetadataHash` - `ipMetadataURI` JSON 객체의 해시
+- `nftMetadataURI` - [Opensea ERC721 표준](https://docs.opensea.io/docs/metadata-standards)을 따르는 JSON 객체를 가리키는 URI
+- `nftMetadataHash` - `nftMetadataURI` JSON 객체의 해시

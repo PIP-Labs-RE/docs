@@ -1,0 +1,84 @@
+---
+title: License Token 민팅
+description: TypeScript에서 IP Asset으로부터 License Token을 민팅하는 방법을 알아봅니다.
+---
+
+이 섹션에서는 [IP Asset](/concepts/ip-asset)에서 [License Token](/concepts/licensing-module/license-token)을 민팅하는 방법을 보여줍니다. IP Asset에 [License Terms](/concepts/licensing-module/license-terms)가 첨부되어 있는 경우에만 해당 IP Asset에서 License Token을 민팅할 수 있습니다. License Token은 ERC-721로 민팅됩니다.
+
+License Token을 민팅하는 데에는 두 가지 이유가 있습니다:
+
+1. 라이선스를 보유하고 기초 IP Asset을 라이선스에 명시된 대로 사용할 수 있도록 하기 위함(예: "적절한 출처 표기를 제공하고 수익의 5%를 공유하는 한 상업적으로 사용할 수 있음")
+2. 라이선스 토큰을 사용해 다른 IP Asset을 그 파생물로 연결하기 위함. _다만, 나중에 보게 되겠지만 일부 SDK 함수는 파생물을 등록하기 위해 명시적으로 license token을 먼저 민팅할 필요가 없으며, 실제로는 내부적으로 처리해 줍니다._
+
+### 사전 준비 사항
+
+튜토리얼을 시작하기 전에 완료해야 할 몇 가지 단계가 있습니다.
+
+1. [TypeScript SDK 설정](/developers/typescript-sdk/setup) 완료
+2. License Terms가 추가된 IP Asset. IPA에 License Terms를 추가하는 방법은 [여기](/developers/typescript-sdk/attach-terms)에서 확인할 수 있습니다.
+
+## 1. 라이선스 민팅
+
+IP Asset(`ipId = 0x01`)에 License Terms(`licenseTermdId = 10`)가 첨부되어 있다고 가정해 봅시다. 그 약관을 가진 License Token 2개를 특정 지갑 주소(`0x02`)로 민팅하고자 합니다.
+
+<Warning>
+
+일부 IP Asset에는 라이선스를 민팅하는 사용자가 `defaultMintingFee`를 지불해야 하는 라이선스 약관이 첨부되어 있을 수 있다는 점에 유의하세요. 그 예시는 [TypeScript 튜토리얼](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/derivative/registerDerivativeCommercial.ts)에서 확인할 수 있습니다.
+
+</Warning>
+
+<Note>
+ 
+  license token은 `licenseTermsId`가 이미 IP Asset에 첨부되어 있어 공개적으로 사용 가능한 라이선스가 된 경우에만 민팅할 수 있다는 점에 유의하세요. 단, IP 소유자는 IP Asset에 첨부되지 않은 `licenseTermsId`로 license token을 민팅하여 [비공개 라이선스](/concepts/licensing-module/license-token#private-licenses)를 민팅할 수 있습니다.
+
+</Note>
+
+<Info>
+  관련 문서:
+  [license.mintLicenseTokens](/sdk-reference/license#mintlicensetokens)
+</Info>
+
+```typescript main.ts
+// you should already have a client set up (prerequisite)
+import { client } from "./client";
+
+async function main() {
+  const response = await client.license.mintLicenseTokens({
+    licenseTermsId: "10",
+    licensorIpId: "0x641E638e8FCA4d4844F509630B34c9D524d40BE5",
+    receiver: "0x641E638e8FCA4d4844F509630B34c9D524d40BE5", // optional. if not provided, it will go to the tx sender
+    amount: 2,
+    maxMintingFee: BigInt(0), // disabled
+    maxRevenueShare: 100, // default
+  });
+
+  console.log(
+    `License Token minted at transaction hash ${response.txHash}, License IDs: ${response.licenseTokenIds}`
+  );
+}
+
+main();
+```
+
+### 1a. License Token 민팅에 제한 설정하기
+
+이는 IP Asset의 소유자가 누가, 또는 어떻게 라이선스 토큰을 민팅하는지에 제한을 설정하고 싶을 때 참고할 사항입니다. 다음과 같은 작업이 가능합니다:
+
+- 민팅 가능한 라이선스 최대 수 설정
+- 민팅 주체/수량에 따른 동적 수수료 부과
+- 토큰 민팅 가능한 특정 지갑 화이트리스트 지정
+
+... 등등. 자세한 내용은 문서의 [License Config](/concepts/licensing-module/license-config) 섹션을 확인하세요.
+
+## 2. 파생물 등록
+
+이제 License Token을 민팅했으므로, 이를 보유하거나 IP Asset을 파생물로 연결하는 데 사용할 수 있습니다. 이는 다음 페이지에서 다루겠습니다.
+
+_다만, 나중에 보게 되겠지만 일부 SDK 함수는 파생물을 등록하기 위해 명시적으로 license token을 먼저 민팅할 필요가 없으며, 실제로는 내부적으로 처리해 줍니다._
+
+### 2a. 필요하지 않은데 굳이 License Token을 사용할 이유가 있나요?
+
+파생물을 등록하기 위해 License Token이 **필요한** 경우가 몇 가지 있습니다:
+
+- License Token이 비공개 라이선스 약관을 포함하고 있어, 소유자가 수동으로 민팅한 License Token이 있어야만 파생물로 등록할 수 있는 경우. 자세한 내용은 [여기](/concepts/licensing-module/license-token#private-licenses).
+- License Token(NFT)을 민팅할 때 `mintingFee`가 발생하지만 마켓플레이스에서 더 저렴한 가격에 살 수 있는 경우. 그러면 더 비싼 `defaultMintingFee`를 지불해야 하는 것보다 License Token으로 등록하는 것이 더 합리적입니다.

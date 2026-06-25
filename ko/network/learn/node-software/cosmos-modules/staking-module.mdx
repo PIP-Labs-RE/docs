@@ -1,0 +1,47 @@
+---
+title: 스테이킹 모듈
+description: 잠금(locked) 토큰과 잠금 해제(unlocked) 토큰에 대한 리워드 배수가 적용된 수정된 스테이킹 모듈
+---
+
+## 개요
+
+스테이킹 모듈은 아래의 변경 사항을 수용하기 위해 수정되었습니다. 자세한 내용은 Cosmos SDK의 [스테이킹 모듈 문서](https://docs.cosmos.network/main/build/modules/staking)를 참고하세요.
+
+## 리워드 배수(Reward Multiplier)
+
+### Validator
+
+Validator는 위임(delegation)으로 잠금 토큰을 받을지 잠금 해제 토큰을 받을지 선택할 수 있습니다. 잠금 토큰을 받는 Validator는 잠금 해제 토큰을 받는 Validator의 인플레이션 분배의 절반만 받도록 설정되어 있습니다.
+
+각 Validator는 위임 상태에 따라 서로 다른 인플레이션 분배를 받기 때문에, 리워드 풀에서 Validator v<sub>i</sub>의 인플레이션 분배 I<sub>v<sub>i</sub></sub>는 다음과 같이 계산됩니다:
+
+<img src="/images/network/staking-module-1.png" />
+
+여기서
+
+- I<sub>v<sub>i</sub></sub>는 v<sub>i</sub>의 총 인플레이션 토큰 리워드입니다
+- S<sub>v<sub>i</sub></sub>는 v<sub>i</sub>의 스테이킹된 토큰 수입니다
+- M<sub>v<sub>i</sub></sub>는 v<sub>i</sub>의 리워드 배수입니다
+  - 잠금 토큰의 경우 0.5
+  - 잠금 해제 토큰의 경우 1
+- R<sub>n</sub>은 블록 n에서 리워드 풀에 할당된 총 인플레이션 토큰으로, [mint](/network/node-architecture/cosmos-modules/mint-module) 모듈에서 계산됩니다
+
+### 위임(Delegation)
+
+위임자는 네 가지의 다른 스테이킹 잠금 기간으로 위임할 수 있으며, 이는 각 위임(위임자-Validator 쌍의 스테이킹)에 대한 서로 다른 스테이킹 리워드 배수를 가져옵니다. 각 위임 D<sub>i</sub>에 대한 인플레이션 분배는 다음과 같이 계산됩니다:
+
+<img src="/images/network/staking-module-2.png" />
+
+여기서
+
+- S<sub>d<sub>i</sub></sub>는 Validator v<sub>d</sub>에 대한 위임 d<sub>i</sub>의 스테이킹된 토큰 수입니다
+- M<sub>d<sub>i</sub></sub>는 v<sub>d</sub>에 대한 d<sub>i</sub>의 리워드 배수입니다
+- I<sub>v</sub>는 v<sub>d</sub>의 총 인플레이션 토큰 리워드입니다
+- C<sub>v</sub>는 v<sub>d</sub>의 커미션 비율입니다
+
+#### 시간 가중 리워드 배수 M<sub>d<sub>i</sub></sub>
+
+- _Flexible_ (잠금 기간 없음): 1
+- _Short_ (90일): 1.1
+- _Medium_ (360일): 1.5
+- _Long_ (540일): 2.0

@@ -1,0 +1,139 @@
+---
+title: IPA에 약관 첨부하기
+description: Solidity에서 IP Asset에 라이선스 약관(License Terms)을 첨부하는 방법을 알아보세요.
+---
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/2_AttachTerms.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이 섹션에서는 [IP Asset](/concepts/ip-asset/overview)에 [라이선스 약관(License Terms)](/concepts/licensing-module/license-terms)을 첨부하는 방법을 설명합니다. 약관을 첨부하면, 사용자는 해당 IP로부터 그 약관이 적용된 [라이선스 토큰(License Token)](/concepts/licensing-module/license-token)(온체인 "라이선스")을 공개적으로 민팅할 수 있습니다.
+
+## 사전 준비
+
+튜토리얼을 시작하기 전에 몇 가지 단계를 완료해야 합니다.
+
+1. [자체 프로젝트 설정하기](/developers/smart-contracts-guide/setup)를 완료하세요.
+2. 라이선스 약관을 생성하고 `licenseTermsId`를 확보하세요. [이전 페이지](/developers/smart-contracts-guide/register-terms)를 따라 진행하면 됩니다.
+
+## 라이선스 약관 첨부
+
+이제 약관을 생성하고 연관된 `licenseTermsId`를 얻었으므로, 이를 기존 IP Asset에 첨부할 수 있습니다.
+
+`test/2_AttachTerms.t.sol`에 테스트 파일을 만들어 동작 및 결과를 확인해 봅시다:
+
+<Note>
+**컨트랙트 주소**
+
+DATA Foundation 컨트랙트 주소를 미리 채워 두었습니다. 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서도 확인할 수 있습니다.
+
+</Note>
+
+```solidity test/2_AttachTerms.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+// for testing purposes only
+import { MockIPGraph } from "@storyprotocol/test/mocks/MockIPGraph.sol";
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+import { ILicenseRegistry } from "@storyprotocol/core/interfaces/registries/ILicenseRegistry.sol";
+import { IPILicenseTemplate } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+import { ILicensingModule } from "@storyprotocol/core/interfaces/modules/licensing/ILicensingModule.sol";
+import { PILFlavors } from "@storyprotocol/core/lib/PILFlavors.sol";
+import { PILTerms } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+
+import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/2_AttachTerms.t.sol
+contract AttachTermsTest is Test {
+    address internal alice = address(0xa11ce);
+
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+    // Protocol Core - IPAssetRegistry
+    IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
+    // Protocol Core - LicenseRegistry
+    ILicenseRegistry internal LICENSE_REGISTRY = ILicenseRegistry(0x529a750E02d8E2f15649c13D69a465286a780e24);
+    // Protocol Core - LicensingModule
+    ILicensingModule internal LICENSING_MODULE = ILicensingModule(0x04fbd8a2e56dd85CFD5500A4A4DfA955B9f1dE6f);
+    // Protocol Core - PILicenseTemplate
+    IPILicenseTemplate internal PIL_TEMPLATE = IPILicenseTemplate(0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316);
+    // Protocol Core - RoyaltyPolicyLAP
+    address internal ROYALTY_POLICY_LAP = 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E;
+    // Revenue Token - MERC20
+    address internal MERC20 = 0xF2104833d386a2734a4eB3B8ad6FC6812F29E38E;
+
+    SimpleNFT public SIMPLE_NFT;
+    uint256 public tokenId;
+    address public ipId;
+    uint256 public licenseTermsId;
+
+    function setUp() public {
+        // this is only for testing purposes
+        // due to our IPGraph precompile not being
+        // deployed on the fork
+        vm.etch(address(0x0101), address(new MockIPGraph()).code);
+
+        SIMPLE_NFT = new SimpleNFT("Simple IP NFT", "SIM");
+        tokenId = SIMPLE_NFT.mint(alice);
+        ipId = IP_ASSET_REGISTRY.register(block.chainid, address(SIMPLE_NFT), tokenId);
+
+        // Register random Commercial Remix terms so we can attach them later
+        licenseTermsId = PIL_TEMPLATE.registerLicenseTerms(
+            PILFlavors.commercialRemix({
+                mintingFee: 0,
+                commercialRevShare: 10 * 10 ** 6, // 10%
+                royaltyPolicy: ROYALTY_POLICY_LAP,
+                currencyToken: MERC20
+            })
+        );
+    }
+
+    /// @notice Attaches license terms to an IP Asset.
+    /// @dev Only the owner of an IP Asset can attach license terms to it.
+    /// So in this case, alice has to be the caller of the function because
+    /// she owns the NFT associated with the IP Asset.
+    function test_attachLicenseTerms() public {
+        vm.prank(alice);
+        LICENSING_MODULE.attachLicenseTerms(ipId, address(PIL_TEMPLATE), licenseTermsId);
+
+        assertTrue(LICENSE_REGISTRY.hasIpAttachedLicenseTerms(ipId, address(PIL_TEMPLATE), licenseTermsId));
+        assertEq(LICENSE_REGISTRY.getAttachedLicenseTermsCount(ipId), 1);
+        (address licenseTemplate, uint256 attachedLicenseTermsId) = LICENSE_REGISTRY.getAttachedLicenseTerms({
+            ipId: ipId,
+            index: 0
+        });
+        assertEq(licenseTemplate, address(PIL_TEMPLATE));
+        assertEq(attachedLicenseTermsId, licenseTermsId);
+    }
+}
+```
+
+## 코드 테스트하기!
+
+`forge build`를 실행하세요. 모든 것이 정상이라면 명령이 성공적으로 컴파일되어야 합니다.
+
+이제 다음 명령을 실행하여 테스트를 진행하세요:
+
+```bash
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/2_AttachTerms.t.sol
+```
+
+## 라이선스 민팅하기
+
+축하합니다, IPA에 약관을 첨부했습니다!
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/2_AttachTerms.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이제 IP에 라이선스 약관을 첨부했으니, 다음 단계는 라이선스 토큰을 민팅하는 것입니다. 다음 페이지에서 다루겠습니다.

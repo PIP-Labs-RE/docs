@@ -1,0 +1,153 @@
+---
+title: 라이선스 토큰 민팅하기
+description: Solidity에서 IPA로부터 라이선스 토큰(License Token)을 민팅하는 방법을 알아보세요.
+---
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/3_LicenseToken.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이 섹션에서는 [IP Asset](/concepts/ip-asset/overview)으로부터 [라이선스 토큰(License Token)](/concepts/licensing-module/license-token)을 민팅하는 방법을 설명합니다. IP Asset에 [라이선스 약관(License Terms)](/concepts/licensing-module/license-terms)이 첨부되어 있어야만 해당 IP Asset에서 라이선스 토큰을 민팅할 수 있습니다. 라이선스 토큰은 ERC-721로 민팅됩니다.
+
+라이선스 토큰을 민팅하는 이유는 두 가지입니다:
+
+1. 라이선스를 보유하고, 라이선스에 명시된 조건으로 기반 IP Asset을 사용할 수 있게 하기 위함 (예: "적절한 출처 표시를 하고 수익의 5%를 공유하는 한 상업적 사용 가능")
+2. 라이선스 토큰을 사용해 다른 IP Asset을 그 IP의 파생물로 연결하기 위함. _다만 이후에 보게 되겠지만, 일부 SDK 함수들은 파생물을 등록하기 위해 라이선스 토큰을 먼저 명시적으로 민팅할 필요 없이 내부적으로 알아서 처리해 줍니다._
+
+## 사전 준비
+
+튜토리얼을 시작하기 전에 몇 가지 단계를 완료해야 합니다.
+
+1. [자체 프로젝트 설정하기](/developers/smart-contracts-guide/setup)를 완료하세요.
+2. 라이선스 약관이 첨부된 IP Asset이 있어야 합니다. 방법은 [여기](/developers/smart-contracts-guide/attach-terms)에서 확인할 수 있습니다.
+
+## 라이선스 민팅
+
+IP Asset (`ipId = 0x01`)에 라이선스 약관 (`licenseTermdId = 10`)이 첨부되어 있다고 가정합시다. 이 약관이 적용된 라이선스 토큰 2개를 특정 지갑 주소 (`0x02`)로 민팅하려고 합니다.
+
+<Warning>
+**유료 라이선스**
+
+일부 IP Asset에는 라이선스 약관이 첨부되어 있을 수 있으며, 라이선스를 민팅하는 사용자에게 `mintingFee`를 요구할 수 있다는 점을 유의하세요.
+
+</Warning>
+
+`test/3_LicenseToken.t.sol`에 테스트 파일을 만들어 동작 및 결과를 확인해 봅시다:
+
+<Note>
+**컨트랙트 주소**
+
+DATA Foundation 컨트랙트 주소를 미리 채워 두었습니다. 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서도 확인할 수 있습니다.
+
+</Note>
+
+```solidity test/3_LicenseToken.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+// for testing purposes only
+import { MockIPGraph } from "@storyprotocol/test/mocks/MockIPGraph.sol";
+import { IIPAssetRegistry } from "@storyprotocol/core/interfaces/registries/IIPAssetRegistry.sol";
+import { IPILicenseTemplate } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+import { ILicensingModule } from "@storyprotocol/core/interfaces/modules/licensing/ILicensingModule.sol";
+import { ILicenseToken } from "@storyprotocol/core/interfaces/ILicenseToken.sol";
+import { RoyaltyPolicyLAP } from "@storyprotocol/core/modules/royalty/policies/LAP/RoyaltyPolicyLAP.sol";
+import { PILFlavors } from "@storyprotocol/core/lib/PILFlavors.sol";
+import { PILTerms } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+
+import { SimpleNFT } from "../src/mocks/SimpleNFT.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/3_LicenseToken.t.sol
+contract LicenseTokenTest is Test {
+    address internal alice = address(0xa11ce);
+    address internal bob = address(0xb0b);
+
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+    // Protocol Core - IPAssetRegistry
+    IIPAssetRegistry internal IP_ASSET_REGISTRY = IIPAssetRegistry(0x77319B4031e6eF1250907aa00018B8B1c67a244b);
+    // Protocol Core - LicensingModule
+    ILicensingModule internal LICENSING_MODULE = ILicensingModule(0x04fbd8a2e56dd85CFD5500A4A4DfA955B9f1dE6f);
+    // Protocol Core - PILicenseTemplate
+    IPILicenseTemplate internal PIL_TEMPLATE = IPILicenseTemplate(0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316);
+    // Protocol Core - RoyaltyPolicyLAP
+    address internal ROYALTY_POLICY_LAP = 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E;
+    // Protocol Core - LicenseToken
+    ILicenseToken internal LICENSE_TOKEN = ILicenseToken(0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC);
+    // Revenue Token - MERC20
+    address internal MERC20 = 0xF2104833d386a2734a4eB3B8ad6FC6812F29E38E;
+
+    SimpleNFT public SIMPLE_NFT;
+    uint256 public tokenId;
+    address public ipId;
+    uint256 public licenseTermsId;
+
+    function setUp() public {
+        // this is only for testing purposes
+        // due to our IPGraph precompile not being
+        // deployed on the fork
+        vm.etch(address(0x0101), address(new MockIPGraph()).code);
+
+        SIMPLE_NFT = new SimpleNFT("Simple IP NFT", "SIM");
+        tokenId = SIMPLE_NFT.mint(alice);
+        ipId = IP_ASSET_REGISTRY.register(block.chainid, address(SIMPLE_NFT), tokenId);
+
+        licenseTermsId = PIL_TEMPLATE.registerLicenseTerms(
+            PILFlavors.commercialRemix({
+                mintingFee: 0,
+                commercialRevShare: 10 * 10 ** 6, // 10%
+                royaltyPolicy: ROYALTY_POLICY_LAP,
+                currencyToken: MERC20
+            })
+        );
+
+        vm.prank(alice);
+        LICENSING_MODULE.attachLicenseTerms(ipId, address(PIL_TEMPLATE), licenseTermsId);
+    }
+
+    /// @notice Mints license tokens for an IP Asset.
+    /// Anyone can mint a license token.
+    function test_mintLicenseToken() public {
+        uint256 startLicenseTokenId = LICENSING_MODULE.mintLicenseTokens({
+            licensorIpId: ipId,
+            licenseTemplate: address(PIL_TEMPLATE),
+            licenseTermsId: licenseTermsId,
+            amount: 2,
+            receiver: bob,
+            royaltyContext: "", // for PIL, royaltyContext is empty string
+            maxMintingFee: 0,
+            maxRevenueShare: 0
+        });
+
+        assertEq(LICENSE_TOKEN.ownerOf(startLicenseTokenId), bob);
+        assertEq(LICENSE_TOKEN.ownerOf(startLicenseTokenId + 1), bob);
+    }
+}
+```
+
+## 코드 테스트하기!
+
+`forge build`를 실행하세요. 모든 것이 정상이라면 명령이 성공적으로 컴파일되어야 합니다.
+
+이제 다음 명령을 실행하여 테스트를 진행하세요:
+
+```bash
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/3_LicenseToken.t.sol
+```
+
+## 파생물 등록하기
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/3_LicenseToken.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이제 라이선스 토큰을 민팅했으니, 보유하거나 IP Asset을 파생물로 연결하는 데 사용할 수 있습니다. 다음 페이지에서 다루겠습니다.

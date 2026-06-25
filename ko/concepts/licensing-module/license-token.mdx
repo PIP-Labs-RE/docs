@@ -1,0 +1,89 @@
+---
+title: 라이선스 토큰(License Token)
+description: 토큰에 정의된 라이선스 약관에 따라, 자신의 IP를 다른 IP의 파생물로 등록할 수 있게 해주는 ERC-721 NFT
+---
+
+<CardGroup cols={1}>
+  <Card
+    title="LicenseToken.sol"
+    href="https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/LicenseToken.sol"
+    icon="scroll"
+    color="#ccb092"
+  >
+    라이선스 토큰의 스마트 컨트랙트를 살펴보세요.
+  </Card>
+</CardGroup>
+
+**라이선스 토큰(License Token)**은 **ERC-721 NFT**로 표현되며, 자신이 대표하는 특정 [라이선스 약관](/concepts/licensing-module/license-terms)을 포함합니다. 단 하나의 라이선스 토큰 컨트랙트만 존재하기 때문에, 연관된 `licenseTokenId`는 전역적입니다.
+
+라이선스 약관이 IP 자산에 부착되면, 해당 자산은 공개 상태가 되어 누구나 그 약관에 대한 라이선스 토큰을 민팅할 수 있게 됩니다. 라이선스 토큰은 다른 IP를 원본 IP 자산의 파생물로 등록하는 데 사용될 때 소각됩니다.
+
+<Frame caption="라이선스 토큰이 민팅될 때 발생하는 일을 보여주는 다이어그램.">
+  <img
+    src="/images/concepts/license-token-diagram.png"
+    alt="A diagram showing what happens when a License Token is minted."
+  />
+</Frame>
+
+## 비공개 라이선스(Private Licenses)
+
+<Frame>
+  <img
+    src="/images/concepts/private-licenses.png"
+    alt="A diagram showing how private licenses are minted."
+  />
+</Frame>
+
+비공개 라이선스 토큰을 민팅하기 위해, 루트 IP 자산의 소유자는 **아직 IP 자산 자체에 부착되지 않은** 약관을 가진 라이선스 토큰을 발행할 수 있습니다. 또한 중요한 점은, 파생 IP 자산은 비공개 라이선스를 발행할 수 없다는 것입니다. 이는 자신이 상속받은 약관의 라이선스만 발행할 수 있도록 제한되어 있기 때문입니다.
+
+## 라이선스 토큰의 전송 가능성
+
+라이선스 토큰은 자신이 가리키는 라이선스 약관의 값에 따라 전송 가능할 수도, 그렇지 않을 수도 있습니다.
+
+전송 불가능한 라이선스 토큰이 수신자에게 민팅되면, 영원히 그곳에 묶이게 됩니다.
+
+## 파생물 등록하기
+
+자신의 IP 자산을 다른 IP 자산들의 파생물로 등록할 수 있으며, 각각의 IP 자산은 고유의 라이선스 약관 합의를 가집니다. 이는 IP 자산 간에 법적 구속력이 있는 합의를 형성합니다.
+
+### ⚠️ 제한 사항
+
+파생물 등록에는 몇 가지 제한이 있습니다:
+
+- IP 자산은 단 한 번만 파생물로 등록할 수 있습니다. IP 자산에 여러 부모가 있는 경우, 동시에 모두 등록해야 합니다.
+- IP 자산이 한 번 파생물이 되면, 더 이상 다른 부모를 연결할 수 없습니다.
+- IP 자산을 파생물로 연결할 때, 해당 자산에는 라이선스 약관이 부착되어 있어서는 안 됩니다. 약관은 부모로부터 상속됩니다.
+- 부모 IP 자산이나 자식 IP 자산 중 어느 하나라도 분쟁 중이어서는 안 됩니다.
+- 자식 IP 자산은 이미 파생물을 가지고 있어서는 안 됩니다.
+- 라이선스 약관 중 적어도 하나가 상업적이라면, 모두 상업적이어야 합니다 (`commercialUse = true`).
+
+---
+
+파생 IP 자산을 등록하는 방법은 두 가지가 있습니다.
+
+<Note>
+IP 자산은 단 한 번만 파생물로 등록할 수 있습니다. IP 자산에 여러 부모가 있는 경우, 동시에 모두 등록해야 합니다. IP 자산이 한 번 파생물이 되면, 더 이상 다른 부모를 연결할 수 없습니다.
+
+</Note>
+
+### 1. 기존 라이선스 토큰 사용하기
+
+라이선스 토큰은 다른 IP를 원본 IP 자산의 파생물로 등록하는 데 사용될 때 소각됩니다.
+
+<Frame>
+  <img
+    src="/images/concepts/existing-license-token.png"
+    alt="Using an Existing License Token"
+  />
+</Frame>
+
+### 2. 파생물 직접 등록하기
+
+라이선스 토큰 없이도 파생물을 직접 등록할 수 있습니다. IP 자산에 라이선스 약관이 부착되어 있다면 어차피 라이선스 토큰을 민팅하는 것이 공개되어 있다는 점을 기억하세요. 따라서 이 방법은 단순히 편리한 방식으로, 라이선스 토큰을 민팅하는 중간 단계를 건너뛰는 것입니다.
+
+<Frame>
+  <img
+    src="/images/concepts/derivative-directly.png"
+    alt="Registering a Derivative Directly"
+  />
+</Frame>

@@ -1,0 +1,66 @@
+---
+title: 프리컴파일(Precompiles)
+description: DATA Foundation의 실행 계층에 구현된 특수 스마트 컨트랙트
+icon: gear
+---
+
+## 소개
+
+프리컴파일된 컨트랙트(precompiled contracts)는 블록체인의 실행 계층에 직접 구현된 특수한 스마트 컨트랙트입니다. EVM 바이트코드를 실행하는 사용자 배포 스마트 컨트랙트와 달리, 프리컴파일된 컨트랙트는 복잡한 암호학적 및 계산적 연산을 위한 최적화된 네이티브 구현을 제공합니다. 이를 통해 효율성을 크게 향상시키고 가스 비용을 줄일 수 있습니다. 프리컴파일된 컨트랙트는 실행 클라이언트 내의 고정된 주소에 존재하며, 각 프리컴파일은 계산 복잡도에 따라 사전 정의된 가스 비용을 가지므로 예측 가능한 실행 수수료를 보장합니다.
+
+DATA Foundation은 두 개의 프리컴파일된 컨트랙트를 도입합니다:
+
+- secp256r1 타원 곡선의 서명 검증을 지원하는 `p256Verify` 프리컴파일.
+- 온체인 지식재산권 관리를 강화하는 `ipgraph` 프리컴파일.
+
+또한 DATA Foundation의 실행 계층은 모든 표준 EVM 프리컴파일된 컨트랙트를 지원하여 Ethereum 기반 도구 및 애플리케이션과의 완전한 호환성을 보장합니다.
+
+## 프리컴파일된 컨트랙트
+
+| 주소     | 기능                                                          |
+| ------- | ------------------------------------------------------------- |
+| byte1   | `ecrecover` - ECDSA 서명 복구                                  |
+| byte2   | `sha256` - SHA-256 해시 계산                                   |
+| byte3   | `ripemd160` - RIPEMD-160 해시 계산                             |
+| byte4   | `identity` - 항등 함수                                         |
+| byte5   | `modexp` - 모듈러 지수 연산                                    |
+| byte6   | `bn256Add` - BN256 타원 곡선 덧셈                              |
+| byte7   | `bn256ScalarMul` - BN256 타원 곡선 스칼라 곱셈                  |
+| byte8   | `bn256Pairing` - BN256 타원 곡선 페어링 검사                    |
+| byte9   | `blake2f` - Blake2 해시 함수                                   |
+| byte10  | `kzgPointEvaluation` - KZG 다항식 약속(commitment) 평가         |
+| byte0   | `p256Verify` - Secp256r1 서명 검증                             |
+| byte1   | `ipgraph` - 지식재산권 관리                                    |
+
+## p256Verify 프리컴파일
+
+자세한 내용은 [RIP-7212](https://github.com/ethereum/RIPs/blob/master/RIPS/rip-7212.md)를 참고하세요.
+
+## IPgraph 프리컴파일
+
+`ipgraph` 프리컴파일은 IP 관계 및 로열티 구조를 효율적으로 조회하고 수정할 수 있게 하면서 가스 비용을 최소화합니다.
+
+이 컨트랙트는 `0x0000000000000000000000000000000000000101`에 배포되며, 접근은 `0x1640A22a8A086747cD377b73954545e2Dfcc9Cad` 컨트랙트를 통해 제어됩니다.
+
+이 프리컴파일은 함수 선택자(입력의 처음 4바이트)에 따라 여러 기능을 제공합니다.
+
+| 함수 선택자                | 설명                                                            | 가스 계산 공식                                          | 가스 비용                          |
+| :----------------------- | :-------------------------------------------------------------- | :---------------------------------------------------- | :--------------------------------- |
+| `addParentIp`            | 부모 IP 레코드 추가                                              | `intrinsicGas + (ipGraphWriteGas * parentCount)`      | 1100보다 큼                        |
+| `hasParentIp`            | 한 IP가 다른 IP의 부모인지 확인                                   | `ipGraphReadGas * averageParentIpCount`               | 40                                 |
+| `getParentIps`           | 부모 IP 조회                                                    | `ipGraphReadGas * averageParentIpCount`               | 40                                 |
+| `getParentIpsCount`      | 부모 IP 개수 조회                                                | `ipGraphReadGas`                                      | 10                                 |
+| `getAncestorIps`         | 조상(ancestor) IP 조회                                          | `ipGraphReadGas * averageAncestorIpCount * 2`         | 600                                |
+| `getAncestorIpsCount`    | 조상 IP 개수 조회                                                | `ipGraphReadGas * averageParentIpCount * 2`           | 80                                 |
+| `hasAncestorIp`          | 한 IP가 다른 IP의 조상인지 확인                                   | `ipGraphReadGas * averageAncestorIpCount * 2`         | 600                                |
+| `setRoyalty`             | IP의 로열티 세부사항 설정                                         | `ipGraphWriteGas`                                     | 1000                               |
+| `getRoyalty`             | IP의 로열티 세부사항 조회                                         | `varies by royalty policy`                            | LAP:900, LRP:620, other:1000       |
+| `getRoyaltyStack`        | IP의 로열티 스택 조회                                            | `varies by royalty policy`                            | LAP:50, LRP: 600, other:1000       |
+| `hasParentIpExt`         | 외부 호출을 통해 한 IP가 다른 IP의 부모인지 확인                    | `ipGraphExternalReadGas * averageParentIpCount`       | 8400                               |
+| `getParentIpsExt`        | 외부 호출을 통해 부모 IP 조회                                     | `ipGraphExternalReadGas * averageParentIpCount`       | 8400                               |
+| `getParentIpsCountExt`   | 외부 호출을 통해 부모 IP 개수 조회                                 | `ipGraphExternalReadGas`                              | 2100                               |
+| `getAncestorIpsExt`      | 외부 호출을 통해 조상 IP 조회                                     | `ipGraphExternalReadGas * averageAncestorIpCount * 2` | 126000                             |
+| `getAncestorIpsCountExt` | 외부 호출을 통해 조상 IP 개수 조회                                 | `ipGraphExternalReadGas * averageParentIpCount * 2`   | 16800                              |
+| `hasAncestorIpExt`       | 외부 호출을 통해 한 IP가 다른 IP의 조상인지 확인                    | `ipGraphExternalReadGas * averageAncestorIpCount * 2` | 126000                             |
+| `getRoyaltyExt`          | 외부 호출을 통해 IP의 로열티 세부사항 조회                          | `varies by royalty policy`                            | LAP:189000, LRP:130200, other:1000 |
+| `getRoyaltyStackExt`     | 외부 호출을 통해 IP의 로열티 스택 조회                              | `varies by royalty policy`                            | LAP:10500, LRP:126000, other:1000  |

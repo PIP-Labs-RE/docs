@@ -1,0 +1,195 @@
+---
+title: IP Account
+description: IPAccount를 사용하면 IP 계정 메타데이터를 관리하고 트랜잭션을 실행할 수 있습니다.
+---
+
+## IPAccount
+
+### Methods
+
+- set_ip_metadata
+- execute
+- execute_with_sig
+- transfer_erc20
+
+### set_ip_metadata
+
+IP 자산의 metadataURI를 설정합니다.
+
+| Method            |
+| ----------------- |
+| `set_ip_metadata` |
+
+Parameters:
+
+- `ip_id`: 메타데이터를 설정할 IP입니다.
+- `metadata_uri`: IP 자산에 설정할 metadataURI입니다. [IPA 메타데이터 표준](/concepts/ip-asset/ipa-metadata-standard)에 부합하는 메타데이터를 가리키는 URL이어야 합니다.
+- `metadata_hash`: metadataURI에 있는 메타데이터의 해시입니다.
+- `tx_options`: \[Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+tx_hash = story_client.IPAccount.set_ip_metadata(
+  ip_id="0x01",
+  metadata_uri="https://ipfs.io/ipfs/bafkreiardkgvkejqnnkdqp4pamkx2e5bs4lzus5trrw3hgmoa7dlbb6foe",
+  # example hash (not accurate)
+  metadata_hash="0x129f7dd802200f096221dd89d5b086e4bd3ad6eafb378a0c75e3b04fc375f997",
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP to set the metadata for
+metadata_uri: str  # The metadataURI to set for the IP asset. Should be a URL pointing to metadata that fits the [IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard)
+metadata_hash: str  # The hash of metadata at metadataURI
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### execute
+
+IP 계정에서 트랜잭션을 실행합니다.
+
+| Method    |
+| --------- |
+| `execute` |
+
+Parameters:
+
+- `ip_id`: IP 계정을 가져올 IP ID입니다.
+- `to`: 트랜잭션의 수신자입니다.
+- `value`: 전송할 Ether 양입니다.
+- `data`: 트랜잭션과 함께 전송할 데이터입니다.
+- `tx_options`: \[Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.IPAccount.execute(
+  ip_id="0x01",
+  to="0x1234567890123456789012345678901234567890",
+  value=1000000000000000000,  # 1 ETH
+  data="0x1234567890123456789012345678901234567890",
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP to set the metadata for
+to: str  # The recipient of the transaction
+value: int  # The amount of Ether to send
+data: str  # The data to send along with the transaction
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### execute_with_sig
+
+IP 계정에서 트랜잭션을 실행합니다.
+
+| Method             |
+| ------------------ |
+| `execute_with_sig` |
+
+Parameters:
+
+- `ip_id`: 메타데이터를 설정할 IP입니다.
+- `to`: 트랜잭션의 수신자입니다.
+- `data`: 트랜잭션과 함께 전송할 데이터입니다.
+- `signer`: 트랜잭션의 서명자입니다.
+- `deadline`: 트랜잭션 서명의 만료 시간입니다.
+- `signature`: EIP-712로 인코딩된 트랜잭션 서명입니다.
+- `value`: \[Optional] 전송할 Ether 양입니다. **기본값: 0**
+- `tx_options`: \[Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.IPAccount.execute_with_sig(
+  ip_id="0x01",
+  to="0x1234567890123456789012345678901234567890",
+  data="0x1234567890123456789012345678901234567890",
+  signer="0x1234567890123456789012345678901234567890",
+  deadline=1000000000000000000,
+  signature="0x1234567890123456789012345678901234567890",
+  value=1000000000000000000,  # 1 ETH
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP to set the metadata for
+to: str  # The recipient of the transaction
+data: str  # The data to send along with the transaction
+signer: str  # The signer of the transaction
+deadline: int  # The deadline of the transaction signature
+signature: str  # The signature of the transaction, EIP-712 encoded
+value: int = 0  # Optional: The amount of Ether to send
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### transfer_erc20
+
+IP 계정에서 ERC20 토큰을 전송합니다.
+
+| Method           |
+| ---------------- |
+| `transfer_erc20` |
+
+Parameters:
+
+- `ip_id`: 계정의 `ipId`입니다.
+- `tokens`: 전송할 토큰 정보입니다.
+  - `tokens.address`: WIP 및 표준 ERC20을 포함한 ERC20 토큰의 주소입니다.
+  - `tokens.amount`: 전송할 토큰 양입니다.
+  - `tokens.target`: 수신자의 주소입니다.
+- `tx_options`: \[Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.IPAccount.transferERC20(
+  ip_id="0x01",
+  tokens=[
+    {
+        "address": "0x1514000000000000000000000000000000000000", # $WIP
+        "target": "0x02",
+        "amount": 1000000  # Equivalent to 0.001 ether
+    }
+  ]
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP to set the metadata for
+tokens: list  # The token info to transfer
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str, # The transaction hash
+}
+```
+
+</CodeGroup>

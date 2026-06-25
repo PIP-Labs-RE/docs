@@ -1,0 +1,147 @@
+---
+title: RainbowKit 설정
+description: DATA Foundation DApp에서 RainbowKit Wallet을 설정하는 방법을 알아봅니다.
+---
+
+<Note>
+**선택 사항: 공식 RainbowKit 문서**
+
+공식 Wagmi + RainbowKit 설치 문서는 [여기](https://www.rainbowkit.com/docs/installation)에서 확인하세요.
+
+</Note>
+
+## 종속성 설치
+
+<CodeGroup>
+
+```bash npm
+npm install --save @story-protocol/core-sdk @rainbow-me/rainbowkit wagmi viem @tanstack/react-query
+```
+
+```bash pnpm
+pnpm install @story-protocol/core-sdk viem
+```
+
+```bash yarn
+yarn add @story-protocol/core-sdk viem
+```
+
+</CodeGroup>
+
+## 설정
+
+예제로 들어가기 전에 두 가지가 설정되어 있는지 확인하세요:
+
+1. `.env` 파일에 `NEXT_PUBLIC_RPC_PROVIDER_URL`이 설정되어 있는지 확인하세요.
+   - 공용 기본값(`https://aeneid.datarpc.io`) 또는 [여기](/network/network-info/aeneid#rpcs)의 다른 RPC를 사용할 수 있습니다.
+2. `.env` 파일에 `NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID`가 설정되어 있는지 확인하세요. [Reown (이전 WalletConnect)](https://reown.com/)에 로그인하고 프로젝트를 생성하여 이를 수행하세요.
+
+<CodeGroup>
+
+```jsx Web3Providers.tsx
+"use client";
+import "@rainbow-me/rainbowkit/styles.css";
+import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { WagmiProvider } from "wagmi";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { PropsWithChildren } from "react";
+import { aeneid } from "@story-protocol/core-sdk";
+
+const config = getDefaultConfig({
+  appName: "Test DATA Foundation App",
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string,
+  chains: [aeneid],
+  ssr: true, // If your dApp uses server side rendering (SSR)
+});
+
+const queryClient = new QueryClient();
+
+export default function Web3Providers({ children }: PropsWithChildren) {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>
+          {children}
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+```
+
+```jsx layout.tsx
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { PropsWithChildren } from "react";
+import Web3Providers from "./Web3Providers";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Example",
+  description: "This is an Example DApp",
+};
+
+export default function RootLayout({ children }: PropsWithChildren) {
+  return (
+    <html lang="en">
+      <body>
+        <Web3Providers>
+          <ConnectButton />
+          {children}
+        </Web3Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+```jsx TestComponent.tsx
+import { custom, toHex } from 'viem';
+import { useWalletClient } from "wagmi";
+import { StoryClient, StoryConfig } from "@story-protocol/core-sdk";
+
+// example of how you would now use the fully setup sdk
+
+export default function TestComponent() {
+  const { data: wallet } = useWalletClient();
+
+  async function setupStoryClient(): Promise<StoryClient> {
+    const config: StoryConfig = {
+      wallet: wallet,
+      transport: custom(wallet!.transport),
+      chainId: "aeneid",
+    };
+    const client = StoryClient.newClient(config);
+    return client;
+  }
+
+  async function registerIp() {
+    const client = await setupStoryClient();
+    const response = await client.ipAsset.registerIpAsset({
+      nft: {
+        type: 'minted',
+        nftContract: '0x01...',
+        tokenId: '1',
+      }
+      ipMetadata: {
+        ipMetadataURI: "test-metadata-uri",
+        ipMetadataHash: toHex("test-metadata-hash", { size: 32 }),
+        nftMetadataURI: "test-nft-metadata-uri",
+        nftMetadataHash: toHex("test-nft-metadata-hash", { size: 32 }),
+      }
+    });
+    console.log(
+      `Root IPA created at tx hash ${response.txHash}, IPA ID: ${response.ipId}`
+    );
+  }
+
+  return (
+    {/* */}
+  )
+}
+```
+
+</CodeGroup>

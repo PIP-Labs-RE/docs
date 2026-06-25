@@ -1,0 +1,166 @@
+---
+title: IP Account
+description: IPAccountClient를 사용하면 IP Account 메타데이터를 관리하고 트랜잭션을 실행할 수 있습니다.
+---
+
+## IPAccountClient
+
+### 메서드
+
+- setIpMetadata
+- execute
+- executeWithSig
+- transferErc20
+
+### setIpMetadata
+
+IP asset에 대한 metadataURI를 설정합니다.
+
+| Method          | Type                                    |
+| --------------- | --------------------------------------- |
+| `setIpMetadata` | `(SetIpMetadataRequest) => Promis<Hex>` |
+
+매개변수:
+
+- `request.ipId`: 메타데이터를 설정할 IP.
+- `request.metadataURI`: IP asset에 대해 설정할 metadataURI. [IPA Metadata Standard](/concepts/ip-asset/ipa-metadata-standard)에 맞는 메타데이터를 가리키는 URL이어야 합니다.
+- `request.metadataHash`: metadataURI에 있는 메타데이터의 해시.
+
+<CodeGroup>
+
+```typescript TypeScript
+const txHash = await client.ipAccount.setIpMetadata({
+  ipId: "0x01",
+  metadataURI:
+    "https://ipfs.io/ipfs/bafkreiardkgvkejqnnkdqp4pamkx2e5bs4lzus5trrw3hgmoa7dlbb6foe",
+  // example hash (not accurate)
+  metadataHash:
+    "0x129f7dd802200f096221dd89d5b086e4bd3ad6eafb378a0c75e3b04fc375f997",
+});
+```
+
+```typescript Request Type
+export type SetIpMetadataRequest = {
+  ipId: Address;
+  metadataURI: string;
+  metadataHash: Hex;
+};
+```
+
+</CodeGroup>
+
+### execute
+
+IP Account에서 트랜잭션을 실행합니다.
+
+| Method    | Type                                                            |
+| --------- | --------------------------------------------------------------- |
+| `execute` | `(IPAccountExecuteRequest) => Promis<IPAccountExecuteResponse>` |
+
+매개변수:
+
+- `request.ipId`: ip account를 얻을 Ip Id.
+- `request.to`: 트랜잭션의 수신자.
+- `request.value`: 보낼 Ether의 양.
+- `request.data`: 트랜잭션과 함께 보낼 데이터.
+
+<CodeGroup>
+
+```typescript Request Type
+export type IPAccountExecuteRequest = {
+  ipId: Address;
+  to: Address;
+  value: number;
+  data: Hex;
+};
+```
+
+```typescript Response Type
+export type IPAccountExecuteResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+};
+```
+
+</CodeGroup>
+
+### executeWithSig
+
+IP Account에서 트랜잭션을 실행합니다.
+
+| Method           | Type                                                            |
+| ---------------- | --------------------------------------------------------------- |
+| `executeWithSig` | `(IPAccountExecuteRequest) => Promis<IPAccountExecuteResponse>` |
+
+매개변수:
+
+- `request.ipId`: ip account를 얻을 Ip Id.
+- `request.to`: 트랜잭션의 수신자.
+- `request.data`: 트랜잭션과 함께 보낼 데이터.
+- `request.signer`: 트랜잭션의 서명자.
+- `request.deadline`: 트랜잭션 서명의 마감 시간.
+- `request.signature`: 트랜잭션의 서명, EIP-712 인코딩.
+- `request.value`: \[선택] 보낼 Ether의 양.
+
+<CodeGroup>
+
+```typescript Request Type
+export type IPAccountExecuteWithSigRequest = {
+  ipId: Address;
+  to: Address;
+  data: Hex;
+  signer: Address;
+  deadline: number | bigint | string;
+  signature: Address;
+  value?: number | bigint | string;
+};
+```
+
+```typescript Response Type
+export type IPAccountExecuteWithSigResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+};
+```
+
+</CodeGroup>
+
+### transferErc20
+
+IP Account에서 ERC20 토큰을 전송합니다.
+
+| Method          | Type                                                              |
+| --------------- | ----------------------------------------------------------------- |
+| `transferErc20` | `(request: TransferErc20Request) => Promise<TransactionResponse>` |
+
+매개변수:
+
+- `request.ipId`: 계정의 `ipId`
+- `request.tokens`: 전송할 토큰 정보
+  - `request.tokens.address`: WIP 및 표준 ERC20을 포함한 ERC20 토큰의 주소.
+  - `request.tokens.amount`: 전송할 토큰의 양
+  - `request.tokens.target`: 수신자의 주소.
+
+<CodeGroup>
+
+```typescript Request Type
+export type TransferErc20Request = {
+  ipId: Address;
+  tokens: {
+    address: Address;
+    amount: bigint | number;
+    target: Address;
+  }[];
+};
+```
+
+```typescript Response Type
+export type TransactionResponse = {
+  txHash: Hex;
+
+  /** Transaction receipt, only available if waitForTransaction is set to true */
+  receipt?: TransactionReceipt;
+};
+```
+
+</CodeGroup>

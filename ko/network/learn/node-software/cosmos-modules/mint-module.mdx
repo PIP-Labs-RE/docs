@@ -1,0 +1,71 @@
+---
+title: 토큰 발행 모듈
+description: DATA 네트워크에서 토큰 발행 및 인플레이션을 담당하는 모듈
+---
+## 목차
+
+1. [목차](#contents)
+2. [상태](#state)
+3. [Begin Block](#begin-block)
+4. [매개변수](#parameters)
+5. [이벤트](#events)
+
+## 상태
+
+### Params
+
+* Params: `mint/params -> legacy_amino(params)`
+
+```protobuf protobuf
+message Params {
+  option (amino.name) = "client/x/mint/Params";
+
+  // type of coin to mint
+  string mint_denom = 1;
+  // inflation amount per year
+  string inflations_per_year = 2 [
+    (cosmos_proto.scalar)  = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable)   = false
+  ];
+  // expected blocks per year
+  uint64 blocks_per_year = 3;
+}
+```
+
+## Begin Block
+
+각 블록의 시작 시점에 발행 매개변수가 계산되고 인플레이션이 지급됩니다.
+
+### 인플레이션 양 계산
+
+인플레이션 양은 `NewAppModule` 함수에 전달되는 "인플레이션 계산 함수(inflation calculation function)"를 사용하여 계산됩니다.\
+함수가 전달되지 않으면 SDK의 기본 인플레이션 함수(`DefaultInflationCalculationFn`)가 사용됩니다. 사용자 정의 인플레이션 계산 로직이 필요한 경우 `InflationCalculationFn`의 시그니처에 맞는 함수를 정의하여 전달하면 됩니다.
+
+```go
+type InflationCalculationFn func(ctx sdk.Context, minter Minter, params Params, bondedRatio math.LegacyDec) math.LegacyDec
+```
+
+## 매개변수
+
+발행 모듈은 다음과 같은 매개변수를 포함합니다:
+
+| 키                | 타입            | 예시                |
+| ----------------- | --------------- | ------------------- |
+| MintDenom         | string          | "stake"             |
+| InflationsPerYear | string (dec)    | "20000000000000000" |
+| BlocksPerYear     | string (uint64) | "10368000"          |
+
+* `MintDenom`은 사용되는 코인 단위입니다.
+* `InflationsPerYear`는 1e18 소수점 단위로 표시되는 연간 목표 인플레이션입니다.
+* `BlocksPerYear`는 연간 목표 블록 수입니다.
+
+## 이벤트
+
+발행 모듈은 다음과 같은 이벤트를 발생시킵니다:
+
+### BeginBlocker
+
+| 타입 | 속성 키       | 속성 값          |
+| :--- | :------------ | :-------------- |
+| mint | amount        | "1000"          |

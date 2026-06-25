@@ -1,0 +1,79 @@
+---
+title: 개발자 개요
+sidebarTitle: 개요
+description: 프로토콜 위에서 빌드하려는 개발자를 위한 가이드입니다.
+---
+
+개발자라면, 필요한 모든 것이 여기에 있습니다:
+
+<Tip>
+
+찾고 싶은 게 없으신가요? 저희 [Builder Discord](https://discord.gg/databuilders)에서 문서 작성자에게 도움을 요청하세요.
+
+</Tip>
+
+<CardGroup cols={3}>
+
+<Card
+  title="테스트넷 블록 익스플로러"
+  href="https://aeneid.datanetscan.io"
+  icon="house"
+>
+  DATA Foundation의 모든 테스트넷 블록 및 트랜잭션 데이터를 확인하세요.
+</Card>
+
+<Card
+  title="IP 관련 익스플로러"
+  href="https://aeneid.explorer.datafdn.org"
+  icon="user"
+>
+  등록, 라이선싱 등 IP 상호작용과 관련된 테스트넷 트랜잭션 데이터를
+  확인하세요.
+</Card>
+
+<Card
+  title="빠른 시작"
+  href="/quickstart"
+  icon="truck-fast"
+  
+>
+  DATA Foundation에서 빠르게 빌드를 시작하세요.
+</Card>
+  
+</CardGroup>
+
+## Confidential Data Rails (CDR)
+
+CDR은 DATA Foundation에서 기밀 데이터를 암호화하고, 저장하고, 접근을 게이팅하는 주요 방법입니다.
+
+- [CDR SDK 가이드](/developers/cdr-sdk/overview) - 설정부터 데이터 암호화, IP Asset 라이선스에 의한 게이팅까지 `@piplabs/cdr-sdk`의 단계별 가이드 **_(작동하는 코드 포함)_**
+- [CDR SDK 참조](/sdk-reference/cdr/overview) - CDR SDK의 모든 함수에 대한 자세한 **설명과 예제**
+
+## Trace
+
+[Trace](/trace/overview)는 데이터 출처 및 감사 레이어입니다. 프로바이더는 간단한 REST API를 통해 통합합니다. [Trace 통합 가이드](/trace/integration)를 참조하세요.
+
+## IP & 라이선싱 SDK
+
+CDR이 기반하는 권리 계층:
+
+- [SDK 참조](/sdk-reference) - 각 함수에 대한 자세한 **설명과 예제**가 포함된 전체 SDK 참조를 확인하세요 **_(바로 코딩을 시작할 수 있는 작동하는 코드 포함)_**
+- [TypeScript SDK 가이드](/developers/typescript-sdk/overview) - IP 등록, 조건 첨부 및 라이선스 발행 방법에 대한 자세한 단계별 가이드 **_(바로 코딩을 시작할 수 있는 작동하는 코드 포함)_**
+- [튜토리얼](/developers/tutorials/how-to-register-ip) - "DATA Foundation에서 음악을 등록하려면 어떻게 하나요?" 및 "SDK로 지갑 없는 온보딩을 구현하려면 어떻게 하나요?" 같은 더 구체적인 주제 **_(바로 코딩을 시작할 수 있는 작동하는 코드 포함)_**
+
+## 스마트 컨트랙트
+
+프로토콜을 배우기 위한 다음 리소스를 확인하세요:
+
+- [스마트 컨트랙트 가이드](/developers/smart-contracts-guide/overview) - 프로토콜의 가장 인기 있는 사용을 설정하고 구현하는 방법에 대한 가이드 **_(바로 코딩을 시작할 수 있는 작동하는 코드 포함)_**
+- [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts) - 배포된 모든 프로토콜 주소
+
+<Warning>
+  의사 난수에 `RANDAO`를 사용하지 말고, 대신 온체인 VRF(Pyth 또는 Gelato)를
+  사용하세요. 현재 `RANDAO` 값은 부모 블록 해시로 설정되어 있으므로 X-1
+  블록에 대해 무작위가 아닙니다.
+</Warning>
+
+## API
+
+[API 참조](/api-reference)를 확인하세요.

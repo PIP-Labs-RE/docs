@@ -1,0 +1,153 @@
+---
+title: Permissions
+description: Permission을 사용하면 DATA Foundation 내의 IP 계정 권한을 관리할 수 있습니다.
+---
+
+## Permission
+
+### Methods
+
+- set_permission
+- create_set_permission_signature
+- set_all_permissions
+
+### set_permission
+
+특정 함수 호출에 대한 권한을 설정합니다.
+
+각 정책은 IP 계정 주소에서 서명자 주소, 수신자
+주소, 함수 셀렉터, 권한 레벨로의 매핑으로 표현됩니다. 권한 레벨은 0 (ABSTAIN), 1 (ALLOW), 또는
+2 (DENY)일 수 있습니다.
+
+기본적으로 모든 정책은 0 (ABSTAIN)으로 설정되며, 이는 권한이 설정되지 않았음을 의미합니다. IP 계정 소유자는 기본적으로 모든 권한을 가집니다.
+
+| Method           |
+| ---------------- |
+| `set_permission` |
+
+Parameters:
+
+- `ip_id`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+- `to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+- `permission`: 새로운 권한 레벨입니다.
+- `func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+set_permission_response = story_client.Permission.set_permission(
+  ip_id="0x01",
+  signer="0x1234567890123456789012345678901234567890",
+  to="0x2345678901234567890123456789012345678901",
+  permission=1,  # ALLOW
+  func="0x12345678"  # Optional function selector
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP ID that grants the permission for signer
+signer: str  # The address that can call to on behalf of the ipAccount
+to: str  # The address that can be called by the signer (currently only modules can be to)
+permission: int  # The new permission level (0=ABSTAIN, 1=ALLOW, 2=DENY)
+func: str = "0x00000000"  # Optional: The function selector string
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### create_set_permission_signature
+
+특정 권한이 서명을 통해 와일드카드 권한을 재정의합니다.
+
+| Method                            |
+| --------------------------------- |
+| `create_set_permission_signature` |
+
+Parameters:
+
+- `ip_id`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+- `to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+- `permission`: 새로운 권한 레벨입니다.
+- `func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+- `deadline`: [Optional] 서명의 만료 시간(밀리초)이며, 기본값은 1000ms입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.PermissionClient.create_set_permission_signature(
+  ip_id="0x01",
+  signer="0x1234567890123456789012345678901234567890",
+  to="0x2345678901234567890123456789012345678901",
+  permission=1,  # ALLOW
+  func="0x12345678",  # Optional function selector
+  deadline=1000  # Optional deadline in milliseconds
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP ID that grants the permission for signer
+signer: str  # The address that can call to on behalf of the ipAccount
+to: str  # The address that can be called by the signer (currently only modules can be to)
+permission: int  # The new permission level (0=ABSTAIN, 1=ALLOW, 2=DENY)
+func: str = "0x00000000"  # Optional: The function selector string
+deadline: int = None  # Optional: The deadline for the signature in milliseconds
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### set_all_permissions
+
+모든 모듈에 걸친 모든 함수에 대해 서명자에게 권한을 설정합니다.
+
+| Method                |
+| --------------------- |
+| `set_all_permissions` |
+
+Parameters:
+
+- `ip_id`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `signer`: 권한을 받는 서명자의 주소입니다.
+- `permission`: 새로운 권한입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.PermissionClient.set_all_permissions(
+  ip_id="0x01",
+  signer="0x1234567890123456789012345678901234567890",
+  permission=1  # ALLOW
+)
+```
+
+```python Request Parameters
+ip_id: str  # The IP ID that grants the permission for signer
+signer: str  # The address of the signer receiving the permissions
+permission: int  # The new permission level (0=ABSTAIN, 1=ALLOW, 2=DENY)
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>

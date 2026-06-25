@@ -1,0 +1,127 @@
+---
+title: 릴리즈 노트
+description: DATA Foundation 실행 및 컨센서스 클라이언트 소프트웨어 릴리즈 정보
+---
+
+이 페이지에서는 story 실행 및 컨센서스 클라이언트 소프트웨어 릴리즈 정보를 제공합니다. 실행 클라이언트 릴리즈는 [story-geth](https://github.com/piplabs/story-geth/releases) 저장소에서, 컨센서스 클라이언트 릴리즈는 [story](https://github.com/piplabs/story/releases) 저장소에서 찾을 수 있습니다.
+
+### 프로덕션 릴리즈
+
+릴리즈는 일반적으로 네 가지 유형이 있습니다:
+
+- Major: 미리 정의된 업그레이드 높이로 하드포크 업그레이드가 필요합니다. 노드 운영자는 해당 높이 이전 또는 그 시점에 업그레이드해야 합니다. 이 릴리즈는 마이너 버전 번호를 증가시킵니다.
+- Minor: 하드포크 업그레이드가 필요하지 않습니다. 노드 운영자는 가능한 빨리 바이너리를 업그레이드해야 합니다. 이 릴리즈는 패치 버전 번호를 증가시킵니다.
+- Fix: 긴급 수정입니다. 노드 운영자는 가능한 빨리 바이너리를 업그레이드해야 합니다. 이 릴리즈는 마이너 버전 또는 패치 버전 번호를 증가시킵니다.
+- Optional: 선택적 수정입니다. 노드 운영자는 필요에 따라 바이너리를 업그레이드할 수 있습니다. 이 릴리즈는 패치 버전 번호를 증가시킵니다.
+
+각 릴리즈에는 새로운 기능 또는 수정 사항 목록을 설명하는 릴리즈 노트가 함께 제공됩니다. 릴리즈된 소프트웨어 바이너리도 릴리즈 노트에 첨부됩니다. 현재 darwin-amd64, darwin-arm64, linux-amd64, linux-arm64의 네 가지 시스템 유형을 지원하는 바이너리를 제공합니다. 릴리즈 노트의 커밋 해시를 사용하여 바이너리를 직접 빌드할 수도 있습니다.
+
+### 릴리즈 항목
+
+다음 릴리즈 매트릭스를 참조하여 메인넷 및 Aeneid 테스트넷용 노드를 실행하세요.
+
+| Network | story-geth        | story            |
+| ------- | ----------------- | ---------------- |
+| Mainnet | v1.2.0 (Yasunari) | v1.4.2 (Terence) |
+| Aeneid  | v1.2.0 (Yasunari) | v1.4.2 (Terence) |
+
+<Update label="2025-12-12" description="Terence (Story v1.4.2)">
+    ### Terence
+    [전체 릴리즈 노트](https://github.com/piplabs/story/releases/tag/v1.4.2)
+
+        <Accordion title="Fix">
+            - 보안 수정
+        </Accordion>
+
+</Update>
+
+<Update label="2025-08-08" description="Polybius (Story v1.3.3)">
+    ### Polybius
+    [전체 릴리즈 노트](https://github.com/piplabs/story/releases/tag/v1.3.3)
+
+        <Accordion title="Fix">
+            - v1.3.3 (#598) 릴리즈에 대한 수정 사항 백포트
+        </Accordion>
+
+</Update>
+
+<Update label="2025-08-08" description="Polybius (Story v1.3.2)">
+    ### Polybius
+    [전체 릴리즈 노트](https://github.com/piplabs/story/releases/tag/v1.3.2)
+
+        <Accordion title="Fix">
+            - 최대 검증자 수를 64에서 80으로 증가
+        </Accordion>
+
+</Update>
+
+<Update label="2025-07-23" description="Polybius (Story v1.3.1)">
+    ### Polybius
+    [전체 릴리즈 노트](https://github.com/piplabs/story/releases/tag/v1.3.1)
+
+        <Accordion title="Fix">
+           버전별 잔여 보상 처리
+        </Accordion>
+
+</Update>
+
+<Update label="2025-06-19" description="Cosmas (Geth v1.1.1)">
+    ### Cosmas
+    [전체 릴리즈 노트](https://github.com/piplabs/story-geth/releases)
+
+        <Accordion title="포함된 EIP">
+           메인넷용 Pectra 업그레이드 활성화
+        </Accordion>
+
+</Update>
+
+<Update label="2025-05-20" description="Cosmas (Geth v1.1.0)">
+    ### Cosmas (테스트넷 전용)
+    [전체 릴리즈 노트](https://github.com/piplabs/story-geth/releases)
+
+        <Accordion title="포함된 EIP">
+            - EIP-7702 – EOA 계정 코드 설정
+            - EIP-2537 – BLS12-381 곡선 연산
+            - EIP-7623 – calldata 비용 증가
+            - EIP-7685 – 실행 계층 요청 (EIP-7685)
+        </Accordion>
+
+</Update>
+
+<Update label="2025-05-02" description="Ovid (Story v1.2.0)">
+    ### Ovid
+    [전체 릴리즈 노트](https://github.com/piplabs/story/releases/tag/v1.2.0)
+
+    <AccordionGroup>
+        <Accordion title="기능">
+            - (app) 컨센서스 파라미터에서 블록의 MaxBytes 변경 (#529)
+            - (x/evmengine) 실행 엔진을 위한 snap sync 지원 (#506)
+            - (cli) 검증자 개인 키에 대한 암호화 추가 (#494)
+            - (cli) with-comet 플래그 추가 (#518)
+            - (api) 출금 큐 쿼리 추가 (#496)
+        </Accordion>
+
+        <Accordion title="수정">
+
+            - (app) cosmos tx에서 내보내지 않은 필드 비허용 (#529)
+            - (x/evmengine) tx의 최대 크기에 대한 검증 추가 (#529)
+            - (cli) 검증자 생성 중 검증자 not found 오류 수정 (#515)
+            - (cli) 최대 수수료 변경률에 대한 검증 추가 (#489)
+            - (cli) unjail 명령에 자체 위임 검증 추가 (#510)
+            - (api) 정수 타입 간의 잘못된 타입 변환 수정 (#492)
+        </Accordion>
+    </AccordionGroup>
+
+</Update>
+
+<Update label="2025-02-26" description="Homer (Geth v1.0.2)">
+    ### Ovid
+    [전체 릴리즈 노트](https://github.com/piplabs/story-geth/releases/tag/v1.0.2)
+
+        <Accordion title="수정">
+
+            - [ipgraph] add parent의 gas 계산에서 오버플로 방지 (#102)
+            - [ipgraph] hasAncestorIp 함수에 acl 적용 (#106)
+        </Accordion>
+
+</Update>

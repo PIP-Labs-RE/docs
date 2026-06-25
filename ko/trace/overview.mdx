@@ -1,0 +1,95 @@
+---
+title: "Trace 개요"
+description: "DATA Foundation에 등록된 데이터에 대한 검증 가능하고 제공자 표준화된 출처."
+icon: "fingerprint"
+---
+
+<Note>
+  Trace는 현재 스테이징 환경에서 사용할 수 있습니다. 스테이징 API를 기준으로
+  통합을 구축하고 테스트하세요. 정식 릴리스 전까지 스키마와 엔드포인트는
+  안정적이지만 발전하는 상태로 간주해 주세요.
+</Note>
+
+## Trace란 무엇인가요?
+
+**Trace**는 DATA Foundation의 데이터 출처 및 감사 계층입니다. 데이터 제공자는 자신이 다루는 콘텐츠에 대한
+정규화된 메타데이터(콘텐츠 해시, 지각 해시, 기여자 동의, KYC 신호, 캡처/업로드 동작 등)를
+DATA Foundation으로 전송하며, DATA Foundation은 각 레코드에 글로벌 `data_id`를 부여하고,
+추가 전용 메타데이터 이력을 저장하며, 전체 데이터셋에 대한 공개 감사 뷰를 노출합니다.
+
+그 결과 **데이터가 어디에서 왔고 어떤 조건으로 기여되었는지**에 대한 휴대 가능하고,
+쿼리 가능하며, 검증 가능한 레코드가 통합된 모든 제공자에 걸쳐 제공됩니다(단일 제공자에 국한되지 않음).
+
+```text
+Provider client
+  -> story-api webhook batch endpoint   (write: register + metadata updates)
+  -> asynchronous DATA Foundation processing       (assigns data_id, hashes events)
+  -> story-api read/search/stats         (public audit views)
+```
+
+## Trace가 어디에 위치하는가
+
+<CardGroup cols={3}>
+  <Card title="Trace: 출처(provenance)" icon="fingerprint">
+    제공자 표준화된 스키마와 공개 감사 뷰로 데이터의 출처, 동의, 계보를 증명합니다.
+  </Card>
+  <Card title="CDR: 기밀성(confidentiality)" icon="lock" href="/developers/cdr-sdk/overview">
+    온체인 액세스 제어로 임계값 복호화를 게이팅하면서 기본 데이터를 암호화된 상태로 유지합니다.
+  </Card>
+  <Card title="IP 및 라이선싱: 권리(rights)" icon="scroll" href="/concepts/ip-asset/overview">
+    데이터의 소유자와 사용 조건을 정의합니다.
+  </Card>
+</CardGroup>
+
+이 세 가지가 결합되어 제공자는 **증명 가능하고**(Trace),
+**기밀이며**(CDR), **명확한 사용 권리에 의해 통제되는**(IP 및 라이선싱) 데이터를 등록할 수 있습니다.
+
+## Trace 스키마
+
+모든 제공자는 자체 페이로드를 단일 공유 형태인 **Trace
+스키마**(`schema_version: trace-v1.0`)에 매핑하며, 제공자별 세부 정보가 손실되지 않도록 전체 원본
+페이로드를 `provider_payload` 아래에 포함합니다. 정규화된 필드는 Trace 프론트엔드,
+감사 흐름 및 기타 모든 제공자가 의존하는 휴대 가능한 계약입니다.
+
+스키마에는 다음이 포함됩니다:
+
+- **`file`**: 콘텐츠 해시(`content_sha256`), MIME 타입, 미디어 카테고리,
+  지각 해시(`phash64`, `dhash64`, `ahash64`, 키프레임 해시), 그리고
+  비PII 캡처/업로드 동작 신호.
+- **`user` / `contributor`**: KYC 상태 및 국가, 세금 상태, 계정
+  검증 상태, 그리고 기여자가 수락한 정확한 서비스 약관 / 개인정보 처리방침
+  버전, 해시 및 URI.
+- **`app`**: 통합 뒤에 있는 플랫폼 이름과 법적 주체.
+- **`timestamps`**: 콘텐츠가 캡처, 업로드 및 발생한 시점.
+- **`attestation`**: 페이로드 해시 및 독립 검증을 위한 선택적 제공자
+  서명.
+- **`provider_payload`**: 제공자의 전체 원본 공개 페이로드.
+
+## 제공자 통합 방법
+
+통합은 API 키와 제공자 스코프로 인증되는 REST 흐름이며, SDK가
+필요하지 않습니다.
+
+<CardGroup cols={2}>
+  <Card title="통합 가이드" icon="plug" href="/trace/integration">
+    완전한 쓰기, 읽기, 검색, 스코프 그룹 API, Trace 스키마,
+    그리고 제한/재시도 동작.
+  </Card>
+  <Card title="제공자 되기" icon="discord" href="https://discord.gg/databuilders">
+    제공자 스코프와 스테이징 API 키를 받으려면 문의하세요.
+  </Card>
+</CardGroup>
+
+제공자는:
+
+1. 제공자 스코프(예: `X-Provider: kled`)와 API 키를 받습니다.
+2. 웹훅 엔드포인트를 통해 배치로 레코드를 등록하며, 정규화된
+   Trace 필드와 전체 원본 페이로드를 함께 전송합니다.
+3. KYC, 동의 또는 기타 변경 가능한 필드가 변경됨에 따라 시간이 지나면서 메타데이터 업데이트를
+   제출합니다. 각 업데이트는 전체 최신 상태이며 독립적으로 검증 가능합니다.
+4. 제공자 정책 엔드포인트를 통해 활성 서비스 약관과 개인정보 처리방침을
+   설정합니다.
+
+읽기, 검색, 통계, 피드, 스코프 그룹 요약은 글로벌 `data_id`로
+인덱싱된 **공개 감사 뷰**이며, 선택적 필터로 `provider`를 사용할 수
+있습니다.

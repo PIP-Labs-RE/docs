@@ -1,0 +1,143 @@
+---
+title: Permissions
+description: PermissionClient를 사용하면 DATA Foundation 내의 IP 계정 권한을 관리할 수 있습니다.
+---
+
+## PermissionClient
+
+### Methods
+
+- setPermission
+- createSetPermissionSignature
+- setAllPermissions
+- setBatchPermissions
+- createBatchPermissionSignature
+
+### setPermission
+
+특정 함수 호출에 대한 권한을 설정합니다.
+
+각 정책은 IP 계정 주소에서 서명자 주소, 수신자\
+주소, 함수 셀렉터, 권한 레벨로의 매핑으로 표현됩니다. 권한 레벨은 0 (ABSTAIN), 1 (ALLOW), 또는\
+2 (DENY)일 수 있습니다.
+
+기본적으로 모든 정책은 0 (ABSTAIN)으로 설정되며, 이는 권한이 설정되지 않았음을 의미합니다. IP 계정 소유자는 기본적으로 모든 권한을 가집니다.
+
+| Method          | Type                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| `setPermission` | `(request: SetPermissionsRequest) => Promise<SetPermissionsResponse>` |
+
+Parameters:
+
+- `request.ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `request.signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+- `request.to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+- `request.permission`: 새로운 권한 레벨입니다.
+- `request.func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+
+```typescript Response Type
+export type SetPermissionsResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  success?: boolean;
+};
+```
+
+### createSetPermissionSignature
+
+특정 권한이 서명을 통해 와일드카드 권한을 재정의합니다.
+
+| Method                         | Type                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| `createSetPermissionSignature` | `(request: CreateSetPermissionSignatureRequest) => Promise<SetPermissionsResponse>` |
+
+Parameters:
+
+- `request.ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `request.signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+- `request.to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+- `request.permission`: 새로운 권한 레벨입니다.
+- `request.func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+- `request.deadline`: [Optional] 서명의 만료 시간(밀리초)이며, 기본값은 1000ms입니다.
+
+```typescript Response Type
+export type SetPermissionsResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  success?: boolean;
+};
+```
+
+### setAllPermissions
+
+모든 모듈에 걸친 모든 함수에 대해 서명자에게 권한을 설정합니다.
+
+| Method              | Type                                                                     |
+| ------------------- | ------------------------------------------------------------------------ |
+| `setAllPermissions` | `(request: SetAllPermissionsRequest) => Promise<SetPermissionsResponse>` |
+
+Parameters:
+
+- `request.ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `request.signer`: 권한을 받는 서명자의 주소입니다.
+- `request.permission`: 새로운 권한입니다.
+
+```typescript Response Type
+export type SetPermissionsResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  success?: boolean;
+};
+```
+
+### setBatchPermissions
+
+단일 트랜잭션에서 여러 권한을 일괄 설정합니다.
+
+| Method                | Type                                                                       |
+| --------------------- | -------------------------------------------------------------------------- |
+| `setBatchPermissions` | `(request: SetBatchPermissionsRequest) => Promise<SetPermissionsResponse>` |
+
+Parameters:
+
+- `request.permissions[]`: 설정할 권한을 나타내는 `Permission` 구조체의 배열입니다.
+  - `request.permissions[].ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+  - `request.permissions[].signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+  - `request.permissions[].to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+  - `request.permissions[].permission`: 새로운 권한 레벨입니다.
+  - `request.permissions[].func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+- `request.deadline`: [Optional] 서명의 만료 시간(밀리초)이며, 기본값은 1000ms입니다.
+
+```typescript Response Type
+export type SetPermissionsResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  success?: boolean;
+};
+```
+
+### createBatchPermissionSignature
+
+서명을 사용하여 단일 트랜잭션에서 여러 권한을 일괄 설정합니다.
+
+| Method                           | Type                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `createBatchPermissionSignature` | `(request: CreateBatchPermissionSignatureRequest) => Promise<SetPermissionsResponse>` |
+
+Parameters:
+
+- `request.ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+- `request.permissions[]` - 설정할 권한을 나타내는 `Permission` 구조체의 배열입니다.
+  - `request.permissions[].ipId`: `signer`에게 권한을 부여하는 IP ID입니다.
+  - `request.permissions[].signer`: `ipAccount`를 대신하여 `to`를 호출할 수 있는 주소입니다.
+  - `request.permissions[].to`: `signer`가 호출할 수 있는 주소입니다 (현재 `to`는 모듈만 가능합니다).
+  - `request.permissions[].permission`: 새로운 권한 레벨입니다.
+  - `request.permissions[].func`: [Optional] `signer`가 `ipAccount`를 대신해 호출할 수 있는 `to`의 함수 셀렉터 문자열입니다. 기본적으로 모든 함수를 허용합니다.
+
+```typescript Response Type
+export type SetPermissionsResponse = {
+  txHash?: Hex;
+  encodedTxData?: EncodedTxData;
+  success?: boolean;
+};
+```

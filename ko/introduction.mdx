@@ -1,0 +1,128 @@
+---
+title: "소개"
+sidebarTitle: "소개"
+description: "DATA Foundation: 데이터의 출처를 증명하고, 기밀성을 유지하며, 데이터에 대한 권리를 정의합니다."
+icon: hand-wave
+---
+
+<Frame>
+  <img src="/images/df-banner.png" alt="The DATA Foundation" />
+</Frame>
+
+## DATA Foundation
+
+DATA Foundation은 목적에 맞게 설계된 레이어 1 블록체인 위에 구축된, 데이터를 위한 보금자리입니다. 이곳에서 데이터에는 출처, 기밀성 수준, 그리고 명확한 권리가 부여되며, 이 모든 것이 간단한 API를 통해 프로그래밍 가능합니다.
+
+DATA Foundation의 모든 데이터는 다음을 갖출 수 있습니다:
+
+- **증명 가능(Proven)**: 데이터의 출처와 기여 조건에 대한 검증 가능하고 이동성 있는 기록
+- **기밀(Confidential)**: 권한을 부여한 당사자만 복호화할 수 있도록 암호화됨
+- **거버넌스(Governed)**: 투명한 온체인 조건에 따라 소유, 라이선싱, 수익화됨
+
+<Note>
+  데이터는 이미지, 음악, 데이터셋, RWA, AI 학습 데이터, 또는 그 사이의 어떤 것도 될 수 있습니다.
+</Note>
+
+## 세 가지 계층
+
+<CardGroup cols={3}>
+  <Card title="Trace: 출처 증명" icon="fingerprint" href="/trace/overview">
+    검증 가능하고 제공자별로 정규화된 출처 정보: 콘텐츠 해시, 기여자 동의, KYC 신호를 제공하며, 전체 데이터셋에 대한 공개 감사 뷰를 지원합니다.
+  </Card>
+  <Card
+    title="CDR: 기밀성"
+    icon="lock"
+    href="/developers/cdr-sdk/overview"
+  >
+    Confidential Data Rails: 데이터를 임계값 암호화하고 온체인 접근 제어로 복호화를 게이팅합니다. 어떤 단일 당사자도 전체 키를 보유하지 않습니다.
+  </Card>
+  <Card title="IP & 라이선싱: 권리" icon="scroll" href="/concepts/overview">
+    데이터를 IP로 등록하고 누가 어떻게 사용할 수 있는지 정의하는 온체인 라이선스 조항을 부여합니다. 다른 두 계층이 그 위에 구축되는 권리 계층입니다.
+  </Card>
+</CardGroup>
+
+이들이 결합되면 DATA Foundation에 **증명 가능**(Trace), **기밀성 유지**(CDR), **명확한 사용 권리에 따라 거버넌스되는**(IP & 라이선싱) 데이터를 올릴 수 있습니다.
+
+## 빌드 시작하기
+
+<CardGroup cols={2}>
+  <Card title="빠른 시작" icon="flag-checkered" href="/quickstart">
+    네트워크를 추가하고, 코드 예제를 가져와 첫 번째 통합을 출시하세요.
+  </Card>
+  <Card
+    title="CDR SDK"
+    icon="screwdriver-wrench"
+    href="/developers/cdr-sdk/overview"
+  >
+    `@piplabs/cdr-sdk`로 기밀 데이터를 암호화하고, 저장하며, 접근을 제어하세요.
+  </Card>
+  <Card title="Trace 통합" icon="plug" href="/trace/integration">
+    SDK 없이 간단한 REST API로 데이터 출처를 등록하세요.
+  </Card>
+  <Card title="SDK 레퍼런스" icon="book" href="/sdk-reference">
+    CDR, Protocol, Python SDK의 모든 함수와 작동 예제를 확인하세요.
+  </Card>
+</CardGroup>
+
+## 전체 구성
+
+DATA Network는 EVM과 Cosmos SDK의 장점을 결합한 목적 지향형 레이어 1입니다. 100% EVM 호환이며, 복잡한 데이터 구조(예: IP 그래프)를 몇 초 안에 미미한 비용으로 탐색할 수 있도록 실행 계층이 최적화되어 있고, 빠른 파이널리티와 저렴한 트랜잭션을 위한 CometBFT 기반 합의 계층을 갖추고 있습니다.
+
+네트워크 위에서 세 계층이 결합됩니다:
+
+- **Trace**는 데이터가 어디서 왔는지와 어떤 조건으로 기여되었는지를 기록합니다.
+- **CDR**은 해당 데이터를 암호화 상태로 유지하고, 종종 아래에서 정의된 라이선스에 따라 온체인에서 복호화를 게이팅합니다.
+- **IP & 라이선싱**은 데이터를 [🧩 IP 자산](/concepts/ip-asset)으로 등록하고 [📜 Licensing Module](/concepts/licensing-module)을 통해 투명한 조건을 부여합니다. 이 조건은 온체인에서 집행되지만, 오프체인 법적 계약인 [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)에 매핑됩니다.
+
+<Accordion title="왜 DATA Foundation인가?" icon="face-thinking">
+데이터는 AI 시대의 가장 가치 있는 자산이지만, 이를 공유하기 위해 사용하는 시스템들은 데이터를 위해 설계되지 않았습니다. 창작자는 자신의 작품이 온라인에 게시되는 순간 통제력과 크레딧을 잃습니다. AI는 저작권이 있고 동의 없는 데이터로 학습되며, 어떤 데이터가 어디서 왔는지에 대한 이동 가능하고 검증 가능한 기록이 존재하지 않습니다.
+
+DATA Foundation은 이를 해결합니다. 등록된 데이터는 출처를 함께 가지고 다니며(Trace), 접근 권한을 얻을 때까지 기밀로 유지될 수 있고(CDR), 투명하고 프로그래밍 가능한 권리에 의해 거버넌스됩니다(IP & 라이선싱). 따라서 데이터가 AI를 포함한 누군가에 의해 사용될 때 기여자에게 크레딧이 부여되고 공정한 보상이 이루어집니다.
+
+</Accordion>
+
+## 빠른 FAQ
+
+<AccordionGroup>
+
+<Accordion title="가스 토큰은 무엇인가요?">$DATA</Accordion>
+
+<Accordion title="어떤 지갑을 사용해야 하나요?">
+
+물론 사용자의 선호에 따라 선택할 수 있으며, EVM 기반 지갑이라면 어느 것이든 사용할 수 있습니다. 다만 [MetaMask](https://metamask.io/) 또는 [OKX](https://www.okx.com/web3)를 추천합니다. 아래에서 DATA Foundation의 L1을 추가할 수 있습니다:
+
+<CardGroup cols={2}>
+
+<Card
+  title="DATA Foundation 메인넷 추가"
+  icon="globe"
+  href="https://chainid.network/chain/1514/"
+>
+  지갑을 DATA Foundation 메인넷에 연결합니다.
+</Card>
+
+<Card
+  title="DATA Foundation 'Aeneid' 테스트넷 추가"
+  icon="globe"
+  href="https://chainid.network/chain/1315/"
+>
+  지갑을 DATA Foundation의 'Aeneid' 테스트넷에 연결합니다.
+</Card>
+
+  </CardGroup>
+
+</Accordion>
+
+<Accordion title="스테이블코인 옵션은 무엇이 있나요?">
+
+[Stargate](https://stargate.finance/bridge)를 통해 브릿지된 USDC.e를 사용할 수 있습니다.
+
+</Accordion>
+
+<Accordion title="브릿지는 어떻게 하며, 가장 좋은 방법은 무엇인가요?">
+
+[Stargate](https://stargate.finance/bridge), [deBridge](https://app.debridge.finance/?inputChain=1&outputChain=1514&inputCurrency=&outputCurrency=0xf1815bd50389c46847f0bda824ec8da914045d14&dlnMode=simple&address=&amount=1), 또는 [Orbiter Finance](https://www.orbiter.finance/en?tgt_chain=1514&src_chain=1&src_token=ETH)를 이용하세요.
+
+</Accordion>
+
+</AccordionGroup>

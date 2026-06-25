@@ -1,0 +1,67 @@
+---
+title: 설정
+description: DATA Foundation 스마트 컨트랙트 개발 환경을 설정합니다.
+---
+
+이 가이드에서는 단 몇 분만에 DATA Foundation 스마트 컨트랙트 개발 환경을 설정하는 방법을 보여드립니다.
+
+## 사전 준비 사항
+
+- [Foundry 설치](https://book.getfoundry.sh/getting-started/installation)
+- [yarn 설치](https://classic.yarnpkg.com/lang/en/docs/install/)
+
+## 프로젝트 만들기
+
+1. `foundryup`을 실행하여 미리 컴파일된 바이너리(forge, cast, anvil, chisel)의 최신 안정 버전을 자동으로 설치합니다.
+2. 새 디렉터리에서 다음 명령을 실행합니다: `forge init`. 그러면 프로젝트 루트에 `foundry.toml`과 예제 프로젝트 파일이 생성됩니다. 기본적으로 forge init은 새 git 저장소도 초기화합니다.
+3. 새 yarn 프로젝트를 초기화합니다: `yarn init`. (⚠️ 참고: 이 프로젝트에서 사용되는 패키지는 Yarn만 호환됩니다. `npm`이나 `pnpm`을 사용하면 의존성 충돌이 발생할 수 있습니다.)
+4. 루트 레벨의 `foundry.toml` 파일(프로젝트 최상위 디렉터리에 위치)을 열고 다음 내용으로 교체합니다:
+
+```toml
+[profile.default]
+out = 'out'
+libs = ['node_modules', 'lib']
+cache_path  = 'forge-cache'
+gas_reports = ["*"]
+optimizer = true
+optimizer_runs = 20000
+test = 'test'
+solc = '0.8.26'
+fs_permissions = [{ access = 'read', path = './out' }, { access = 'read-write', path = './deploy-out' }]
+evm_version = 'cancun'
+remappings = [
+    '@openzeppelin/=node_modules/@openzeppelin/',
+    '@storyprotocol/core/=node_modules/@story-protocol/protocol-core/contracts/',
+    '@storyprotocol/periphery/=node_modules/@story-protocol/protocol-periphery/contracts/',
+    'erc6551/=node_modules/erc6551/',
+    'forge-std/=node_modules/forge-std/src/',
+    'ds-test/=node_modules/ds-test/src/',
+    '@storyprotocol/test/=node_modules/@story-protocol/protocol-core/test/foundry/',
+    '@solady/=node_modules/solady/'
+]
+```
+
+5. 예제 컨트랙트 파일을 제거합니다: `rm src/Counter.sol script/Counter.s.sol test/Counter.t.sol`
+
+## 의존성 설치
+
+이제 의존성을 설치할 준비가 되었습니다. DATA Foundation의 core 및 periphery 모듈을 통합하려면 다음을 실행하여 `package.json`에 추가합니다. 컨트랙트와 테스트의 의존성으로 `openzeppelin`과 `erc6551`도 함께 설치합니다.
+
+```bash
+# 참고: 하나씩 실행하거나 한 번에 모두 실행할 수 있습니다
+yarn add @story-protocol/protocol-core@https://github.com/storyprotocol/protocol-core-v1
+yarn add @story-protocol/protocol-periphery@https://github.com/storyprotocol/protocol-periphery-v1
+yarn add @openzeppelin/contracts
+yarn add @openzeppelin/contracts-upgradeable
+yarn add erc6551
+yarn add solady
+```
+
+또한, Foundry의 테스트 킷을 사용하려면 다음과 같은 `devDependencies`를 추가하는 것을 권장합니다:
+
+```bash
+yarn add -D https://github.com/dapphub/ds-test
+yarn add -D github:foundry-rs/forge-std#v1.7.6
+```
+
+이제 간단한 테스트 등록 컨트랙트를 작성할 준비가 되었습니다!

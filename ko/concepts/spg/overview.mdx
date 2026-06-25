@@ -1,0 +1,41 @@
+---
+title: 📦 SPG (Periphery)
+sidebarTitle: 개요
+description: 프로토콜과의 상호작용을 간소화하는 DATA Foundation Gateway에 대해 알아보세요
+---
+
+DATA Foundation Gateway(SPG)는 우리 프로토콜에 배포된 주변/유틸리티 스마트 컨트랙트 그룹으로, [🧩 IP 자산](/concepts/ip-asset/overview)을 등록하고 해당 IP 자산에 라이선스 약관을 부착하는 것과 같은 **독립적인 작업들을 결합하여 단일 트랜잭션으로 처리할 수 있게 해주어, 개발자의 작업을 더 쉽게 만들어줍니다**.
+
+이는 주로 우리 [SDK](/sdk-reference)를 더 쉽게 사용할 수 있도록 개발되었습니다.
+
+예를 들어, 이 `mintAndRegisterIpAndAttachPILTerms`는 SPG에 있는 함수 중 하나(더 구체적으로는 `LicenseAttachmentWorkflows.sol` 내)로, NFT를 민팅하고, 이를 IP 자산으로 등록하고, 라이선스 약관을 부착하는 작업을 단일 호출로 수행할 수 있게 해줍니다:
+
+```solidity LicenseAttachmentWorkflows.sol
+function mintAndRegisterIpAndAttachPILTerms(
+  address spgNftContract,
+  address recipient,
+  WorkflowStructs.IPMetadata calldata ipMetadata,
+  WorkflowStructs.LicenseTermsData[] calldata licenseTermsData,
+  bool allowDuplicates
+) external onlyMintAuthorized(spgNftContract) returns (address ipId, uint256 tokenId, uint256[] memory licenseTermsIds)
+```
+
+## 지원되는 모든 워크플로우
+
+위에서 언급한 것처럼, 여러 함수를 하나로 결합한 다양한 함수들을 만들었습니다. 이를 여러 그룹으로 분류했으며, 이러한 그룹을 "워크플로우"라고 부릅니다.
+
+<CardGroup cols={2}>
+  <Card title="모든 워크플로우 보기" href="https://github.com/storyprotocol/protocol-periphery-v1/blob/main/docs/WORKFLOWS.md" icon="eyes" color="grey">
+    여기를 클릭하여 지원되는 모든 워크플로우를 살펴보세요.
+  </Card>
+
+  <Card title="스마트 컨트랙트" href="https://github.com/storyprotocol/protocol-periphery-v1/tree/main/contracts/workflows" icon="scroll" color="#ccb092">
+    여기를 클릭하여 워크플로우 스마트 컨트랙트를 살펴보세요.
+  </Card>
+</CardGroup>
+
+## 호출 일괄 처리
+
+SPG에는 `mintAndRegisterIpAndAttachPILTerms`, `registerIpAndAttachPILTerms` 등 다양한 함수가 포함되어 있지만, IP 자산과의 가능한 모든 상호작용 조합을 위해 컨트랙트를 지속적으로 업데이트하는 것은 번거로운 일입니다.
+
+대신, 원하는 방식으로 트랜잭션을 일괄 처리할 수 있는 "Multicall" 메커니즘을 허용했습니다. 자세한 내용은 [배치 함수 호출](/concepts/spg/batch-spg-function-calls)을 참고하세요.

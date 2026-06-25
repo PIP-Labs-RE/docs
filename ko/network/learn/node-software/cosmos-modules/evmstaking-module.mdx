@@ -1,0 +1,169 @@
+---
+title: EVM staking 모듈
+description: 합의 계층의 스테이킹 관련 로직을 담당하는 모듈
+---
+
+## 개요
+
+본 문서는 DATA Network의 내부 `x/evmstaking` 모듈을 정의합니다.
+
+DATA Network에서 가스 토큰은 실행 계층(EL)에 존재하며 트랜잭션 비용 지불 및 스마트 컨트랙트와의 상호작용에 사용됩니다. 반면, 합의 계층(CL)은 합의 스테이킹, 슬래싱, 보상을 관리합니다. 이 모듈은 커스텀 락 기간으로 validator에게 위임하는 등과 같은 CL 수준의 스테이킹 관련 로직을 지원하기 위해 존재합니다.
+
+## 목차
+
+1. **[State](#state)**
+2. **[이중 큐 시스템](#two-queue-system)**
+3. **[Withdrawal Queue 내용](#withdrawal-queue-content)**
+4. **[End Block](#end-block)**
+5. **[스테이킹 이벤트 처리](#processing-staking-events)**
+6. **[위임 출금](#withdrawing-delegations)**
+7. **[보상 출금](#withdrawing-rewards)**
+8. **[UBI 출금](#withdrawing-ubi)**
+
+## State
+
+### Withdrawal Queue
+
+타입: `Queue[types.Withdrawal]`
+
+(스테이크) withdrawal queue는 CL에서 소각되고 EL에서 발행되어야 할 미처리(언본딩 완료) 스테이크들을 저장합니다. 14일의 언스테이킹 기간 후 언본딩된 스테이크들이 이 큐에 추가되어 처리됩니다.
+
+### Reward Withdrawal Queue
+
+타입: `Queue[types.Withdrawal]`
+
+reward withdrawal queue는 CL에서 소각되고 EL에서 발행될 스테이크 보상의 대기 항목들을 저장합니다. 임계값을 초과하는 모든 보상은 이 큐에 추가될 자격이 있지만, 블록당 최대 추가 수에 대한 파라미터가 존재합니다.
+
+### 파라미터
+
+```protobuf protobuf
+message Params {
+  uint32 max_withdrawal_per_block = 1 [
+    (gogoproto.moretags) = "yaml:\"max_withdrawal_per_block\""
+  ];
+  uint32 max_sweep_per_block = 2 [
+    (gogoproto.moretags) = "yaml:\"max_sweep_per_block\""
+  ];
+  uint64 min_partial_withdrawal_amount = 3 [
+    (gogoproto.moretags) = "yaml:\"min_partial_withdrawal_amount\""
+  ];
+  string ubi_withdraw_address = 4 [
+    (gogoproto.moretags) = "yaml:\"ubi_withdraw_address\""
+  ];
+}
+```
+
+- `max_withdrawal_per_block`은 블록당 처리되는 출금(보상 및 언스테이크, 각각)의 최대 수입니다. 이 파라미터는 노드가 한 번에 너무 많은 출금을 처리하여 최대 체인 타임아웃을 초과하는 것을 방지합니다.
+- `max_sweep_per_block`은 블록당 처리(sweep)되는 validator-위임자 위임의 최대 수입니다. 이 파라미터는 노드가 한 번에 너무 많은 위임을 처리하는 것을 방지합니다.
+- `min_partial_withdrawal_amount`는 보상이 reward withdrawal queue에 추가되기 위해 요구되는 최소 금액입니다.
+- `ubi_withdrawal_address`는 UBI 출금이 입금되어야 하는 UBI 컨트랙트 주소입니다.
+
+### Delegator Withdraw Address
+
+타입: `Map[string, string]`
+
+delegator-withdraw 주소 매핑은 위임자가 출금된 스테이크를 받을 주소를 추적합니다. (스테이크) withdrawal queue는 이 매핑을 사용하여 EVM 블록 페이로드를 빌드할 때 사용되는 `Withdrawal` 구조체의 `execution_address`를 결정합니다.
+
+위임자는 언제든지 withdraw 주소를 변경할 수 있지만, (스테이크) withdrawal queue에 이미 존재하는 스테이크 출금 요청은 원래 값을 유지합니다.
+
+### Delegator Reward Address
+
+delegator-reward 주소 매핑은 delegator-withdraw 매핑과 유사하게, 위임자가 보상 스테이크를 받을 주소를 추적합니다.
+
+위임자는 언제든지 reward 주소를 변경할 수 있지만, reward withdrawal queue에 이미 존재하는 보상 출금 요청은 원래 값을 유지합니다.
+
+타입: `Map[string, string]`
+
+### Delegator Operator Address
+
+타입: `Map[string, string]`
+
+delegator-operator 주소 매핑은 위임자가 자신을 대신하여 위임(스테이킹), 위임 해제(언스테이킹), 재위임(redelegate)할 권한을 부여한 주소를 추적합니다.
+
+### IP Token Staking Contract
+
+타입: `*bindings.IPTokenStaking`
+
+IPTokenStaking 컨트랙트는 EL의 스테이킹 관련 이벤트를 필터링하고 파싱하는 데 사용됩니다.
+
+## 이중 큐 시스템
+
+이 모듈은 모든 언본딩된 항목(14일의 언본딩 기간 후 언본딩된 스테이크)이 즉시 위임자 계정으로 분배되는 전통적인 Cosmos SDK 스테이킹 모듈의 언스테이킹 시스템과 다릅니다. 대신, DATA Foundation의 언스테이킹 시스템은 슬롯당 16개의 전체 또는 부분(보상) 출금이 처리되는 Ethereum 2.0의 언스테이킹 시스템과 유사합니다.
+
+단일 출금 큐에서는 보상 출금이 스테이크 출금을 크게 지연시킬 수 있습니다. 따라서 DATA Network는 큐별로 블록당 처리할 최대 수량이 강제되는 이중 큐 시스템을 구현합니다. 즉, 스테이크/ubi withdrawal과 reward withdrawal 큐는 각각 블록당 max 파라미터만큼 처리할 수 있습니다.
+
+## Withdrawal Queue 내용
+
+이 모듈은 언스테이크/보상/ubi를 처리하고 큐에 저장만 하기 때문에, 실행 계층으로의 실제 출금을 위한 디큐는 [evmengine](/network/node-architecture/cosmos-modules/evmengine-module) 모듈에서 수행됩니다. 보다 구체적으로, 제안자가 각 큐에서 최대 수량의 출금을 디큐하고 이를 EVM 블록 페이로드에 추가하며, 이 페이로드는 [Engine API](/network/node-architecture/engine-api)를 통해 EL에서 실행됩니다. validator들이 제안자로부터 제안된 블록 페이로드를 수신하면, 각자 로컬 큐를 확인하고 수신된 블록의 출금과 비교합니다. 출금이 일치하지 않으면 스테이킹 로직의 비결정성을 의미하며 체인 정지를 유발해야 합니다.
+
+다시 말해, `evmstaking` 모듈은 출금 요청을 파싱, 처리하고 두 큐에 삽입하는 역할을 담당하며, `evmengine` 모듈은 출금 요청을 검증 및 디큐하고 EL의 해당 출금 주소로 입금하는 역할을 담당합니다.
+
+## End Block
+
+`EndBlock` ABCI2 호출은 [staking](/network/node-architecture/cosmos-modules/staking-module) 모듈에서 언본딩된 항목(14일 후 언본딩된 스테이크)을 가져와 (스테이크) withdrawal queue에 삽입하는 역할을 담당합니다. 또한, 스테이크 보상 출금을 reward withdrawal queue로, UBI 출금을 (스테이크) withdrawal queue로 처리합니다.
+
+네트워크가 [Singularity 기간](/network/tokenomics-staking#singularity)이라면, 이 기간 동안 스테이킹 보상 및 출금이 제공되지 않으므로 End Block은 건너뜁니다. 그렇지 않은 경우, 자세한 출금 절차는 [위임 출금](#withdrawing-delegations) 및 [보상 출금](#withdrawing-rewards)을 참고하세요.
+
+## 스테이킹 이벤트 처리
+
+이 모듈은 [IPTokenStaking 컨트랙트](https://github.com/piplabs/story/blob/main/contracts/src/protocol/IPTokenStaking.sol)에서 발행된 스테이킹 이벤트를 파싱하고 처리하며, 이 이벤트는 [evmengine](/network/node-architecture/cosmos-modules/evmengine-module) 모듈에 의해 수집됩니다. 이벤트 목록은 다음과 같습니다:
+
+### 스테이킹 이벤트
+
+- Create Validator
+- Deposit (위임)
+- Withdraw (위임 해제)
+- Redelegate
+- Unjail: 누구나 컨트랙트에 unjail 수수료를 지불함으로써 jailed validator의 unjail을 요청할 수 있습니다.
+
+이러한 작업은 스팸을 방지하기 위해 고정 가스 비용이 부과됩니다.
+
+### 파라미터 이벤트
+
+- Update Validator Commission: validator 커미션 업데이트.
+- Set Withdrawal Address: 위임자는 향후 언스테이크/위임 해제에 사용될 withdraw 주소를 변경할 수 있습니다.
+- Set Reward Address: 위임자는 향후 보상 발행에 사용될 출금 주소를 변경할 수 있습니다.
+- Set Operator: 위임자는 위임, 위임 해제, 재위임 권한을 가진 operator를 변경할 수 있습니다.
+- Unset Operator: 위임자는 operator를 제거할 수 있습니다.
+
+이러한 작업은 스팸을 방지하기 위해 고정 가스 비용이 부과됩니다.
+
+## Withdrawal
+
+두 출금 큐는 모두 다음 타입의 withdrawal을 보관합니다:
+
+```protobuf protobuf
+message Withdrawal {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+
+  uint64 creation_height = 1;
+  string execution_address = 2 [
+    (cosmos_proto.scalar) = "cosmos.AddressString",
+    (gogoproto.moretags) = "yaml:\"execution_address\""
+  ];
+  uint64 amount = 3 [
+    (gogoproto.moretags) = "yaml:\"amount\""
+  ];
+  WithdrawalType withdrawal_type = 4 [
+    (gogoproto.moretags) = "yaml:\"withdrawal_type\""
+  ];
+  string validator_address = 5 [
+    (gogoproto.moretags) = "yaml:\"validator_address\""
+  ];
+}
+```
+
+- `creation_height`는 withdrawal이 생성된 블록 높이입니다.
+- `execution_address`는 출금된 자금을 수령하는 EVM 주소이며, CL에서는 소각됩니다.
+- `amount`는 CL에서 소각되고 EL에서 발행될 금액입니다.
+- `withdrawal_type`은 출금 유형입니다: $0$은 언스테이크, $1$은 보상, $2$는 UBI.
+- `validator_address`는 EVM validator 주소입니다.
+
+### 위임 출금
+
+14일의 언본딩 기간 후 언본딩된 위임(즉, 언본딩된 항목)은 각 블록의 끝에서 (스테이크) withdrawal queue에 추가됩니다. validator가 완전히 언스테이크된 경우, 즉 모든 위임 및 자체 위임이 언본딩된 경우, validator의 커미션도 함께 출금됩니다.
+
+### 보상 출금
+
+위임에 할당된 인플레이션 보상은 각 블록 종료 시 자동으로 스윕(sweep)됩니다. 위임의 누적 보상이 파라미터화된 임계값보다 큰 경우, 해당 보상은 reward withdrawal queue에 추가되어 위임자의 EVM 보상 주소로 입금됩니다.

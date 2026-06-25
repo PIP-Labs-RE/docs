@@ -1,0 +1,170 @@
+---
+title: 라이선스 약관 등록하기
+description: Solidity에서 새로운 라이선스 약관(License Terms)을 생성하는 방법을 알아보세요.
+---
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/1_LicenseTerms.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+[라이선스 약관(License Terms)](/concepts/licensing-module/license-terms)은 해당 약관이 적용된 IP에서 민팅되는 라이선스에 대한 제한을 정의하는, 구성 가능한 값들의 집합입니다. 예를 들어, "이 라이선스를 민팅하려면 수익의 50%를 저에게 공유해야 합니다."와 같은 식입니다. [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 전체 약관 집합을 확인할 수 있습니다.
+
+## 사전 준비
+
+튜토리얼을 시작하기 전에 몇 가지 단계를 완료해야 합니다.
+
+1. [자체 프로젝트 설정하기](/developers/smart-contracts-guide/setup)를 완료하세요.
+
+## 시작하기 전에
+
+중요한 점은, **만들고자 하는 동일한 파라미터 집합에 대한 라이선스 약관이 이미 존재한다면 다시 만들 필요가 없다는 것**입니다. 라이선스 약관은 프로토콜 전역에서 공유되므로, 기존 라이선스 약관을 그 `licenseTermsId`로 사용할 수 있습니다.
+
+## 라이선스 약관 등록
+
+전체 약관 집합은 [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 확인할 수 있습니다.
+
+`test/1_LicenseTerms.t.sol`에 테스트 파일을 만들어 동작 및 결과를 확인해 봅시다:
+
+<Note>
+**컨트랙트 주소**
+
+DATA Foundation 컨트랙트 주소를 미리 채워 두었습니다. 주소는 [배포된 스마트 컨트랙트](/developers/deployed-smart-contracts)에서도 확인할 수 있습니다.
+
+</Note>
+
+```solidity test/1_LicenseTerms.t.sol
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.26;
+
+import { Test } from "forge-std/Test.sol";
+import { IPILicenseTemplate } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+import { PILTerms } from "@storyprotocol/core/interfaces/modules/licensing/IPILicenseTemplate.sol";
+
+// Run this test:
+// forge test --fork-url https://aeneid.datarpc.io/ --match-path test/1_LicenseTerms.t.sol
+contract LicenseTermsTest is Test {
+    address internal alice = address(0xa11ce);
+
+    // For addresses, see https://docs.datafdn.org/developers/deployed-smart-contracts
+    // Protocol Core - PILicenseTemplate
+    IPILicenseTemplate internal PIL_TEMPLATE = IPILicenseTemplate(0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316);
+    // Protocol Core - RoyaltyPolicyLAP
+    address internal ROYALTY_POLICY_LAP = 0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E;
+    // Revenue Token - MERC20
+    address internal MERC20 = 0xF2104833d386a2734a4eB3B8ad6FC6812F29E38E;
+
+    function setUp() public {}
+
+    /// @notice Registers new PIL Terms. Anyone can register PIL Terms.
+    function test_registerPILTerms() public {
+        PILTerms memory pilTerms = PILTerms({
+            transferable: true,
+            royaltyPolicy: ROYALTY_POLICY_LAP,
+            defaultMintingFee: 0,
+            expiration: 0,
+            commercialUse: true,
+            commercialAttribution: true,
+            commercializerChecker: address(0),
+            commercializerCheckerData: "",
+            commercialRevShare: 0,
+            commercialRevCeiling: 0,
+            derivativesAllowed: true,
+            derivativesAttribution: true,
+            derivativesApproval: true,
+            derivativesReciprocal: true,
+            derivativeRevCeiling: 0,
+            currency: MERC20,
+            uri: ""
+        });
+        uint256 licenseTermsId = PIL_TEMPLATE.registerLicenseTerms(pilTerms);
+
+        uint256 selectedLicenseTermsId = PIL_TEMPLATE.getLicenseTermsId(pilTerms);
+        assertEq(licenseTermsId, selectedLicenseTermsId);
+    }
+}
+```
+
+### PIL Flavors
+
+위에서 볼 수 있듯이 선택해야 할 약관이 많습니다.
+
+새 약관을 등록하는 데 도움이 되는 편의 함수가 준비되어 있습니다. 어떤 약관을 사용할지 결정하는 데 도움이 되도록, 라이선스 약관의 인기 조합을 미리 구성한 [PIL Flavors](/concepts/programmable-ip-license/pil-flavors)를 만들었습니다. 해당 PIL Flavors를 확인한 다음, 아래의 편의 함수를 사용해 약관을 등록할 수 있습니다:
+
+<CardGroup cols={2}>
+
+<Card
+  title="비상업적 소셜 리믹스(Non-Commercial Social Remixing)"
+  href="/concepts/programmable-ip-license/pil-flavors#non-commercial-social-remixing"
+  icon="file"
+>
+  출처 표시와 함께 자유로운 리믹스 허용. 상업적 활용 불가.
+</Card>
+
+<Card
+  title="상업적 사용(Commercial Use)"
+  href="/concepts/programmable-ip-license/pil-flavors#commercial-use"
+  icon="file"
+>
+  라이선스를 비용을 지불하고 사용하며 출처 표시를 하지만, 수익을 공유할 필요는 없음.
+</Card>
+
+<Card
+  title="상업적 리믹스(Commercial Remix)"
+  href="/concepts/programmable-ip-license/pil-flavors#commercial-remix"
+  icon="file"
+>
+  라이선스를 비용을 지불하고 사용하며 출처 표시를 하고, 수익의 일정 비율을 공유.
+</Card>
+
+<Card
+  title="Creative Commons Attribution"
+  href="/concepts/programmable-ip-license/pil-flavors#creative-commons-attribution"
+  icon="file"
+>
+  출처 표시와 함께 자유로운 리믹스 및 상업적 사용 허용.
+</Card>
+
+</CardGroup>
+
+예시:
+
+```solidity Solidity
+import { PILFlavors } from "@storyprotocol/core/lib/PILFlavors.sol";
+
+PILTerms memory pilTerms = PILFlavors.commercialRemix({
+  mintingFee: 0,
+  commercialRevShare: 5 * 10 ** 6, // 5% rev share
+  royaltyPolicy: ROYALTY_POLICY_LAP,
+  currencyToken: MERC20
+});
+```
+
+## 코드 테스트하기!
+
+`forge build`를 실행하세요. 모든 것이 정상이라면 명령이 성공적으로 컴파일되어야 합니다.
+
+이제 다음 명령을 실행하여 테스트를 진행하세요:
+
+```bash
+forge test --fork-url https://aeneid.datarpc.io/ --match-path test/1_LicenseTerms.t.sol
+```
+
+## IP에 약관 첨부하기
+
+축하합니다, 새 라이선스 약관을 생성했습니다!
+
+<Card
+  title="완성된 코드"
+  href="https://github.com/storyprotocol/story-protocol-boilerplate/blob/main/test/1_LicenseTerms.t.sol"
+  icon="thumbs-up"
+>
+  완성된 코드를 끝까지 따라가 보세요.
+</Card>
+
+이제 새 라이선스 약관을 등록했으니, IP Asset에 첨부할 수 있습니다. 이를 통해 다른 사람들이 라이선스를 민팅하고 약관의 제한 안에서 여러분의 IP를 사용할 수 있게 됩니다.
+
+다음 페이지에서 이 내용을 다루겠습니다.

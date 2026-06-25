@@ -1,0 +1,216 @@
+---
+title: 배치 함수 호출
+description: 효율성을 위해 여러 작업을 단일 트랜잭션으로 일괄 처리하는 방법을 알아보세요
+---
+
+## 배경
+
+지금까지는 여러 IP를 등록하거나, 민팅, 라이선스 약관 부착, 파생물 등록 등의 작업을 수행하려면 각 작업마다 별도의 트랜잭션이 필요했습니다. 이는 비효율적이고 비용이 많이 들 수 있습니다. 이 과정을 간소화하기 위해, 여러 트랜잭션을 하나로 일괄 처리할 수 있습니다. 이를 위한 두 가지 솔루션이 있습니다:
+
+1. **SPG 함수 호출 일괄 처리:** [SPG의 내장 `multicall` 함수](#1-batch-spg-function-calls-via-built-in-multicall-function) 사용.
+2. **SPG 이외의 함수 호출 일괄 처리:** [Multicall3 컨트랙트](#2-batch-function-calls-via-multicall3-contract) 사용.
+
+---
+
+## 1. 내장 `multicall` 함수를 통한 SPG 함수 호출 일괄 처리
+
+SPG에는 여러 읽기 또는 쓰기 작업을 단일 트랜잭션으로 결합할 수 있는 `multicall` 함수가 포함되어 있습니다.
+
+### 함수 정의
+
+`multicall` 함수는 인코딩된 호출 데이터 배열을 받아, 각 함수 호출에 해당하는 인코딩된 결과 배열을 반환합니다:
+
+```solidity Solidity
+/// @dev Executes a batch of function calls on this contract.
+function multicall(bytes[] calldata data) external virtual returns (bytes[] memory results);
+```
+
+### 사용 예시
+
+여러 NFT를 민팅하고, 이를 IP로 등록하고, 일부 부모 IP에 파생물로 연결한다고 가정해봅시다.
+
+이를 위해 SPG의 `multicall` 함수를 사용해 `mintAndRegisterIpAndMakeDerivative` 함수 호출들을 일괄 처리할 수 있습니다.
+
+방법은 다음과 같습니다:
+
+```solidity Solidity
+// an SPG workflow contract: https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/workflows/DerivativeWorkflows.sol
+contract DerivativeWorkflows {
+    ...
+    function mintAndRegisterIpAndMakeDerivative(
+        address nftContract,
+        MakeDerivative calldata derivData,
+        IPMetadata calldata ipMetadata,
+        address recipient
+    ) external returns (address ipId, uint256 tokenId) {
+        ....
+    }
+    ...
+}
+```
+
+`multicall` 함수를 사용해 `mintAndRegisterIpAndMakeDerivative`를 일괄 호출하려면:
+
+```javascript JavaScript
+// batch mint, register, and make derivatives for multiple IPs
+await DerivativeWorkflows.multicall([
+  DerivativeWorkflows.contract.methods.mintAndRegisterIpAndMakeDerivative(
+      nftContract1,
+      derivData1,
+      recipient1,
+      ipMetadata1,
+  ).encodeABI(),
+
+  DerivativeWorkflows.contract.methods.mintAndRegisterIpAndMakeDerivative(
+      nftContract2,
+      derivData2,
+      recipient2,
+      ipMetadata2,
+  ).encodeABI(),
+
+  DerivativeWorkflows.contract.methods.mintAndRegisterIpAndMakeDerivative(
+      nftContract3,
+      derivData3,
+      recipient3,
+      ipMetadata3,
+  ).encodeABI(),
+  ...
+  // Add more calls as needed
+]);
+```
+
+---
+
+## 2. Multicall3 컨트랙트를 통한 함수 호출 일괄 처리
+
+<Warning>
+
+Multicall3 컨트랙트는 Multicall 실행 중 액세스 제어 및 컨텍스트가 변경되기 때문에, SPGNFT 민팅을 포함하는 SPG 함수와 완전히 호환되지는 않습니다. 그러한 작업의 경우, [SPG의 내장 multicall 함수](#1-batch-spg-function-calls-via-built-in-multicall-function)를 사용하세요.
+
+</Warning>
+
+Multicall3 컨트랙트는 단일 트랜잭션 내에서 여러 호출을 실행하고 결과를 집계할 수 있게 해줍니다. [`viem` 라이브러리](https://viem.sh/docs/contract/multicall#multicall)는 Multicall3에 대한 네이티브 지원을 제공합니다.
+
+### Aeneid Testnet Multicall3 배포 정보
+
+(모든 EVM 체인에서 동일한 주소)
+
+```json
+{
+  "contractName": "Multicall3",
+  "chainId": 1516,
+  "contractAddress": "0xcA11bde05977b3631167028862bE2a173976CA11",
+  "url": "https://aeneid.datanetscan.io/address/0xcA11bde05977b3631167028862bE2a173976CA11"
+}
+```
+
+### 주요 함수
+
+여러 함수 호출을 일괄 처리하려면, 다음 함수들을 사용할 수 있습니다:
+
+1. **`aggregate3`**: `Call3` 구조체를 사용해 호출을 일괄 처리합니다.
+2. **`aggregate3Value`**: `aggregate3`와 유사하지만, 각 호출에 값(value)을 첨부할 수도 있습니다.
+
+```solidity Solidity
+/// @notice Aggregate calls, ensuring each returns success if required.
+/// @param calls An array of Call3 structs.
+/// @return returnData An array of Result structs.
+function aggregate3(Call3[] calldata calls) external payable returns (Result[] memory returnData);
+
+/// @notice Aggregate calls with an attached msg value.
+/// @param calls An array of Call3Value structs.
+/// @return returnData An array of Result structs.
+function aggregate3Value(Call3Value[] calldata calls) external payable returns (Result[] memory returnData);
+```
+
+### 구조체 정의
+
+- **Call3**: `aggregate3`에서 사용.
+- **Call3Value**: `aggregate3Value`에서 사용.
+
+```solidity Solidity
+struct Call3 {
+  address target;      // Target contract to call.
+  bool allowFailure;   // If false, the multicall will revert if this call fails.
+  bytes callData;      // Data to call on the target contract.
+}
+
+struct Call3Value {
+  address target;
+  bool allowFailure;
+  uint256 value;       // Value (in wei) to send with the call.
+  bytes callData;      // Data to call on the target contract.
+}
+```
+
+### 반환 타입
+
+- **Result**: `aggregate3` 및 `aggregate3Value` 모두에서 반환되는 구조체.
+
+```solidity Solidity
+struct Result {
+  bool success;        // Whether the function call succeeded.
+  bytes returnData;    // Data returned from the function call.
+}
+```
+
+<Note>
+
+Solidity, TypeScript, Python의 자세한 예시는 [Multicall3 저장소](https://github.com/mds1/multicall/tree/main/examples)를 참고하세요.
+
+</Note>
+
+### 제한 사항
+
+Multicall3 사용 시의 제한 사항 목록은 [Multicall3 README](https://github.com/mds1/multicall/blob/main/README.md#batch-contract-writes)를 참고하세요.
+
+### 추가 자료
+
+- [Multicall3 문서](https://github.com/mds1/multicall/blob/main/README.md)
+- [Viem의 Multicall 문서](https://viem.sh/docs/contract/multicall#multicall)
+
+### 전체 Multicall3 인터페이스
+
+```solidity Solidity
+interface IMulticall3 {
+  struct Call {
+      address target;
+      bytes callData;
+  }
+
+  struct Call3 {
+      address target;
+      bool allowFailure;
+      bytes callData;
+  }
+
+  struct Call3Value {
+      address target;
+      bool allowFailure;
+      uint256 value;
+      bytes callData;
+  }
+
+  struct Result {
+      bool success;
+      bytes returnData;
+  }
+
+  function aggregate(Call[] calldata calls) external payable returns (uint256 blockNumber, bytes[] memory returnData);
+  function aggregate3(Call3[] calldata calls) external payable returns (Result[] memory returnData);
+  function aggregate3Value(Call3Value[] calldata calls) external payable returns (Result[] memory returnData);
+  function blockAndAggregate(Call[] calldata calls) external payable returns (uint256 blockNumber, bytes32 blockHash, Result[] memory returnData);
+  function getBasefee() external view returns (uint256 basefee);
+  function getBlockHash(uint256 blockNumber) external view returns (bytes32 blockHash);
+  function getBlockNumber() external view returns (uint256 blockNumber);
+  function getChainId() external view returns (uint256 chainId);
+  function getCurrentBlockCoinbase() external view returns (address coinbase);
+  function getCurrentBlockDifficulty() external view returns (uint256 difficulty);
+  function getCurrentBlockGasLimit() external view returns (uint256 gaslimit);
+  function getCurrentBlockTimestamp() external view returns (uint256 timestamp);
+  function getEthBalance(address addr) external view returns (uint256 balance);
+  function getLastBlockHash() external view returns (bytes32 blockHash);
+  function tryAggregate(bool requireSuccess, Call[] calldata calls) external payable returns (Result[] memory returnData);
+  function tryBlockAndAggregate(bool requireSuccess, Call[] calldata calls) external payable returns (uint256 blockNumber, bytes32 blockHash, Result[] memory returnData);
+}
+```

@@ -1,0 +1,305 @@
+---
+title: License
+description: License를 사용하면 DATA Foundation 내의 라이선스 조건과 토큰을 관리할 수 있습니다.
+---
+
+## License
+
+### Methods
+
+- attach_license_terms
+- mint_license_tokens
+- register_pil_terms
+- register_non_com_social_remixing_pil
+- register_commercial_use_pil
+- register_commercial_remix_pil
+
+### attach_license_terms
+
+IP에 라이선스 조건을 첨부합니다.
+
+| Method                 |
+| ---------------------- |
+| `attach_license_terms` |
+
+Parameters:
+
+- `ip_id`: 라이선스 조건이 첨부될 IP의 주소입니다.
+- `license_template`: 라이선스 템플릿의 주소입니다.
+- `license_terms_id`: 라이선스 조건의 ID입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.License.attach_license_terms(
+  ip_id="0x4c1f8c1035a8cE379dd4ed666758Fb29696CF721",
+  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.datafdn.org/docs/deployed-smart-contracts
+  license_terms_id="1"
+)
+```
+
+```python Request Parameters
+ip_id: str  # The address of the IP to which the license terms are attached
+license_template: str  # The address of the license template
+license_terms_id: int  # The ID of the license terms
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str
+}
+```
+
+</CodeGroup>
+
+### mint_license_tokens
+
+IP에 첨부된 라이선스 조건에 대한 라이선스 토큰을 발행합니다.
+
+라이선스 토큰은 수신자에게 발행됩니다.
+
+이 함수를 호출하기 전에 라이선스 조건이 IP에 첨부되어 있어야 합니다.
+
+IP 소유자는 라이선스 조건을 IP에 첨부하지 않고도 임의의 라이선스 조건으로 자신의 IP에 대한 라이선스 토큰을 발행할 수 있습니다.
+
+라이선스 조건 또는 IP 소유자의 설정에 따라 호출자가 발행 수수료를 지불해야 할 수 있습니다. 발행 수수료는 라이선스 조건에서 지정되었거나 IP 소유자가 구성한 발행 수수료 토큰으로 지불됩니다. IP 소유자는 자신의 IP에 대한 발행 수수료를 구성하거나, 발행 수수료를 결정하기 위해 발행 수수료 모듈을 구성할 수 있습니다.
+
+| Method                |
+| --------------------- |
+| `mint_license_tokens` |
+
+Parameters:
+
+- `licensor_ip_id`: 라이선서 IP ID입니다.
+- `license_template`: 라이선스 템플릿의 주소입니다.
+- `license_terms_id`: 라이선스 템플릿 내의 라이선스 조건 ID입니다.
+- `amount`: 발행할 라이선스 토큰 양입니다.
+- `receiver`: 수신자의 주소입니다.
+- `max_minting_fee`: [Optional] 지불할 최대 발행 수수료입니다.
+- `max_revenue_share`: [Optional] 최대 수익 공유 비율입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = client.License.mint_license_tokens(
+  licensor_ip_id="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+  license_template="0x2E896b0b2Fdb7457499B56AAaA4AE55BCB4Cd316", # insert PILicenseTemplate from https://docs.datafdn.org/docs/deployed-smart-contracts
+  license_terms_id="1",
+  amount=1,
+  receiver="0x14dC79964da2C08b23698B3D3cc7Ca32193d9955", # optional
+  max_minting_fee=0, # disabled
+  max_revenue_share=100 # default
+)
+```
+
+```python Request Parameters
+licensor_ip_id: str  # The licensor IP ID
+license_template: str  # The address of the license template
+license_terms_id: int  # The ID of the license terms
+amount: int   # The amount of license tokens to mint
+receiver: str  # The address of the receiver
+max_minting_fee: int = 0  # Optional: The maximum minting fee to pay
+max_revenue_share: int = 0  # Optional: The maximum revenue share percentage
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "license_token_ids": list,  # List of license token IDs
+  "tx_hash": str,  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### register_pil_terms
+
+새 라이선스 조건을 등록하고 새로 등록된 라이선스 조건의 ID를 반환합니다.
+
+| Method               |
+| -------------------- |
+| `register_pil_terms` |
+
+Parameters:
+
+- 모든 매개변수는 아래 Python 코드 예제를 참고하세요. 모두 [PIL Terms](/concepts/programmable-ip-license/pil-terms)에서 가져옵니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.License.register_pil_terms(
+  transferable=False,
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  default_minting_fee=0,
+  expiration=0,
+  commercial_use=False,
+  commercial_attribution=False,
+  commercializer_checker="0x0000000000000000000000000000000000000000",
+  commercializer_checker_data="0x",
+  commercial_rev_share=10, # 10%
+  commercial_rev_ceiling=0,
+  derivatives_allowed=True,
+  derivatives_attribution=False,
+  derivatives_approval=False,
+  derivatives_reciprocal=False,
+  derivative_rev_ceiling=0,
+  currency="0x1514000000000000000000000000000000000000", # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  uri="",
+)
+```
+
+```python Request Parameters
+transferable: bool  # Indicates whether the license is transferable or not
+royalty_policy: str  # The address of the royalty policy contract
+default_minting_fee: int  # The default minting fee to be paid when minting a license
+expiration: int  # The expiration period of the license
+commercial_use: bool  # Indicates whether the work can be used commercially or not
+commercial_attribution: bool  # Whether attribution is required when reproducing the work commercially
+commercializer_checker: str  # Commercializers that are allowed to commercially exploit the work
+commercializer_checker_data: str  # The data to be passed to the commercializer checker contract
+commercial_rev_share: int  # Percentage of revenue that must be shared with the licensor (0-100)
+commercial_rev_ceiling: int  # The maximum revenue that can be generated from commercial use
+derivatives_allowed: bool  # Indicates whether the licensee can create derivatives of the work
+derivatives_attribution: bool  # Whether attribution is required for derivatives of the work
+derivatives_approval: bool  # Whether the licensor must approve derivatives before they can be linked
+derivatives_reciprocal: bool  # Whether derivatives must be licensed under the same terms
+derivative_rev_ceiling: int  # The maximum revenue that can be generated from derivative use
+currency: str  # The ERC20 token to be used to pay the minting fee
+uri: str  # The URI of the license terms
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "license_terms_id": int,
+  "tx_hash": str
+}
+```
+
+</CodeGroup>
+
+### register_non_com_social_remixing_pil
+
+레지스트리에 PIL 비상업적 소셜 리믹스 라이선스를 등록하기 위한 편의 함수입니다.
+
+<Warning>
+
+이 함수를 호출할 이유가 없습니다. 비상업적 소셜 리믹스 조건은 이미 우리 프로토콜에 `licenseTermdId = 1`로 등록되어 있습니다. 다시 등록할 이유가 없습니다.
+
+</Warning>
+
+| Method                                 |
+| -------------------------------------- |
+| `register_non_com_social_remixing_pil` |
+
+Parameters:
+
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.License.register_non_com_social_remixing_pil()
+```
+
+```python Request Parameters
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "license_terms_id": int,  # The ID of the registered license terms
+  "tx_hash": str,  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### register_commercial_use_pil
+
+레지스트리에 PIL 상업적 사용 라이선스를 등록하기 위한 편의 함수입니다.
+
+| Method                        |
+| ----------------------------- |
+| `register_commercial_use_pil` |
+
+Parameters:
+
+- `default_minting_fee`: 라이선스 발행 시 지불할 수수료입니다.
+- `currency`: 발행 수수료를 지불하는 데 사용할 ERC20 토큰이며, 해당 토큰은 DATA Foundation 프로토콜에 등록되어 있어야 합니다.
+- `royalty_policy`: [Optional] 로열티 정책 컨트랙트의 주소이며, 기본값은 LAP입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.License.register_commercial_use_pil(
+  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  default_minting_fee=10, # 10 of the currency (using the above currency, 10 $WIP),
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+)
+```
+
+```python Request Parameters
+default_minting_fee: int  # The fee to be paid when minting a license
+currency: str  # The ERC20 token to be used to pay the minting fee
+royalty_policy: str = None  # Optional: The address of the royalty policy contract
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "license_terms_id": int,  # The ID of the registered license terms
+  "tx_hash": str,  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### register_commercial_remix_pil
+
+레지스트리에 PIL 상업적 리믹스 라이선스를 등록하기 위한 편의 함수입니다.
+
+| Method                          |
+| ------------------------------- |
+| `register_commercial_remix_pil` |
+
+Parameters:
+
+- `default_minting_fee`: 라이선스 발행 시 지불할 수수료입니다.
+- `commercial_rev_share`: 라이선서와 공유해야 하는 수익의 비율입니다.
+- `currency`: 발행 수수료를 지불하는 데 사용할 ERC20 토큰이며, 해당 토큰은 DATA Foundation 프로토콜에 등록되어 있어야 합니다.
+- `royalty_policy`: 로열티 정책 컨트랙트의 주소이며, 기본값은 LAP입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.License.register_commercial_remix_pil(
+  currency='0x1514000000000000000000000000000000000000', # $WIP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  default_minting_fee=10, # 10 of the currency (using the above currency, 10 $WIP)
+  royalty_policy="0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E", # RoyaltyPolicyLAP address from https://docs.datafdn.org/docs/deployed-smart-contracts
+  commercial_rev_share=10 # 10%
+)
+```
+
+```python Request Parameters
+default_minting_fee: int  # The fee to be paid when minting a license
+currency: str  # The ERC20 token to be used to pay the minting fee
+commercial_rev_share: int  # Percentage of revenue that must be shared with the licensor
+royalty_policy: str  # The address of the royalty policy contract
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "license_terms_id": int,  # The ID of the registered license terms
+  "tx_hash": str,  # The transaction hash
+}
+```
+
+</CodeGroup>

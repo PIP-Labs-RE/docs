@@ -1,0 +1,394 @@
+---
+title: 📝 IPA 메타데이터 표준
+sidebarTitle: IPA 메타데이터 표준
+description: IP 특화 메타데이터 표준에 대한 개요
+---
+
+<Warning>
+  IPA 메타데이터 표준을 정의하는 최선의 방법을 아직 찾고 있습니다. 투명성을 위해
+  다음 문서는 현재까지의 우리의 생각을 담고 있지만, 향후 버전을 출시함에 따라
+  변경될 수 있습니다.
+</Warning>
+
+<CardGroup cols={2}>
+  <Card title="공식 Ippy IP" href="https://explorer.datafdn.org/ipa/0xB1D831271A68Db5c18c8F0B69327446f7C8D0A42" icon="house">
+    NFT 및 IP 메타데이터를 모두 가진 공식 Ippy IP를 확인하세요.
+  </Card>
+
+  <Card title="IP Asset에 메타데이터를 추가하는 방법" href="/concepts/ip-asset/overview#nft-vs-ip-metadata" icon="computer">
+    설명과 완성된 코드 예제로 여기에 설명된 IP 메타데이터를 실제 IP Asset에 추가하는 방법을 알아보세요.
+  </Card>
+</CardGroup>
+
+이것은 IP Asset과 연결된 JSON 메타데이터로, IP Account 내부에 저장됩니다. 메타데이터를 설정하려면 IP Account 내부에서 `setMetadata(...)`를 호출해야 하고, 읽으려면 `metadata()`를 호출해야 합니다.
+
+## 속성 및 구조
+
+다음은 IP 메타데이터에 제공해야 할 중요한 속성입니다. **필수 대상** 열은 특정 필드가 어떤 용도로 필요한지 나타냅니다:
+
+- 🔍 DATA Foundation Explorer - 이 필드는 DATA Foundation Explorer에 IP를 표시하는 데 도움이 됩니다
+- 🕵️ 상업적 침해 검사 - 이 필드는 IP가 **상업적**일 경우(즉, `commercialUse = true` 라이선스 조건이 첨부된 경우) 필요합니다. 이 필드들을 사용하여 IP에 대한 침해 검사를 실행합니다.
+  - 이는 `commercialUse = true` 라이선스 조건이 첨부될 때 적용됩니다.
+- 🤖 AI Agents - AI Agents와 관련된 메타데이터를 표시하는 데 사용됩니다
+
+| 속성명         | 유형          | 설명                                                                                                                                                                                          | 필수 대상                                                                |
+| ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `title`       | `string`      | IP의 제목                                                                                                                                                                                       | 🔍 DATA Foundation Explorer                                             |
+| `description` | `string`      | IP에 대한 설명                                                                                                                                                                                  | 🔍 DATA Foundation Explorer                                             |
+| `createdAt`   | `string`      | IP가 생성된 날짜/시간(ISO8601 또는 unix 형식). 이 필드는 온체인에 없는 과거 날짜를 지정하는 데 사용할 수 있습니다. 예를 들어, Harry Potter는 6월 26일에 출판되었습니다.                                  | 🔍 DATA Foundation Explorer                                             |
+| `image`       | `string`      | IP에 대한 이미지. **오디오 asset의 경우 권장 썸네일 종횡비는 1:1입니다. 비디오 asset의 경우 16:9입니다.**                                                                                            | 🔍 DATA Foundation Explorer                                             |
+| `imageHash`   | `string`      | SHA-256 해싱 알고리즘을 사용한 `image`의 해시. 방법은 [여기](#hashing-content)를 참조하세요.                                                                                                       | 🔍 DATA Foundation Explorer                                             |
+| `creators`    | `IpCreator[]` | 제작자에 대한 정보 배열. [아래 정의된 타입 참조](#type-definitions)                                                                                                                              | 🔍 DATA Foundation Explorer                                             |
+| `mediaUrl`    | `string`      | 침해 검사에 사용되며, 실제 미디어(예: 이미지 또는 오디오)를 가리킵니다. **오디오 asset의 경우 권장 썸네일 종횡비는 1:1입니다. 비디오 asset의 경우 16:9입니다.**                                       | 🕵️ 상업적 침해 검사                                                       |
+| `mediaHash`   | `string`      | SHA-256 해싱 알고리즘을 사용한 미디어의 해시 문자열. 방법은 [여기](#hashing-content)를 참조하세요.                                                                                                 | 🕵️ 상업적 침해 검사                                                       |
+| `mediaType`   | `string`      | [mimeType](https://developer.mozilla.org/en-US/docs/Web/HTTP/MIME_types/Common_types)에 기반한 미디어 유형(audio, video, image). 허용되는 미디어 유형은 [여기](#media-types)를 참조하세요.       | 🕵️ 상업적 침해 검사                                                       |
+| `aiMetadata`  | `AIMetadata`  | AI Agent 메타데이터 등록 및 표시에 사용. [아래 정의된 타입 참조](#type-definitions)                                                                                                              | 🤖 AI Agents                                                            |
+| N/A           | N/A           | 다른 값도 포함할 수 있습니다.                                                                                                                                                                   | N/A                                                                     |
+
+### 타입 정의
+
+다음은 메타데이터에서 사용되는 복합 타입의 타입 정의입니다:
+
+<CodeGroup>
+
+```typescript IpCreator
+type IpCreator = {
+  name: string;
+  address: Address;
+  contributionPercent: number; // add up to 100
+  description?: string;
+  image?: string;
+  socialMedia?: IpCreatorSocial[];
+  role?: string;
+};
+
+type IpCreatorSocial = {
+  platform: string;
+  url: string;
+};
+```
+
+```typescript AIMetadata
+type AIMetadata = {
+  // this can be any character file you want
+  // example: https://github.com/elizaOS/characterfile/blob/main/examples/example.character.json
+  characterFileUrl: string;
+  characterFileHash: string;
+};
+```
+
+</CodeGroup>
+
+### 미디어 유형
+
+`mediaType` 필드에 대해 다음 미디어 유형이 허용됩니다:
+
+| 미디어 유형         | 설명                  |
+| ----------------- | --------------------- |
+| `image/jpeg`      | JPEG 이미지            |
+| `image/png`       | PNG 이미지             |
+| `image/apng`      | 애니메이션 PNG 이미지    |
+| `image/avif`      | AV1 이미지 파일 형식    |
+| `image/gif`       | GIF 이미지             |
+| `image/svg+xml`   | SVG 이미지             |
+| `image/webp`      | WebP 이미지            |
+| `audio/wav`       | WAV 오디오             |
+| `audio/mpeg`      | MP3 오디오             |
+| `audio/flac`      | FLAC 오디오            |
+| `audio/aac`       | AAC 오디오             |
+| `audio/ogg`       | OGG 오디오             |
+| `audio/mp4`       | MP4 오디오             |
+| `audio/x-aiff`    | AIFF 오디오            |
+| `audio/x-ms-wma`  | WMA 오디오             |
+| `audio/opus`      | Opus 오디오            |
+| `video/mp4`       | MP4 비디오             |
+| `video/webm`      | WebM 비디오            |
+| `video/quicktime` | QuickTime 비디오       |
+
+### 콘텐츠 해싱
+
+`imageHash` 또는 `mediaHash` 필드에 대한 콘텐츠를 해시하려면 SHA-256 해싱 알고리즘을 사용할 수 있습니다. JavaScript로 이를 수행하는 예시는 다음과 같습니다:
+
+<CodeGroup>
+
+```typescript TypeScript
+import { toHex, Hex } from "viem";
+
+// get hash from a file
+async function getFileHash(file: File): Promise<Hex> {
+  const arrayBuffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+  return toHex(new Uint8Array(hashBuffer), { size: 32 });
+}
+
+// get hash from a url
+async function getHashFromUrl(url: string): Promise<Hex> {
+  const response = await axios.get(url, { responseType: "arraybuffer" });
+  const buffer = Buffer.from(response.data);
+  return "0x" + createHash("sha256").update(buffer).digest("hex");
+}
+```
+
+```shell Shell
+shasum -a 256 myfile.jpg
+```
+
+</CodeGroup>
+
+### 예시 사용 사례
+
+<Tabs>
+
+<Tab title="Ippy 마스코트">
+
+이것은 메인넷에 등록된 공식 Ippy 마스코트입니다. 우리 프로토콜 익스플로러에서 [여기](https://explorer.datafdn.org/ipa/0xB1D831271A68Db5c18c8F0B69327446f7C8D0A42)에서 볼 수 있습니다.
+
+```json
+{
+  "title": "Ippy",
+  "description": "Official mascot of the DATA Foundation.",
+  "createdAt": "1728401700",
+  "image": "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
+  "imageHash": "0x21937ba9d821cb0306c7f1a1a2cc5a257509f228ea6abccc9af1a67dd754af6e",
+  "mediaUrl": "https://ipfs.io/ipfs/QmSamy4zqP91X42k6wS7kLJQVzuYJuW2EN94couPaq82A8",
+  "mediaHash": "0x21937ba9d821cb0306c7f1a1a2cc5a257509f228ea6abccc9af1a67dd754af6e",
+  "mediaType": "image/png",
+  "creators": [
+    {
+      "name": "The DATA Foundation",
+      "address": "0x67ee74EE04A0E6d14Ca6C27428B27F3EFd5CD084",
+      "description": "The World's IP Blockchain",
+      "contributionPercent": 100,
+      "socialMedia": [
+        {
+          "platform": "Twitter",
+          "url": "https://x.com/DataFDN"
+        },
+        {
+          "platform": "Telegram",
+          "url": "https://t.me/yourproject"
+        },
+        {
+          "platform": "Website",
+          "url": "https://datafdn.org"
+        },
+        {
+          "platform": "Discord",
+          "url": "https://discord.gg/datafdn"
+        },
+        {
+          "platform": "YouTube",
+          "url": "https://youtube.com/@storyFDN"
+        }
+      ]
+    }
+  ],
+  "tags": ["Ippy", "DATA Foundation", "DATA Foundation Mascot", "Mascot", "Official"], // experimental field
+  "ipType": "Character" // experimental field
+}
+```
+
+</Tab>
+
+<Tab title="음악">
+[Suno](https://suno.com/)에서 생성되어 테스트넷에 등록된 노래 예시입니다. 아래 예시는 [프로토콜 익스플로러에서](https://aeneid.explorer.datafdn.org/ipa/0x7d126DB8bdD3bF88d757FC2e99BFE3d77a55509b) 확인할 수 있습니다.
+
+```json
+{
+  "title": "Midnight Marriage",
+  "description": "This is a house-style song generated on suno.",
+  "createdAt": "1740005219",
+  "creators": [
+    {
+      "name": "Jacob Tucker",
+      "address": "0xA2f9Cf1E40D7b03aB81e34BC50f0A8c67B4e9112",
+      "contributionPercent": 100
+    }
+  ],
+  "image": "https://cdn2.suno.ai/image_large_8bcba6bc-3f60-4921-b148-f32a59086a4c.jpeg",
+  "imageHash": "0xc404730cdcdf7e5e54e8f16bc6687f97c6578a296f4a21b452d8a6ecabd61bcc",
+  "mediaUrl": "https://cdn1.suno.ai/dcd3076f-3aa5-400b-ba5d-87d30f27c311.mp3",
+  "mediaHash": "0xb52a44f53b2485ba772bd4857a443e1fb942cf5dda73c870e2d2238ecd607aee",
+  "mediaType": "audio/mpeg"
+}
+```
+
+</Tab>
+
+<Tab title="AI Agent">
+여기서 주요 차이점은 캐릭터 파일과 함께 `aiMetadata`를 제공해야 한다는 점입니다. 원하는 모든 캐릭터 파일을 제공할 수 있으며, 템플릿으로 [이 ElizaOS 예시](https://github.com/elizaOS/characterfile/blob/main/examples/example.character.json)를 사용할 수 있습니다.
+
+아래 예시는 [프로토콜 익스플로러에서](https://aeneid.explorer.datafdn.org/ipa/0x49614De8b2b02C790708243F268Af50979D568d4) 확인할 수 있습니다.
+
+```json
+{
+  "title": "DATA Foundation AI Agent",
+  "description": "This is an example AI Agent registered on the DATA Foundation.",
+  "createdAt": "1740005219",
+  "creators": [
+    {
+      "name": "Jacob Tucker",
+      "address": "0xA2f9Cf1E40D7b03aB81e34BC50f0A8c67B4e9112",
+      "contributionPercent": 100
+    }
+  ],
+  "image": "https://ipfs.io/ipfs/bafybeigi3k77t5h5aefwpzvx3uiomuavdvqwn5rb5uhd7i7xcq466wvute",
+  "imageHash": "0x64ccc40de203f218d16bb90878ecca4338e566ab329bf7be906493ce77b1551a",
+  "mediaUrl": "https://ipfs.io/ipfs/bafybeigi3k77t5h5aefwpzvx3uiomuavdvqwn5rb5uhd7i7xcq466wvute",
+  "mediaHash": "0x64ccc40de203f218d16bb90878ecca4338e566ab329bf7be906493ce77b1551a",
+  "mediaType": "image/webp",
+  "aiMetadata": {
+    "characterFileUrl": "https://ipfs.io/ipfs/bafkreic6eu4hlnwx46soib62rgkhhmlieko67dggu6bzk7bvtfusqsknfu",
+    "characterFileHash": "0x5e253875b6d7e7a4e407da899473b168229def8cc6a783957c35996928494d2d"
+  }
+}
+```
+
+</Tab>
+
+</Tabs>
+
+## 선택적 속성
+
+다음 속성은 선택 사항이지만 IP Asset에 대한 추가 컨텍스트를 제공할 수 있습니다:
+
+<Warning>
+  IPA 메타데이터 표준을 정의하는 최선의 방법을 아직 찾고 있습니다. 아래 필드는
+  나중에 변경되거나 제거될 수 있습니다.
+</Warning>
+
+| 속성명             | 유형                | 설명                                                                                                                                                              |
+| :--------------- | :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ipType`         | `string`           | IP Asset의 유형으로, 제작자가 임의로 정의할 수 있습니다. 예: "character", "chapter", "location", "items", "music" 등                                                  |
+| `relationships`  | `IpRelationship[]` | IPA의 직접 부모 asset과의 상세 관계 정보(`APPEARS_IN`, `FINETUNED_FROM` 등). 더 많은 예시는 [여기](#relationship-types)에서 확인하세요.                                  |
+| `watermarkImage` | `string`           | 워터마크가 이미 적용된 별도의 이미지. 이렇게 하면 사용을 선택한 앱에서 이 버전의 이미지(워터마크 적용)를 렌더링할 수 있습니다.                                                  |
+| `media`          | `IpMedia[]`        | 보조 미디어 배열. 미디어 유형은 아래에 정의됨                                                                                                                          |
+| `app`            | `DataApp`          | 이는 DATA Foundation의 검증된 애플리케이션에 직접 할당됩니다(현재까지는 요청 기반). 각 App ID를 이름에 매핑합니다                                                          |
+| `tags`           | `string[]`         | 이 IPA를 노출시키는 데 도움이 되는 태그                                                                                                                                |
+| `robotTerms`     | `IPRobotTerms`     | 특정 에이전트에 대해 Do Not Train을 설정할 수 있습니다                                                                                                                 |
+| N/A              | N/A                | 다른 값도 포함할 수 있습니다.                                                                                                                                         |
+
+### 타입 정의
+
+<CodeGroup>
+```typescript IpRelationship
+type IpRelationship = {
+  parentIpId: Address;
+  type: string; // see "Relationship Types" docs below
+};
+````
+
+```typescript IpMedia
+type IpMedia = {
+  name: string;
+  url: string;
+  mimeType: string;
+};
+```
+
+```typescript DataApp
+type DataApp = {
+  id: string;
+  name: string;
+  website: string;
+  action?: string;
+};
+```
+
+```typescript IPRobotTerms
+type IPRobotTerms = {
+  userAgent: string;
+  allow: string;
+};
+```
+
+</CodeGroup>
+
+### 관계 유형
+
+`relationships` 속성에 사용할 수 있는 다양한 관계 유형입니다.
+
+#### DATA Foundation 관계
+
+1. **APPEARS_IN** - 캐릭터가 챕터에 APPEARS_IN(등장)합니다.
+
+2. **BELONGS_TO** - 챕터가 책에 BELONGS_TO(속함)합니다.
+
+3. **PART_OF** - 책이 시리즈의 PART_OF(일부)입니다.
+
+4. **CONTINUES_FROM** - 챕터가 이전 챕터에서 CONTINUES_FROM(이어짐)합니다.
+
+5. **LEADS_TO** - 사건이 결과로 LEADS_TO(이어집니다).
+
+6. **FORESHADOWS** - 사건이 미래의 전개를 FORESHADOWS(암시)합니다.
+
+7. **CONFLICTS_WITH** - 캐릭터가 다른 캐릭터와 CONFLICTS_WITH(충돌)합니다.
+
+8. **RESULTS_IN** - 결정이 중대한 변화를 RESULTS_IN(초래)합니다.
+
+9. **DEPENDS_ON** - 서브플롯이 메인 플롯에 DEPENDS_ON(의존)합니다.
+
+10. **SETS_UP** - 프롤로그가 이야기를 SETS_UP(설정)합니다.
+
+11. **FOLLOWS_FROM** - 챕터가 이전 챕터에서 FOLLOWS_FROM(이어집니다).
+
+12. **REVEALS_THAT** - 반전이 예상치 못한 일이 일어났음을 REVEALS_THAT(드러냅니다).
+
+13. **DEVELOPS_OVER** - 캐릭터가 이야기 진행 동안 DEVELOPS_OVER(발전)합니다.
+
+14. **INTRODUCES** - 챕터가 새로운 캐릭터나 요소를 INTRODUCES(소개)합니다.
+
+15. **RESOLVES_IN** - 갈등이 특정 결과로 RESOLVES_IN(해결)됩니다.
+
+16. **CONNECTS_TO** - 테마가 메인 내러티브에 CONNECTS_TO(연결)됩니다.
+
+17. **RELATES_TO** - 서브플롯이 중심 테마와 RELATES_TO(관련)됩니다.
+
+18. **TRANSITIONS_FROM** - 장면이 한 배경에서 다른 배경으로 TRANSITIONS_FROM(전환)됩니다.
+
+19. **INTERACTED_WITH** - 캐릭터가 다른 캐릭터와 INTERACTED_WITH(상호 작용)했습니다.
+
+20. **LEADS_INTO** - 사건이 클라이맥스로 LEADS_INTO(이어집니다).?\
+    **PARALLEL** - 병렬로 또는 비슷한 시간대에 일어나는 이야기
+
+#### AI 관계
+
+1. **TRAINED_ON** - 모델이 데이터셋에서 TRAINED_ON(학습)됩니다.
+
+2. **FINETUNED_FROM** - 모델이 기본 모델에서 FINETUNED_FROM(파인튜닝)됩니다.
+
+3. **GENERATED_FROM** - 이미지가 파인튜닝된 모델에서 GENERATED_FROM(생성)됩니다.
+
+4. **REQUIRES_DATA** - 모델이 학습을 위해 REQUIRES_DATA(데이터 필요).
+
+5. **BASED_ON** - 리믹스가 특정 워크플로우를 BASED_ON(기반)으로 합니다.
+
+6. **INFLUENCES** - 샘플 데이터가 모델 출력을 INFLUENCES(영향)합니다.
+
+7. **CREATES** - 파이프라인이 파인튜닝된 모델을 CREATES(생성)합니다.
+
+8. **UTILIZES** - 워크플로우가 기본 모델을 UTILIZES(활용)합니다.
+
+9. **DERIVED_FROM** - 파인튜닝된 모델이 기본 모델에서 DERIVED_FROM(파생)됩니다.
+
+10. **PRODUCES** - 모델이 생성된 이미지를 PRODUCES(생산)합니다.
+
+11. **MODIFIES** - 리믹스가 기본 워크플로우를 MODIFIES(수정)합니다.
+
+12. **REFERENCES** - AI 생성 이미지가 원본 데이터를 REFERENCES(참조)합니다.
+
+13. **OPTIMIZED_BY** - 모델이 특정 알고리즘에 의해 OPTIMIZED_BY(최적화)됩니다.
+
+14. **INHERITS** - 파인튜닝된 모델이 기본 모델로부터 기능을 INHERITS(상속)합니다.
+
+15. **APPLIES_TO** - 파인튜닝 과정이 모델에 APPLIES_TO(적용)됩니다.
+
+16. **COMBINES** - 리믹스가 여러 데이터셋의 요소를 COMBINES(결합)합니다.
+
+17. **GENERATES_VARIANTS** - 모델이 이미지의 변형을 GENERATES_VARIANTS(생성)합니다.
+
+18. **EXPANDS_ON** - 파인튜닝 과정이 기본 기능을 EXPANDS_ON(확장)합니다.
+
+19. **CONFIGURES** - 워크플로우가 모델의 매개변수를 CONFIGURES(구성)합니다.
+
+20. **ADAPTS_TO** - 파인튜닝된 모델이 새 데이터에 ADAPTS_TO(적응)합니다.

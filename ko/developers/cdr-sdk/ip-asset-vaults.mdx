@@ -1,0 +1,192 @@
+---
+title: IP Asset Vaults
+description: 복호화에 라이선스 토큰이 필요한 IP Asset 기반 CDR 볼트를 생성하는 방법을 알아봅니다.
+---
+
+CDR 볼트는 DATA Foundation의 라이선스 토큰 뒤에 게이팅되어 라이선스 보유자만이
+볼트 콘텐츠를 복호화할 수 있도록 할 수 있습니다. 현재 Aeneid 릴리스에서는
+이것이 수동 통합입니다: CDR 조건 데이터를 직접 인코딩하고 DATA Foundation
+라이선스 토큰을 별도로 발행합니다.
+
+### 사전 요구 사항
+
+- [CDR SDK 설정](/developers/cdr-sdk/setup) 완료
+- 코드에서 라이선스 토큰을 발행할 계획이라면 `@story-protocol/core-sdk` 설치
+- [IP Assets](/concepts/ip-asset) 및 [License Tokens](/concepts/licensing-module/license-token)에 익숙함
+
+## Aeneid 컨트랙트
+
+| 컨트랙트 | 주소 |
+| -------- | ------- |
+| OwnerWriteCondition | `0x4C9bFC96d7092b590D497A191826C3dA2277c34B` |
+| LicenseReadCondition | `0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3` |
+| LicenseToken | `0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC` |
+
+## DATA Foundation 라이선스 읽기 패턴이 작동하는 방식
+
+모든 CDR 볼트에는 `writeConditionAddr` 및 `readConditionAddr`가 있습니다. Aeneid에서
+DATA Foundation 라이선스 게이트 볼트의 경우:
+
+- `writeConditionAddr`는 일반적으로 `OwnerWriteCondition`을 가리키며,
+  `writeConditionData = abi.encode(ownerAddress)`입니다
+- `readConditionAddr`는 `LicenseReadCondition`을 가리키며,
+  `readConditionData = abi.encode(licenseTokenAddress, ipId)`입니다
+- 읽기 시점의 `accessAuxData`는
+  `abi.encode(uint256[] licenseTokenIds)`입니다
+
+CDR SDK는 IP Asset을 등록하거나 라이선스 토큰을 발행해주지 않습니다. 먼저
+DATA Foundation 도구로 IP를 생성하고 그 `ipId`를 얻은 다음 볼트를 구성하세요.
+
+자산을 아직 등록하지 않았다면 [IP Asset 등록](/developers/typescript-sdk/register-ip-asset)에서
+시작하세요. 발행 전에 라이선스 조건을 첨부하거나 검사해야 한다면,
+[Attach Terms](/developers/typescript-sdk/attach-terms)를 참조하세요.
+
+## 라이선스 게이트 볼트 업로드
+
+```typescript
+import { encodeAbiParameters } from "viem";
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const dataKey = new TextEncoder().encode("confidential IP content");
+
+const writeCondData = encodeAbiParameters(
+  [{ type: "address" }],
+  [uploaderAddress],
+);
+
+const readCondData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [
+    "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC",
+    ipId,
+  ],
+);
+
+await client.uploader.uploadCDR({
+  dataKey,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: "0x4C9bFC96d7092b590D497A191826C3dA2277c34B",
+  writeConditionData: writeCondData,
+  readConditionAddr: "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3",
+  readConditionData: readCondData,
+  accessAuxData: "0x",
+});
+```
+
+<Note>
+  암호화된 콘텐츠가 오프체인에 있는 경우 동일한 조건 설정이 `uploadFile()`과 함께
+  작동합니다.
+</Note>
+
+## 읽기 전 라이선스 토큰 발행
+
+사용자가 DATA Foundation 라이선스 게이트 볼트를 읽기 전에 여전히 라이선스
+토큰을 발행해야 합니다. DATA Foundation 코어 SDK의 `wipClient`는 WIP 래핑 및
+승인 단계를 처리하므로 독자가 세 번의 짧은 호출로 IP를 래핑하고,
+RoyaltyModule을 승인하고, 발행할 수 있습니다.
+
+**WIP**는 **Wrapped IP**로, 네이티브 `IP` 토큰의 ERC-20 래핑 형태입니다.
+DATA Foundation의 로열티 / 라이선스 흐름은 WIP를 사용하므로 독자는 먼저 IP를
+래핑한 다음 RoyaltyModule이 이를 사용하도록 승인합니다.
+
+```typescript
+import { parseEther, http } from "viem";
+import { StoryClient } from "@story-protocol/core-sdk";
+
+const ROYALTY_MODULE = "0xD2f60c40fEbccf6311f8B47c4f2Ec6b040400086";
+
+const storyClient = StoryClient.newClient({
+  transport: http("https://aeneid.datarpc.io"),
+  account: readerAccount,
+  chainId: "aeneid",
+});
+
+// 1. Wrap 1 IP → 1 WIP so the mint fee can be paid in WIP.
+await storyClient.wipClient.deposit({
+  amount: parseEther("1"),
+});
+
+// 2. Approve the RoyaltyModule to spend WIP for the mint.
+await storyClient.wipClient.approve({
+  spender: ROYALTY_MODULE,
+  amount: parseEther("1"),
+});
+
+// 3. Mint the DATA Foundation license token.
+const mintResult = await storyClient.license.mintLicenseTokens({
+  licensorIpId: ipId,
+  licenseTermsId: BigInt(2054),
+  amount: 1,
+});
+
+const licenseTokenId = mintResult.licenseTokenIds![0];
+```
+
+<Note>
+  `licenseTermsId: 2054`는 예시일 뿐입니다. 실제로 IP Asset에 첨부된 라이선스
+  조건 ID로 교체하세요. 자산을 등록하거나 조건을 첨부할 때 해당 ID를 받게
+  됩니다.
+</Note>
+
+<Note>
+  위의 래핑, 승인 및 발행 호출은 모두 온체인 트랜잭션입니다. 이후의
+  `accessCDR()` 호출은 한 번의 온체인 읽기 요청을 추가합니다.
+</Note>
+
+## 라이선스 토큰으로 읽기
+
+읽기 시점에 호출자의 라이선스 토큰 ID를 `accessAuxData`를 통해 전달합니다.
+
+```typescript
+import { encodeAbiParameters } from "viem";
+
+const accessAuxData = encodeAbiParameters(
+  [{ type: "uint256[]" }],
+  [[BigInt(licenseTokenId)]],
+);
+
+// Sends 1 read transaction, then collects partials and combines locally
+const { dataKey } = await client.consumer.accessCDR({
+  uuid,
+  accessAuxData,
+  timeoutMs: 120_000,
+});
+
+const content = new TextDecoder().decode(dataKey);
+console.log(`Decrypted IP content: ${content}`);
+```
+
+<Warning>
+  호출자가 볼트의 IP Asset에 대한 유효한 라이선스 토큰을 보유하지 않은 경우,
+  읽기 요청은 온체인에서 되돌려지며 검증자들은 부분 복호화를 생성하지 않습니다.
+</Warning>
+
+## 사용자 정의 조건 컨트랙트
+
+라이선스 게이팅은 하나의 패턴일 뿐입니다. 다음 인터페이스 중 하나 또는 둘 다를
+구현하여 모든 접근 제어 로직에 대해 자체 조건 컨트랙트를 배포할 수 있습니다:
+
+```solidity
+interface ICDRWriteCondition {
+    function checkWriteCondition(
+        uint32 uuid,
+        bytes calldata accessAuxData,
+        bytes calldata conditionData,
+        address caller
+    ) external view returns (bool);
+}
+
+interface ICDRReadCondition {
+    function checkReadCondition(
+        uint32 uuid,
+        bytes calldata accessAuxData,
+        bytes calldata conditionData,
+        address caller
+    ) external view returns (bool);
+}
+```
+
+CDR 컨트랙트는 `write()` 또는 `read()` 작업을 허용하기 전에 이러한 함수를 호출합니다.
+허용하려면 `true`를 반환하고, 거부하려면 `false`를 반환하세요. 그런 다음 볼트를 할당할 때
+조건 컨트랙트 주소를 `readConditionAddr` 또는 `writeConditionAddr`로 전달하세요.

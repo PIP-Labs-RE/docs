@@ -1,0 +1,719 @@
+---
+title: 개요
+description: DATA Network에서 검증자 노드를 실행하기 위한 가이드
+---
+
+## 빠른 링크
+
+<CardGroup cols={2}>
+  <Card
+    title="Story Geth 릴리즈"
+    icon="github"
+    href="https://github.com/piplabs/story-geth/releases"
+  >
+    최신 Story Geth 클라이언트 릴리즈를 다운로드하세요
+  </Card>
+  <Card
+    title="Story 릴리즈"
+    icon="github"
+    href="https://github.com/piplabs/story/releases/"
+  >
+    최신 DATA Foundation 컨센서스 클라이언트 릴리즈를 다운로드하세요
+  </Card>
+</CardGroup>
+
+# 개요
+
+이 섹션에서는 자체 검증자를 실행하는 방법을 안내합니다. 검증자 작업은 `story` 컨센서스 클라이언트를 통해 수행할 수 있습니다.
+
+<Note>
+  아래 작업은 노드를 실행할 필요가 없습니다! 그러나 스테이킹 보상에 참여하려면
+  검증자 노드를 실행해야 합니다.
+</Note>
+
+진행하기 전에 위임자(delegator)와 검증자(validator)의 차이를 숙지하는 것이 중요합니다:
+
+- **검증자(validator)**는 `story` 데이터 디렉터리 아래 `priv_validator_key.json` 파일에 서명 키가 존재하는, 컨센서스에 참여하는 풀 노드입니다. 검증자 키 세부 정보를 출력하려면 [검증자 키 내보내기 섹션](/network/become-a-validator#validator-key-export)을 참조하세요.
+- **위임자(delegator)**는 `IP`를 보유하고 있으며 직접 검증자를 운영하지 않고도 컨센서스 보상에 참여하길 원하는 계정 운영자를 의미합니다.
+
+`story` 바이너리가 있는 동일한 폴더에 `IP`가 충전된 계정의 `PRIVATE_KEY`가 포함된 `.env` 파일을 추가하세요. **아래의 모든 작업에 위임자 계정을 사용할 것을 권장합니다.**
+
+<Note>
+  검증자 자체로 트랜잭션을 발행할 수도 있습니다. 검증자에 해당하는 EVM
+  개인 키를 얻으려면 [Validator Key Export](#validator-key-export) 섹션을 참조하세요.
+  **Story v1.2.0**부터 사용자는 모든 작업에 `.env`를 사용해야 합니다.
+</Note>
+
+`.env` 파일은 다음과 같이 보여야 합니다 _(0x 접두사를 추가하지 않도록 주의하세요):_
+
+```bash
+# ~/.env
+PRIVATE_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+이를 통해 다양한 검증자 작업을 수행할 준비가 모두 완료되었습니다! 아래에서는 CLI를 통해 지원되는 모든 작업을 안내합니다:
+
+## 검증자 키 내보내기
+
+기본적으로 `./story init`을 실행하면 검증자 키가 자동으로 생성됩니다. 검증자 키를 보려면 다음 명령을 실행하세요:
+
+```bash
+./story validator export [flags]
+```
+
+이는 검증자 공개 키 파일을 압축 및 비압축 형식으로 출력합니다. 기본적으로 공개 식별에는 16진수로 인코딩된 압축 키를 사용합니다.
+
+```text
+Compressed Public Key (hex): 03bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a63984
+Compressed Public Key (base64): A73HuJQLq+kibVLX+imaH689ZKgvgJiJJWyPFGlYpjmE
+Uncompressed Public Key (hex): 04bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a6398496b9e2af0a3a1d199c3cc1d09ee899336a530c185df6b46a9735b25e79a493af
+EVM Address: 0x9EacBe2C3B1eb0a9FC14106d97bd3A1F89efdDCc
+Validator Address: storyvaloper1p470h0jtph4n5hztallp8vznq8ehylsw9vpddx
+Delegator Address: story1p470h0jtph4n5hztallp8vznq8ehylswtr4vxd
+```
+
+**사용 가능한 플래그:**
+
+- `--export-evm-key`: (bool) 검증자의 파생된 EVM 개인 키를 기본 데이터 구성 디렉터리로 내보냅니다
+- `--export-evm-key-path`: (string) 검증자의 파생된 EVM 개인 키에 대한 다른 다운로드 위치를 지정합니다
+- `--keyfile`: (string) Tendermint 키 파일 경로 (기본값 "/home/ubuntu/.story/story/config/priv_validator_key.json")
+
+<Tip>
+  위임자가 아닌 검증자로 트랜잭션을 발행하려면 키를 `.env` 파일로 내보내고
+  IP가 전송되어 있는지 확인할 수 있습니다. 예: `./story validator export --export-evm-key --evm-key-path
+  .env`
+</Tip>
+
+## 검증자 생성
+
+새 검증자를 생성하려면 다음 명령을 실행하세요:
+
+```bash Locked token node
+./story validator create
+       --stake ${AMOUNT_TO_STAKE_IN_WEI} \
+       --moniker ${VALIDATOR_NAME} \
+       --rpc ${rpc} \
+       --chain-id ${chain_id} \
+       --commission-rate ${rate} \
+       --unlocked=false
+```
+
+```Text Unlocked token node
+./story validator create
+       --stake ${AMOUNT_TO_STAKE_IN_WEI} \
+       --moniker ${VALIDATOR_NAME} \
+       --rpc ${rpc} \
+       --chain-id ${chain_id} \
+       --commission-rate ${rate} \
+```
+
+이는 `priv_validator_key.json`에 저장된 검증자 키에 해당하는 검증자를 생성하며, 검증자에게 `{$AMOUNT_TO_STAKE_IN_WEI}` IP를 자체 스테이킹할 수 있도록 제공합니다.
+
+<Note>
+  컨센서스에 참여하려면 최소 1024 IP가 스테이킹되어야 합니다(`1024000000000000000000 wei`와 동일)!
+</Note>
+
+다음은 검증자 설정을 추가로 사용자 지정할 수 있는 선택적 플래그 목록입니다:
+
+**사용 가능한 플래그:**
+
+- `--stake`: 검증자가 자체 위임할 wei 단위의 금액을 설정합니다 (기본값은 `1024000000000000000000` wei).
+- `--moniker`: 검증자에 대한 사용자 지정 이름을 정의합니다. 네트워크 사용자에게 표시됩니다.
+- `--chain-id`: 트랜잭션의 Chain ID를 지정합니다. 기본값은 `1516`으로 설정되어 있습니다.
+- `--commission-rate`: 검증자의 수수료율을 bips 단위로 설정합니다 (1% = 100 bips). 예를 들어, `1000`은 10% 수수료를 나타냅니다 (기본값은 `1000`).
+- `--explorer`: 블록체인 익스플로러의 URL을 지정합니다 (기본값: [https://www.datanetscan.io](https://www.datanetscan.io)).
+- `--keyfile`: Tendermint 키 파일의 경로를 가리킵니다 (기본값: `$HOME/.story/story/config/priv_validator_key.json`).
+- `--max-commission-change-rate`: 검증자의 수수료가 변경될 수 있는 최대 비율을 bips 단위로 설정합니다. 예를 들어, `100`은 최대 1% 변경을 나타냅니다 (기본값은 `1000`).
+- `--max-commission-rate`: 검증자가 부과할 수 있는 최대 수수료율을 정의합니다, bips 단위. 예를 들어, `5000`은 50% 최대 비율을 허용합니다 (기본값은 `5000`).
+- `--rpc`: 네트워크에 연결할 RPC URL을 설정합니다 (기본값: [https://mainnet.datarpc.io](https://mainnet.datarpc.io)).
+- `--unlocked`: 잠금 해제된 토큰 스테이킹이 지원되는지 결정합니다 (`true`는 잠금 해제 스테이킹, `false`는 잠금 스테이킹). 기본적으로 이는 `true`로 설정됩니다.
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### 생성 명령 사용 예시
+
+```bash
+story validator create
+  --stake 1024000000000000000000
+  --moniker "timtimtim"
+  --commission-rate 700
+  --validator-pubkey "<validator_pubkey>" # if you dont have a .env
+  --rpc "https://mainnet.datarpc.io"
+  --chain-id 1514
+```
+
+### 검증자 확인
+
+생성된 후, `Explorer URL`을 사용하여 트랜잭션을 확인하세요. 성공한 경우, 검증자 공개 키(`priv_validator_key.json` 파일에 있음)가 다음 엔드포인트의 일부로 나열되어 있는 것을 볼 수 있어야 합니다:
+
+```bash
+curl https://testnet.datarpc.io/validators | jq .
+```
+
+축하합니다, 이제 당신은 DATA Foundation의 최초 IP 검증자 중 한 명입니다!
+
+## 검증자 스테이킹
+
+기존 검증자에 스테이킹하려면, 다음 명령을 실행하세요:
+
+```bash
+./story validator stake \
+   --validator-pubkey ${VALIDATOR_PUB_KEY_IN_HEX} \
+   --stake ${AMOUNT_TO_STAKE_IN_WEI}
+   --staking-period ${STAKING_PERIOD}
+```
+
+- 자신의 `${VALIDATOR_PUB_KEY_IN_HEX}`는 `./story validator export` 명령을 실행하여 `Compressed Public Key (hex)`로 찾을 수 있습니다.
+- 트랜잭션이 유효하려면 최소 1024 IP 상당(`*1024000000000000000000 wei`)을 스테이킹해야 합니다.
+
+스테이킹되면, `Explorer URL`을 사용하여 트랜잭션을 확인할 수 있습니다. 앞서 언급한 대로, [검증자 엔드포인트](https://mainnet.datarpc.io/validators)를 사용하여 검증자의 새로운 투표권을 확인할 수 있습니다.
+
+**사용 가능한 플래그:**
+
+- `--validator-pubkey`: (string) 스테이킹할 검증자의 공개 키
+- `--stake`: (string) wei 단위로 스테이킹할 IP 금액
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값: 1514)
+- `--explorer`: (string) 블록체인 익스플로러의 URL
+- `--help`, `-h`: stake 명령에 대한 도움말 정보 표시
+- `--rpc`: (string) 네트워크에 연결할 RPC URL
+- `--staking-period`: (stakingPeriod) 스테이킹 기간 (옵션: "flexible", "short", "medium", "long") (기본값: flexible)
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### 스테이킹 명령 사용 예시
+
+```bash
+./story validator stake \
+  --validator-pubkey 03bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a63984 \
+  --stake 1024000000000000000000
+  --staking-period "short"
+```
+
+## 검증자 언스테이킹
+
+검증자에서 언스테이킹하려면, 다음 명령을 실행하세요:
+
+```bash
+./story validator unstake \
+  --validator-pubkey ${VALIDATOR_PUB_KEY_IN_HEX} \
+  --unstake ${AMOUNT_TO_UNSTAKE_IN_WEI} \
+  --delegation-id ${ID_STAKING_PERIOD}
+```
+
+이는 선택한 검증자에서 `${AMOUNT_TO_UNSTAKE_IN_WEI}` IP를 언스테이킹합니다. 트랜잭션이 유효하려면 최소 1024 IP 상당(`*1024000000000000000000 wei`)을 언스테이킹해야 합니다.
+
+스테이킹 작업처럼, 트랜잭션을 확인하려면 `Explorer URL`을 사용하고, 검증자의 새롭게 감소된 투표권을 다시 확인하려면 [검증자 엔드포인트](https://mainnet.datarpc.io/validators)를 사용하세요.
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값: 1514)
+- `--delegation-id`: (uint32) 위임 ID (flexible 스테이킹의 경우 0)
+- `--explorer`: (string) 블록체인 익스플로러의 URL (기본값: "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--help`, `-h`: unstake 명령에 대한 도움말
+- `--rpc`: (string) 네트워크에 연결할 RPC URL (기본값: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+- `--unstake`: (string) wei 단위로 언스테이킹할 금액
+- `--validator-pubkey`: (string) 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### 언스테이킹 명령 사용 예시
+
+```bash
+./story validator unstake \
+   --validator-pubkey 03bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a63984 \
+   --unstake 1024000000000000000000 \
+   --delegation-id 1
+```
+
+## 검증자 대리 스테이킹 (Stake-on-Behalf)
+
+다른 위임자를 대신하여 스테이킹하려면, 다음 명령을 실행하세요:
+
+```bash
+./story validator stake-on-behalf \
+  --delegator-address ${DELEGATOR_EVM} \
+  --validator-pubkey ${VALIDATOR_PUB_KEY_IN_HEX} \
+  --stake ${AMOUNT_TO_STAKE_IN_WEI} \
+  --staking-period ${STAKING_PERIOD} \
+  --rpc
+  --chain-id
+```
+
+이는 제공된 위임자를 대신하여 검증자에 `${AMOUNT_TO_STAKE_IN_WEI}` IP를 스테이킹합니다. 트랜잭션이 유효하려면 최소 1024 IP 상당(`*1024000000000000000000 wei`)을 스테이킹해야 합니다.
+
+다른 스테이킹 작업처럼, 트랜잭션을 확인하려면 `Explorer URL`을 사용하고, 검증자의 증가된 투표권을 다시 확인하려면 [검증자 엔드포인트](https://mainnet.datarpc.io/validators)를 사용하세요.
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값: 1514)
+- `--delegator-address`: (string) 위임자의 EVM 주소
+- `--explorer`: (string) 블록체인 익스플로러의 URL (기본값: "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--help`, `-h`: stake-on-behalf 명령에 대한 도움말
+- `--rpc`: (string) 네트워크에 연결할 RPC URL (기본값: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+- `--stake`: (string) 검증자가 자체 위임할 wei 단위의 금액
+- `--staking-period`: (stakingPeriod) 스테이킹 기간 (옵션: "flexible", "short", "medium", "long") (기본값: flexible)
+- `--validator-pubkey`: (string) 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### Stake-on-Behalf 명령 사용 예시
+
+```bash
+./story validator stake-on-behalf \
+   --delegator-address 0xF84ce113FCEe12d78Eb41590c273498157c91520 \
+   --validator-pubkey 03e42b4d778cda2f3612c85161ba7c0aad1550a872f3279d99e028a1dfa7854930 \
+   --stake 1024000000000000000000 \
+   --staking-period "short" \
+   --rpc \
+   --chain-id
+```
+
+## 검증자 대리 언스테이킹 (Unstake-on-Behalf)
+
+위임자를 대신하여 언스테이킹할 수도 있습니다. 그러나 그렇게 하려면 해당 위임자에 대해 인가된 운영자로 등록되어야 합니다. 운영자로서 다른 위임자를 대신하여 언스테이킹하려면 다음 명령을 실행하세요:
+
+```bash
+./story validator unstake-on-behalf \
+  --delegator-address ${DELEGATOR_PUB_KEY_IN_HEX} \
+  --validator-pubkey ${VALIDATOR_PUB_KEY_IN_HEX} \
+  --unstake ${AMOUNT_TO_STAKE_IN_WEI} \
+  --rpc \
+  --chain-id
+```
+
+이는 해당 위임자에 대한 등록된 운영자라는 가정 하에, 위임자를 대신하여 검증자에서 `${AMOUNT_TO_STAKE_IN_WEI}` IP를 언스테이킹합니다. 트랜잭션이 유효하려면 최소 1024 IP 상당(`*1024000000000000000000 wei`)을 언스테이킹해야 합니다.
+
+다른 스테이킹 작업처럼, 트랜잭션을 확인하려면 `Explorer URL`을 사용하고, 검증자의 감소된 투표권을 다시 확인하려면 [검증자 엔드포인트](https://mainnet.datarpc.io/validators)를 사용하세요.
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값: 1514)
+- `--delegator-address`: (string) 위임자의 EVM 주소
+- `--explorer`: (string) 블록체인 익스플로러의 URL (기본값: "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--help`, `-h`: unstake-on-behalf 명령에 대한 도움말
+- `--rpc`: (string) 네트워크에 연결할 RPC URL (기본값: "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+- `--unstake`: (string) wei 단위로 언스테이킹할 금액
+- `--validator-pubkey`: (string) 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### Unstake-on-Behalf 명령 사용 예시
+
+```bash
+./story validator unstake-on-behalf \
+   --delegator-address 0xF84ce113FCEe12d78Eb41590c273498157c91520 \
+   --validator-pubkey 03e42b4d778cda2f3612c85161ba7c0aad1550a872f3279d99e028a1dfa7854930 \
+   --unstake 1024000000000000000000 \
+   --rpc \
+   --chain-id
+```
+
+## 검증자 Unjail
+
+검증자가 jail 상태가 되는 경우(예: 상당한 다운타임이 발생하는 경우), 다음 명령을 사용하여 해당 검증자의 jail을 해제할 수 있습니다:
+
+```Text Bash
+./story validator unjail \
+  --rpc
+  --chain-id
+```
+
+트랜잭션이 유효하려면 트랜잭션을 제출하는 지갑에 최소 1 IP가 있어야 합니다.
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID
+- `--explorer`: (string) 블록체인 익스플로러의 URL
+- `--rpc`: (string) 네트워크에 연결할 RPC URL
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### Unjail 명령 사용 예시
+
+```bash
+./story validator unjail \
+  --rpc \
+  --chain-id
+```
+
+## 검증자 대리 Unjail (Unjail-on-Behalf)
+
+인가된 운영자라면, 다음 명령을 사용하여 검증자를 대신하여 unjail할 수 있습니다:
+
+```bash
+./story validator unjail-on-behalf \
+  --validator-pubkey ${VALIDATOR_PUB_KEY_IN_HEX} \
+  --rpc \
+  --chain-id
+```
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID
+- `--explorer`: (string) 블록체인 익스플로러의 URL
+- `--rpc`: (string) 네트워크에 연결할 RPC URL
+- `--validator-pubkey`: (string) 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### Unjail-on-Behalf 명령 사용 예시
+
+```bash
+./story validator unjail-on-behalf \
+  --rpc \
+  --chain-id
+```
+
+## 검증자 롤백 (Rollback)
+
+<Warning>
+  스냅샷은 이미 업그레이드된 노드에서 가져와야 합니다. 즉, 스냅샷 노드가
+  되감기(rewind)를 수행해야 합니다.
+</Warning>
+
+업그레이드 후 장시간의 되감기에 갇힌 노드를 위한 복구 옵션:
+
+리싱크 대기: 노드가 자연스럽게 따라잡도록 둡니다. 되감기 깊이와 네트워크 대역폭에 따라 시간이 걸릴 수 있습니다.
+스냅샷 적용: Pectra로 이미 업그레이드된 노드의 스냅샷을 사용합니다. 직접 생성하거나 신뢰할 수 있는 커뮤니티 제공자로부터 얻을 수 있습니다.
+
+```bash
+./story validator rollback \
+  --rpc \
+  --chain-id
+```
+
+** 사용 가능한 플래그:**
+
+- `--api-address`: (string) API 서버가 수신할 주소 (기본값 "\***\*\*\*\***:1317")
+- `--api-enable`: (bool) API 서버를 활성화할지 여부 정의
+- `--api-enable-unsafe-cors`: (bool) API 서버에 대해 안전하지 않은 CORS 활성화
+- `--api-idle-timeout`: (uint) API 서버 유휴 타임아웃(초) 정의 (기본값 10)
+- `--api-max-header-bytes`: (uint) API 서버 최대 헤더(바이트) 정의 (기본값 8192)
+- `--api-read-header-timeout`: (uint) API 서버 읽기 헤더 타임아웃(초) 정의 (기본값 10)
+- `--api-read-timeout`: (uint) API 서버 읽기 타임아웃(초) 정의 (기본값 10)
+- `--api-write-timeout`: (uint) API 서버 쓰기 타임아웃(초) 정의 (기본값 10)
+- `--app-db-backend`: (string) 애플리케이션 및 스냅샷 데이터베이스의 데이터베이스 유형 (기본값 "goleveldb")
+- `--engine-endpoint`: (string) EVM 실행 클라이언트 Engine API http 엔드포인트 (기본값 "http://localhost:8551")
+- `--engine-jwt-file`: (string) Engine API JWT 파일 경로
+- `--evm-build-delay`: (duration) EVM 페이로드 빌드를 트리거하고 가져오는 사이의 최소 지연 (기본값 600ms)
+- `--evm-build-optimistic`: (bool) 이전 블록 finalize 시 EVM 페이로드의 낙관적 빌드 활성화 (기본값 true)
+- `--help`: (bool) rollback 도움말
+- `--home`: (string) 구성과 데이터가 포함된 애플리케이션 홈 디렉터리 (기본값 "/home/timothyshen/.story/story")
+- `--log-color`: (string) 로그 색상 (콘솔 형식에만 적용); auto, force, disable (기본값 "auto")
+- `--log-format`: (string) 로그 형식; console, json (기본값 "console")
+- `--log-level`: (string) 로그 레벨; debug, info, warn, error (기본값 "info")
+- `--min-retain-blocks`: (uint) CometBFT 블록 정리(prune)를 위한 ABCI commit 중 최소 블록 높이 오프셋
+- `--network`: (string) 참여할 DATA Network: story, odyssey, aeneid 또는 local
+- `--number`: (uint) 롤백할 블록 수 (기본값 1)
+- `--pruning`: (string) 정리(prune) 전략 (default|nothing|everything) (기본값 "nothing")
+- `--snapshot-interval`: (uint) 상태 동기화 스냅샷 간격 (기본값 1000)
+- `--snapshot-keep-recent`: (uint) 유지할 상태 동기화 스냅샷 (기본값 2)
+- `--tracing-endpoint`: (string) Tracing OTLP 엔드포인트
+- `--tracing-headers`: (string) Tracing OTLP 헤더
+
+### Rollback 명령 사용 예시
+
+```bash
+./story validator rollback \
+  --rpc \
+  --chain-id
+```
+
+## 검증자 재위임 (Redelegate)
+
+한 검증자에서 다른 검증자로 재위임하려면, 다음 명령을 실행하세요:
+
+```bash
+./story validator redelegate \
+  --validator-src-pubkey ${VALIDATOR_SRC_PUB_KEY_IN_HEX} \
+  --validator-dst-pubkey ${VALIDATOR_DST_PUB_KEY_IN_HEX} \
+  --redelegate ${AMOUNT_TO_REDELEGATE_IN_WEI}
+  --rpc \
+  --chain-id
+```
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값 1514)
+- `--delegation-id`: (uint32) 위임 ID (flexible 스테이킹의 경우 0)
+- `--explorer`: (string) 블록체인 익스플로러의 URL (기본값 "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--help`, `-h`: redelegate 명령에 대한 도움말
+- `--redelegate`: (string) wei 단위로 재위임할 금액
+- `--rpc`: (string) 네트워크에 연결할 RPC URL (기본값 "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+- `--validator-dst-pubkey`: (string) 대상 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--validator-src-pubkey`: (string) 원본 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+≈
+
+```bash
+./story validator redelegate \
+  --validator-src-pubkey 03bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a63984 \
+  --validator-dst-pubkey 02ed58a9319aba87f60fe08e87bc31658dda6bfd7931686790a2ff803846d4e59c \
+  --redelegate 1024000000000000000000 \
+  --rpc \
+  --chain-id
+```
+
+## 검증자 대리 재위임 (Redelegate-on-Behalf)
+
+인가된 운영자라면, 다음 명령을 사용하여 위임자를 대신해 한 검증자에서 다른 검증자로 재위임할 수 있습니다:
+
+```bash
+./story validator redelegate-on-behalf \
+  --delegator-address ${DELEGATOR_EVM_ADDRESS} \
+  --validator-src-pubkey ${VALIDATOR_SRC_PUB_KEY_IN_HEX} \
+  --validator-dst-pubkey ${VALIDATOR_DST_PUB_KEY_IN_HEX} \
+  --redelegate ${AMOUNT_TO_REDELEGATE_IN_WEI} \
+  --rpc \
+  --chain-id
+```
+
+**사용 가능한 플래그:**
+
+- `--chain-id`: (int) 트랜잭션에 사용할 Chain ID (기본값 1514)
+- `--delegation-id`: (uint32) 위임 ID (flexible 스테이킹의 경우 0)
+- `--delegator-address`: (string) 위임자의 EVM 주소
+- `--explorer`: (string) 블록체인 익스플로러의 URL (기본값 "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--help`, `-h`: redelegate-on-behalf 명령에 대한 도움말
+- `--redelegate`: (string) wei 단위로 재위임할 금액
+- `--rpc`: (string) 네트워크에 연결할 RPC URL (기본값 "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+- `--validator-dst-pubkey`: (string) 대상 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--validator-src-pubkey`: (string) 원본 검증자의 16진수로 인코딩된 압축된 33바이트 secp256k1 공개 키
+- `--story-api`: 잠재적인 자금 손실을 방지합니다. 기본적으로 `http://localhost:1317`을 값으로 설정해야 합니다.
+
+### Redelegate-on-Behalf 명령 사용 예시
+
+```bash
+./story validator redelegate-on-behalf \
+  --delegator-address 0xf398C12A45Bc409b6C652E25bb0a3e702492A4ab \
+  --validator-src-pubkey 03bdc7b8940babe9226d52d7fa299a1faf3d64a82f809889256c8f146958a63984 \
+  --validator-dst-pubkey 02ed58a9319aba87f60fe08e87bc31658dda6bfd7931686790a2ff803846d4e59c \
+  --redelegate 1024000000000000000000 \
+  --rpc \
+  --chain-id
+```
+
+## 운영자 설정 (Set Operator)
+
+위임자는 자신을 대신해 언스테이킹하거나 재위임할 운영자를 추가할 수 있습니다. 운영자를 추가하려면, 다음 명령을 실행하세요:
+
+- `--chain-id` int 트랜잭션에 사용할 Chain ID (기본값 1514)
+- `--explorer` string 블록체인 익스플로러의 URL (기본값 "[https://www.datanetscan.io](https://www.datanetscan.io)")
+- `--operator` string 위임자에 대한 운영자 설정
+- `--rpc` string 네트워크에 연결할 RPC URL (기본값 "[https://mainnet.datarpc.io](https://mainnet.datarpc.io)")
+
+```bash
+./story validator set-operator \
+  --operator ${OPERATOR_EVM_ADDRESS} \
+  --rpc \
+  --chain-id \
+  --story-api ${DATAFDN_API_URL}
+```
+
+트랜잭션이 유효하려면 트랜잭션을 제출하는 지갑에 최소 1 IP가 있어야 합니다.
+
+### 운영자 추가 명령 사용 예시
+
+```bash
+./story validator set-operator \
+  --operator 0xf398C12A45Bc409b6C652E25bb0a3e702492A4ab \
+  --rpc \
+  --chain-id \
+  --story-api http://localhost:1317
+```
+
+## 운영자 해제 (Unset Operator)
+
+운영자를 제거하려면, 다음 명령을 실행하세요:
+
+```bash
+./story validator unset-operator \
+  --operator ${OPERATOR_EVM_ADDRESS} \
+  --rpc \
+  --chain-id \
+  --story-api ${DATAFDN_API_URL}
+```
+
+### 운영자 제거 명령 사용 예시
+
+```bash
+./story validator remove-operator \
+  --operator 0xf398C12A45Bc409b6C652E25bb0a3e702492A4ab \
+  --rpc \
+  --chain-id \
+  --story-api http://localhost:1317
+```
+
+## 보상 주소 설정 (Set Rewards Address)
+
+위임자가 스테이킹 및 출금 보상을 받는 주소를 변경하려면 다음을 실행할 수 있습니다:
+
+```bash
+./story validator set-rewards-address \
+  --rewards-address ${OPERATOR_EVM_ADDRESS} \
+  --story-api ${DATAFDN_API_URL}
+```
+
+트랜잭션이 유효하려면 트랜잭션을 제출하는 지갑에 최소 1 IP가 있어야 합니다.
+
+### 출금 주소 설정 명령 사용 예시
+
+```bash
+./story validator set-rewards-address \
+  --rewards-address 0xf398C12A45Bc409b6C652E25bb0a3e702492A4ab
+  --story-api http://localhost:1317
+```
+
+## 출금 주소 설정 (Set Withdrawal Address)
+
+위임자가 스테이킹 및 출금 보상을 받는 주소를 변경하려면 다음을 실행할 수 있습니다:
+
+```bash
+./story validator set-withdrawal-address \
+  --withdrawal-address ${OPERATOR_EVM_ADDRESS} \
+  --story-api ${DATAFDN_API_URL}
+```
+
+트랜잭션이 유효하려면 트랜잭션을 제출하는 지갑에 최소 1 IP가 있어야 합니다.
+
+### 출금 주소 설정 명령 사용 예시
+
+```bash
+./story validator set-withdrawal-address \
+  --withdrawal-address 0xf398C12A45Bc409b6C652E25bb0a3e702492A4ab
+  --story-api http://localhost:1317
+```
+
+## 검증자 수수료 업데이트
+
+검증자의 수수료율을 변경하려면 다음을 실행할 수 있습니다:
+
+```
+./story validator update-validator-commission \
+    --commission-rate ${NEW_COMMISSION}
+```
+
+### 검증자 수수료 업데이트 예시
+
+```
+./story validator update-validator-commission \
+    --commission-rate 5000
+```
+
+## DATA Foundation API 활성화
+
+전제 조건:
+
+1. 풀 노드가 동기화되고 최신 블록을 따라잡았는지 확인하세요
+
+활성화 단계:
+
+1. `${DATAFDN_DATA_ROOT}/config/story.toml`로 이동하세요
+2. `[api]` 섹션 아래의 `enable = true`로 설정하세요
+3. 노드를 재시작하세요
+
+그러면 `http://localhost:1317`을 `-story-api` 값으로 사용할 수 있습니다.
+
+## 검증자를 다른 머신으로 마이그레이션
+
+<Warning>
+  검증자 노드를 새 머신으로 마이그레이션하기 전에, 현재 노드가 완전히
+  종료되었는지 확인하세요. 활성 검증자를 복구하려고 시도하면 "이중 서명"이
+  발생할 수 있으며, 이는 위임된 지분의 슬래싱으로 이어질 수 있는
+  중대한 오류입니다.
+</Warning>
+
+1. 검증자에 대한 새 환경을 구성하는 것부터 시작하세요. 새로운 풀 노드가 네트워크의 최신 블록에 완전히 동기화되었는지 확인하세요.
+2. 실수로 이중 서명되는 것을 피하려면, 새 인스턴스를 활성화하기 전에 원본 검증자 노드를 완전히 종료하는 것이 필수입니다. 시스템 재부팅 후 자동으로 다시 시작되는 것을 방지하려면 Story 서비스 파일을 삭제하는 것을 권장합니다. 또한 `priv_validator_key.json`과 `priv_validator_state.json`을 모두 백업하고 활성 검증자가 실행 중인 현재 서버에서 제거하세요. 이 단계를 건너뛰면 블록을 놓치거나 다른 페널티가 발생할 수 있습니다.
+
+```bash
+# Step 1: Stop the original validator node
+sudo systemctl stop <your_service_file_name>.service
+
+# Step 2: Disable the Story service to prevent automatic restarts
+sudo systemctl disable <your_service_file_name>.service
+
+# Step 3: Delete the Story service file to prevent it from starting on reboot
+sudo rm /etc/systemd/system/<your_service_file_name>.service
+
+# Step 4: Back up the `priv_validator_key.json` file securely, e.g., using SFTP:
+# Use an SFTP client or a secure method to download the file without displaying it in the terminal
+# If needed for verification purposes only, you may view it with the following command:
+cat ~/.story/story/config/priv_validator_key.json
+
+# Step 5: Remove the `priv_validator_key.json` file from the current server
+rm ~/.story/story/config/priv_validator_key.json
+```
+
+3. 새 머신의 `~/.story/story/config/` 디렉터리에서 `priv_validator_key.json`과 `priv_validator_state.json`을 찾습니다. 이 파일을 이전 검증자의 백업 사본으로 교체합니다.
+
+<Warning>
+  계속 진행하기 전에, 원래 서버의 이전 검증자를 종료하고 다시 시작하지
+  마세요!
+</Warning>
+
+4. 개인 키 파일을 전송한 후, 새로운 설정에서 검증자 노드를 재시작하세요. 이렇게 하면 검증자가 네트워크와 다시 통합되어 검증 역할을 재개할 수 있습니다.
+
+## 검증자를 위한 개인 키 암호화
+
+이 기능을 통해 운영자는 CLI 명령으로 암호화된 형태의 개인 키를 안전하게 생성, 저장 및 관리할 수 있으며, 여기에는 설정 중 키 암호화, 암호화되지 않은 키 마이그레이션, 그리고 검증자 작업을 위한 안전한 액세스가 포함됩니다.
+
+### 개인 키 암호화 개요
+
+개인 키 암호화는 사용자가 정의한 비밀번호로 민감한 암호화 키를 암호화하는 중요한 보안 조치입니다. 검증자 작업의 맥락에서는, 이는 개인 키 파일이 노출되거나 권한 없는 당사자에 의해 접근되더라도 올바른 비밀번호 없이는 사용할 수 없음을 의미합니다. Story CLI는 검증자 워크플로우에 암호화를 직접 통합하여 사용 편의성을 유지하면서 운영자가 더 강력한 보안 제어를 시행할 수 있도록 합니다. 이 기능은 개인 키가 평문으로 저장되거나 사용되는 것을 방지하여 우발적인 키 유출이나 무단 서버 액세스와 같은 일반적인 공격 벡터를 완화하도록 설계되었습니다.
+
+### 개인 키 암호화로 검증자 초기화
+
+Story CLI를 사용하여 새 검증자를 설정할 때, 운영자는 한 단계에서 검증자의 개인 키를 생성하고 암호화할 수 있습니다. 초기화 중에 `--encrypt-priv-key` 플래그를 추가함으로써 CLI는 운영자에게 비밀번호 생성을 요청하고, 이는 생성된 개인 키를 암호화하는 데 사용됩니다. 이 암호화된 키는 `story/config/priv_validator_key.enc`에 안전하게 저장됩니다.
+
+이 개선을 통해 초기화 중에 개인 키가 평문으로 디스크에 기록되지 않아 우발적 노출의 위험이 크게 줄어듭니다. 일단 암호화되면, 키는 보호된 상태로 유지되며, 검증자 관련 작업을 수행하기 전에 비밀번호 복호화가 필요합니다.
+
+**사용 예시:**
+
+```bash
+./story init --encrypt-priv-key --network local
+```
+
+이 예시에서는 검증자가 로컬 네트워크에서 초기화되어 개인 키 암호화 프로세스가 자동으로 트리거됩니다. 이 단계에서 운영자는 비밀번호를 입력하고 확인하라는 메시지를 받습니다. 결과로 생성된 암호화된 키 파일은 모든 검증자 작업의 기반이 됩니다.
+
+### 암호화된 개인 키 사용
+
+개인 키가 암호화되면, 모든 키 의존 검증자 작업에 대해 복호화가 필요합니다. Story CLI는 검증자 노드를 실행할 때 암호화된 키 파일을 자동으로 감지하고 비밀번호를 묻습니다. 단, 검증자 관련 CLI 명령의 경우 암호화된 키 파일의 경로를 지정해야 합니다. 키 파일 경로가 제공되지 않으면, CLI는 .env 파일의 개인 키로 폴백합니다.
+
+비밀번호 프롬프트는 CLI를 통해 대화형으로 나타나며, 잘못된 비밀번호가 제공되면 실행을 차단합니다. 그 결과, 올바른 비밀번호를 가진 인가된 운영자만이 개인 키를 잠금 해제하고 사용할 수 있어 무단 액세스로부터 보호됩니다.
+
+이 워크플로우는 일반적인 검증자 명령과 통합되어, 개발자 경험을 유지하면서 보안을 강화합니다. 자동화가 필요한 환경의 경우 비밀번호를 안전하게 관리하기 위해 추가 도구(예: 비밀번호 관리자 또는 안전한 키 볼트)를 사용할 수 있습니다. 그렇지만 암호화의 목적을 훼손하지 않도록 주의가 필요합니다.
+
+**예시:**
+
+```bash
+./story validator start
+# CLI will prompt: "Enter password to decrypt private key:"
+```
+
+이 동작은 개인 키 액세스가 필요한 모든 검증자 명령에 일관되게 적용됩니다.
+
+### 기존 개인 키 암호화
+
+암호화되지 않은 개인 키로 검증자를 이미 실행 중인 운영자를 위해, Story CLI는 이제 암호화된 키 저장을 채택할 수 있는 간단한 마이그레이션 경로를 제공합니다. encrypt 명령을 사용하여 기존 개인 키(일반적으로 .env 파일에 정의됨)를 안전하게 암호화할 수 있습니다.
+
+명령이 실행되면, CLI는 비밀번호 설정을 요청합니다. 개인 키는 암호화되고 `--enc-key-file` 플래그를 사용하여 지정된 경로에 저장됩니다. 암호화된 키는 검증자 작업의 기본값이 되어, 더 나은 보안을 위해 .env 파일의 원본 키를 수동으로 제거할 수 있습니다. 이는 명시적인 키 입력이 여전히 필요한 검증자 관련 CLI 명령에는 적용되지 않습니다.
+
+**사용 예시:**
+
+```bash
+./story encrypt --encrypt-priv-key
+```
+
+이를 통해 기존 검증자는 재초기화 없이 암호화된 키 관리의 향상된 보안 혜택을 받을 수 있습니다. `.env` 파일에서 평문 키를 삭제하기 전에 비밀번호와 암호화된 키 파일을 안전하게 백업하는 것이 좋습니다.
+
+### 암호화된 개인 키 보기
+
+Story CLI는 운영자가 암호화된 키에 대한 투명성과 제어권을 가질 수 있도록 show 명령을 도입합니다. 이 명령은 암호화된 개인 키 파일(`--enc-key-file` 플래그로 지정됨)을 복호화하여 공개 키와 검증자 주소와 같은 필수 정보를 표시합니다. 이는 전통적인 export 명령의 기능을 반영하지만 암호화된 키를 지원합니다.
+
+운영자는 키 세부 정보를 공개하기 전에 암호화 비밀번호를 입력하라는 메시지를 받으며, 이는 민감한 정보를 무단 액세스로부터 보호합니다. 고급 사용자의 경우 선택적 `--show-private` 플래그를 통해 16진수로 인코딩된 개인 키가 표시됩니다. 그러나 이는 암호화의 목적을 무효화하고 키를 잠재적 손상에 노출시키므로 신중하게 사용해야 합니다.
+
+**사용 예시:**
+
+```bash
+# View public information (e.g., public key, address)
+./story key show-encrypted --encrypt-key-file <encrypted-key-file-path>
+# View public information and the raw private key (use with caution)
+./story key show-encrypted --show-private --enc-key-file <encrypted-key-file-path>
+```
+
+`--show-private`는 복구나 다른 시스템으로의 마이그레이션과 같은 예외적인 운영상의 필요를 위해 안전한 환경에서만 사용하는 것이 좋습니다.

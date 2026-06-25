@@ -1,0 +1,262 @@
+---
+title: 🪝 Hooks
+sidebarTitle: Hooks
+icon: fishing-rod
+description: 라이선스 토큰을 발행하거나 파생물을 등록하기 전에 사용자 정의 로직을 추가합니다.
+---
+
+Hooks를 사용하면 개발자는 [License Tokens](/concepts/licensing-module/license-token) 발행 또는 파생물 등록 시 사용자 정의 구현, 제한 및 기능을 만들 수 있습니다.
+
+Hooks에는 두 가지 유형이 있습니다:
+
+1. **Licensing Hooks**: [라이선스 토큰을 발행하기 전에 사용자 정의 로직을 추가](/concepts/licensing-module/license-config#logic-that-is-possible-with-license-config)할 수 있게 해줍니다(및 파생물 등록). 예를 들어, 동적 가격 요청, 발행 가능한 라이선스 토큰 수 제한, 화이트리스트 등이 있습니다. Licensing Hooks는 언제든지 licensing config에서 추가/수정할 수 있습니다.
+2. **Commercializer Checker Hooks**: Licensing Hooks와 유사하지만, 직접적으로 라이선스 조건의 일부이며 변경되지 않습니다. 또한 사용자 정의 발행 수수료를 반환할 수도 없습니다.
+
+## Licensing Hooks
+
+이들은 `IModule`을 확장하는 `ILicensingHook` 인터페이스를 구현하는 컨트랙트입니다.
+
+가장 중요한 점은, Licensing Hook가 License Token이 발행되기 전에 호출되어 [사용자 정의 로직](/concepts/licensing-module/license-config#logic-that-is-possible-with-license-config)을 구현하고 해당 License Token의 최종 `totalMintingFee`를 결정하는 `beforeMintLicenseTokens` 함수를 구현한다는 점입니다.
+
+<Note>
+  `ILicensingHook` 스마트 컨트랙트는
+  [여기](https://github.com/storyprotocol/protocol-core-v1/blob/main/contracts/interfaces/modules/licensing/ILicensingHook.sol#L26)에서 확인하세요.
+</Note>
+
+```solidity ILicensingHook.sol
+/// @notice This function is called when the LicensingModule mints license tokens.
+/// @dev The hook can be used to implement various checks and determine the minting price.
+/// The hook should revert if the minting is not allowed.
+/// @param caller The address of the caller who calling the mintLicenseTokens() function.
+/// @param licensorIpId The ID of licensor IP from which issue the license tokens.
+/// @param licenseTemplate The address of the license template.
+/// @param licenseTermsId The ID of the license terms within the license template,
+/// which is used to mint license tokens.
+/// @param amount The amount of license tokens to mint.
+/// @param receiver The address of the receiver who receive the license tokens.
+/// @param hookData The data to be used by the licensing hook.
+/// @return totalMintingFee The total minting fee to be paid when minting amount of license tokens.
+function beforeMintLicenseTokens(
+  address caller,
+  address licensorIpId,
+  address licenseTemplate,
+  uint256 licenseTermsId,
+  uint256 amount,
+  address receiver,
+  bytes calldata hookData
+) external returns (uint256 totalMintingFee);
+```
+
+이 함수가 `totalMintingFee`를 반환한다는 점에 유의하세요. "License Terms에서 발행 수수료를 설정할 수도 있고, `LicenseConfig`에서도 설정할 수 있고, `beforeMintLicenseTokens`에서 동적 가격을 반환할 수도 있다. 그러면 최종 발행 수수료는 실제로 무엇이 될까?"라고 궁금해할 수 있습니다. 우선순위는 다음과 같습니다:
+
+| 발행 수수료                                                    | 중요도            |
+| ------------------------------------------------------------- | ---------------- |
+| `beforeMintLicenseTokens`에서 반환된 `totalMintingFee`         | 최고 우선순위      |
+| `LicenseConfig`에 설정된 `mintingFee`                         | ⬇️               |
+| License Terms에 설정된 `mintingFee`                            | 최저 우선순위      |
+
+<Warning>
+  외부 license hook의 잠재적으로 악의적인 구현에 주의하세요.
+  선택한 hook의 코드는 DATA Foundation 팀에 의해 검토 또는 감사되지 않았을 수
+  있으므로 먼저 직접 확인하세요.
+</Warning>
+
+### 사용 가능한 Hooks
+
+다음은 우리 프로토콜에 배포되어 사용할 수 있는 hooks입니다.
+
+<Info>
+
+이 hooks의 배포된 주소는 [여기](/developers/deployed-smart-contracts#license-hooks)에서 확인하세요.
+
+</Info>
+
+| Hook                       | 설명                                                                                     | 컨트랙트 코드                                                                                                                     |
+| :------------------------- | :------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| LockLicenseHook            | 라이선스 토큰 발행 또는 새로운 파생물 등록을 중단합니다.                                          | [여기 보기 ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/LockLicenseHook.sol)            |
+| TotalLicenseTokenLimitHook | 발행 가능한 라이선스 토큰의 수에 제한을 설정하며, 언제든지 업데이트할 수 있습니다.                   | [여기 보기 ↗️](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/hooks/TotalLicenseTokenLimitHook.sol) |
+
+### Hooks 구현하기
+
+<CardGroup cols={2}>
+
+<Card
+  title="SDK 코드 예제"
+  href="https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts"
+  icon="code"
+>
+  licensing hook를 구현하는 방법을 보여주는 실제 작동하는 TypeScript SDK 코드 예제.
+  더 구체적으로, 발행 가능한 라이선스 수를 제한하는 방법.
+</Card>
+
+<Card
+  title="Solidity 코드 예제"
+  href="https://github.com/storyprotocol/protocol-periphery-v1/blob/main/test/hooks/TotalLicenseTokenLimitHook.t.sol"
+  icon="code"
+>
+  licensing hook를 구현하는 방법을 보여주는 실제 작동하는 Solidity 코드 예제.
+  더 구체적으로, 발행 가능한 라이선스 수를 제한하는 방법.
+</Card>
+
+</CardGroup>
+
+Licensing Hooks는 궁극적으로 `ILicensingHook` 인터페이스를 구현하는 스마트 컨트랙트입니다. 인터페이스는 [여기](https://github.com/storyprotocol/protocol-periphery-v1/blob/main/contracts/interfaces/ILicensingHook.sol)에서 볼 수 있습니다. 이미 배포된 몇 가지 Licensing Hooks가 있습니다(위 차트 참조).
+
+실제로 Licensing Hook를 사용하려면 Licensing Config에 설정해야 합니다. Licensing Config는 IP Asset에 조건을 첨부할 때 License Terms에 설정하는 일련의 구성입니다.
+
+<Steps>
+  <Step title="Licensing Config 생성">
+    먼저 Licensing Config를 생성해야 합니다:
+
+    ```typescript {6-8}
+    import { LicensingConfig } from '@story-protocol/core-sdk';
+
+    const licensingConfig: LicensingConfig = {
+        isSet: true,
+        mintingFee: 0n,
+        // address of TotalLicenseTokenLimitHook
+        // from https://docs.datafdn.org/developers/deployed-smart-contracts
+        licensingHook: '0xaBAD364Bfa41230272b08f171E0Ca939bD600478',
+        hookData: zeroAddress,
+        commercialRevShare: 0,
+        disabled: false,
+        expectMinimumGroupRewardShare: 0,
+        expectGroupRewardPool: zeroAddress,
+    }
+    ```
+
+  </Step>
+  <Step title="Licensing Config 설정">
+    다음으로, License Terms에 Licensing Config를 설정합니다. 다음 예시에서는 IP Asset을 등록할 때 이를 수행하는 방법을 보여드립니다:
+
+<Tip>
+  이 코드 스니펫은 약간의 설정이 필요하며, 이미 TypeScript SDK를 설정하는 방법을
+  이해하고 있는 개발자를 위한 것입니다. 자세한 내용은 [실제 작동하는 코드
+  예제](https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/licenses/oneTimeUseLicense.ts)를 확인하세요.
+</Tip>
+
+<Note>
+
+이는 [여기](/sdk-reference/ipasset#registeripasset)에서 찾을 수 있는 `registerIpAsset` 메서드를 사용합니다.
+
+</Note>
+
+    ```typescript {6-7}
+    const response = await client.ipAsset.registerIpAsset({
+        nft: {
+            type: 'mint',
+            spgNftContract: '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc', // public spg contract for ease-of-use
+        },
+        licenseTermsData: [
+            {
+                terms: { defaultMintingFee: 0, commercialUse: true, ... }, // dummy license terms
+                // set the licensing config here
+                licensingConfig: licensingConfig
+            },
+        ],
+        ipMetadata: {
+            ipMetadataURI: 'test-uri',
+            ipMetadataHash: toHex('test-metadata-hash', { size: 32 }),
+            nftMetadataHash: toHex('test-nft-metadata-hash', { size: 32 }),
+            nftMetadataURI: 'test-nft-uri',
+        }
+    })
+
+    console.log(`Token ID: ${response.tokenId}, IPA ID: ${response.ipId}, License Terms ID: ${response.licenseTermsIds}`);
+    ```
+
+  </Step>
+  <Step title="제한을 1로 설정">
+    이제 조건에 Licensing Config를 설정했으므로, hook의 `setTotalLicenseTokenLimit` 함수를 호출하여 발행 가능한 최대 라이선스 수를 1로 설정할 수 있습니다.
+
+    ```typescript
+    const hookResponse = await client.license.setMaxLicenseTokens({
+      ipId: response.ipId,
+      licenseTermsId: response.licenseTermsIds![0],
+      maxLicenseTokens: 1000,
+    });
+
+    console.log(`Max license tokens set at transaction hash ${hookResponse.txHash}`);
+
+    ```
+
+  </Step>
+</Steps>
+
+### 새로운 Licensing Hook 생성
+
+새로운 licensing hook를 만들고 DATA Foundation 프로토콜에 화이트리스트로 등록하려면 아래 절차를 따르세요.
+
+1. **Hook 개발**: [이 템플릿 저장소](https://github.com/storyprotocol/hook-dev-template)를 포크하여 개발을 부트스트랩할 수 있습니다. 우리 Aeneid 프로토콜에 대한 테스트와 함께 예시 hook가 포함되어 있지만, 사용은 선택 사항입니다.
+
+   <Tip>
+
+   `LicenseCallerWhitelistHook.sol` hook를 개발하는 데 사용된 예시로
+   [license-caller-whitelist-hook](https://github.com/jacob-tucker/license-caller-whitelist-hook)을
+   참조하세요.
+
+   </Tip>
+
+2. **Registered Modules 저장소 포크**: [registered-modules 저장소](https://github.com/storyprotocol/registered-modules)를 자신의 GitHub 계정으로 포크하세요.
+
+3. **Module 목록 업데이트**: `registered-modules` 저장소에서 `hook-modules.json` 파일에 hook의 세부 정보를 추가하세요. aeneid 및 mainnet 모두에 hook를 **배포 및 블록 익스플로러에서 검증**해야 합니다. 다음 JSON 구조를 준수하는지 확인하세요:
+
+   ```json
+   {
+     "name": "YourModuleName",
+     "aeneid": {
+       "address": "YourModuleAddress",
+       "blockExplorerLink": "YourModuleBlockExplorerLink"
+     },
+     "mainnet": {
+       "address": "YourModuleAddress",
+       "blockExplorerLink": "YourModuleBlockExplorerLink"
+     }
+   }
+   ```
+
+   `YourModuleName`, `YourModuleAddress`, `YourModuleBlockExplorerLink`를 각각 hook의 이름, 주소, 블록 익스플로러 페이지 링크로 바꾸세요.
+
+   예시:
+
+   ```json
+   {
+     "name": "LicenseCallerWhitelistHook",
+     "aeneid": {
+       "address": "0x37be56d9fb06d885cda3cb010096c94c28b4d658",
+       "blockExplorerLink": "https://aeneid.datanetscan.io/address/0x37be56d9fb06d885cda3cb010096c94c28b4d658?tab=contract"
+     },
+     "mainnet": {
+       "address": "0x6d9d51a444c8318e8840e75dab7ed81b5a714610",
+       "blockExplorerLink": "https://www.datanetscan.io/address/0x6d9d51a444c8318e8840e75dab7ed81b5a714610?tab=contract"
+     }
+   }
+   ```
+
+4. **Pull Request (PR) 생성**: hook를 추가한 후, 이 저장소에 대해 pull request를 생성하세요. PR 설명에 다음 정보를 추가하세요(값은 본인의 것으로 바꾸세요):
+
+   ```md
+   ## Register my module
+
+   - Module type: `hook`
+   - Module name: `LicenseCallerWhitelistHook`
+   - Aeneid Module address: `0x37be56d9fb06d885cda3cb010096c94c28b4d658`
+   - Mainnet Module address: `0x6d9d51a444c8318e8840e75dab7ed81b5a714610`
+   - My module is immutable: yes
+   - My module is using an upgradeable proxy: no
+   - My module has been verified on the block explorer (required): yes
+   - Summary of my module: Hook for allowing a licensor to gate which addresses can mint a license. The licensor can add/remove an address at any time.
+   - GitHub repository with source code and tests: https://github.com/jacob-tucker/license-caller-whitelist-hook
+   ```
+
+5. **검증 대기**: PR이 제출되면 검토됩니다. 보안 감사가 수행 및 완료되고 모듈이 프로토콜에 화이트리스트로 등록되면, PR이 병합됩니다. 이 시점에서 모듈은 공식적으로 등록되고 DATA Foundation 커뮤니티에서 사용하기에 안전한 것으로 인정됩니다.
+
+여러분의 기여를 기대하며 DATA Foundation 모듈 생태계를 확장해 나가길 바랍니다!
+
+## Commercializer Checker Hooks
+
+<Warning>
+
+문서가 곧 제공될 예정입니다. 그동안 질문이 있으시면 [Builder's Discord](https://discord.gg/databuilders)에서 문의해 주세요.
+
+</Warning>

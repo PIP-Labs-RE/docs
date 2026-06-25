@@ -1,0 +1,52 @@
+---
+title: Engine API
+icon: arrows-left-right
+---
+Engine API는 EVM 노드의 실행 계층(Execution Layer, EL)과 합의 계층(Consensus Layer, CL) 간의 통신을 가능하게 하는 JSON-RPC 메서드 모음입니다. DATA Foundation의 실행 계층은 완전한 EVM 호환성을 제공하며, [Ethereum Engine API](https://github.com/ethereum/execution-apis/blob/main/src/engine/common.md)에 정의된 모든 표준 JSON-RPC 메서드를 지원합니다. 한편, Cosmos 모듈을 기반으로 구축된 DATA Foundation의 합의 계층은 Engine API를 활용하여 실행 계층과 상호 작용합니다.
+
+## 기능
+
+Engine API는 다음과 같은 필수 조정 메커니즘을 제공하여 EL과 CL 간의 원활한 상호 작용을 가능하게 합니다:
+
+* **핸드셰이크(Handshake)**
+* **동기화(Synchronization)**
+* **블록 검증(Block Validation)**
+* **블록 제안(Block Proposal)**
+
+## 실행 계층 구현
+
+DATA 네트워크의 EL은 이러한 기능을 지원하기 위해 다음과 같은 표준 Engine API 메서드를 구현합니다:
+
+* `engine_exchangeCapabilities`: 지원되는 메서드를 교환합니다.
+* `engine_getClientVersion`: 클라이언트 버전 데이터를 교환합니다.
+* `engine_newPayload`: 주어진 페이로드를 로컬 체인에 삽입합니다.
+* `engine_forkchoiceUpdate`: 정식 체인 마커를 업데이트하고 주어진 속성으로 페이로드를 생성합니다.
+* `engine_getPayload`: 미리 생성된 페이로드를 조회합니다.
+
+## 합의 계층 상호 작용
+
+DATA Foundation의 합의 계층(CL)은 이러한 메서드와 어떻게 상호 작용할까요? 그 답은 CometBFT ABCI++에 있습니다.
+
+CometBFT는 Cosmos 모듈에 합의와 보안을 제공하는 상태 머신 복제 엔진입니다. ABCI++(ABCI 2.0이라고도 함)은 CometBFT와 복제 대상이 되는 실제 상태 머신(즉, EL의 상태 머신) 사이의 인터페이스입니다.
+
+ABCI++는 아래와 같이 Engine API와 상호 작용하는 메서드 집합으로 구성됩니다:
+
+### **1. PrepareProposal** (새 블록 제안)
+
+* CL은 `payloadID`를 사용해 페이로드가 이미 생성 중인지 확인합니다.
+* 그렇지 않은 경우, CL은 `engine_forkchoiceUpdate`를 호출하여 새 페이로드 생성을 트리거합니다.
+* 그런 다음 CL은 `payloadID`로 `engine_getPayload`를 호출하여 페이로드를 가져오고 새 블록을 제안합니다.
+
+### **2. ProcessProposal** (새 블록 처리)
+
+* CL은 `engine_newPayload`를 호출하여 새 블록을 EL에 전달합니다.
+* EL은 새 블록의 페이로드를 검증하고, 결정적으로 트랜잭션을 실행하며, 상태를 업데이트합니다.
+
+### **3. FinalizeBlock** (결정된 블록 확정)
+
+* CL은 `engine_newPayload`를 호출하여 확정된 블록을 EL에 전달합니다.
+* 해당 블록이 아직 EL에 통합되지 않았다면, EL은 새 블록의 페이로드를 검증하고, 결정적으로 트랜잭션을 실행하며, 상태를 업데이트합니다.
+* CometBFT가 즉시 최종성을 제공하므로 CL은 `engine_forkchoiceUpdate`를 호출하여 블록을 확정합니다.
+* 마지막으로 CL은 추가 속성과 함께 `engine_forkchoiceUpdate`를 다시 호출하여, 활성화되어 있고 해당 Validator가 다음 제안자인 경우 다음 블록의 낙관적(optimistic) 빌드를 시작합니다.
+
+이 상호 작용은 EL과 CL 간의 원활한 조정을 보장하여 DATA 네트워크의 무결성과 효율성을 유지합니다.

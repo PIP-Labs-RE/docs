@@ -1,0 +1,321 @@
+---
+title: Uploader
+description: 데이터 암호화 및 CDR 볼트에 쓰기 위한 메서드.
+---
+
+## Uploader
+
+`Uploader` 하위 클라이언트는 볼트 할당, TDH2 암호화 및 암호화된 데이터를 온체인에 쓰는 작업을 처리합니다. `walletClient`가 필요합니다.
+
+```typescript
+const uploader = client.uploader;
+```
+
+<Note>
+  볼트에 직접 저장되는 작은 비밀에는 `uploadCDR()`을, 암호화된 바이트가
+  외부 스토리지 백엔드에 있어야 하는 경우에는 `uploadFile()`을 사용하세요.
+</Note>
+
+<Note>
+  SDK는 또한 `createVault`를 `uploadCDR`의 별칭으로, `createFileVault`를
+  `uploadFile`의 별칭으로 노출합니다.
+</Note>
+
+### 메서드
+
+- uploadCDR
+- uploadFile
+- allocate
+- write
+- encryptDataKey
+
+---
+
+### uploadCDR
+
+볼트를 할당하고, 데이터를 암호화하며, ciphertext를 단일 호출로 쓰는 고수준 메서드.
+
+| Method | Type |
+| ------ | ---- |
+| `uploadCDR` | `(params: UploadCDRParams) => Promise<UploadCDRResponse>` |
+
+매개변수:
+
+- `params.dataKey`: `Uint8Array` - 암호화할 비밀 페이로드 바이트. 이름과 달리 이는 암호화 키만이 아닌 임의의 데이터가 될 수 있습니다.
+- `params.globalPubKey` *(선택)*: `Uint8Array` - DKG global public key (`observer.getGlobalPubKey()`에서). 생략하면 Observer를 통해 자동 쿼리됩니다.
+- `params.updatable`: `boolean` - 초기 쓰기 후 볼트를 재기록할 수 있는지 여부
+- `params.writeConditionAddr`: `` `0x${string}` `` - 쓰기 조건 컨트랙트의 주소
+- `params.readConditionAddr`: `` `0x${string}` `` - 읽기 조건 컨트랙트의 주소
+- `params.writeConditionData`: `` `0x${string}` `` - 쓰기 조건에 전달되는 ABI 인코딩된 데이터
+- `params.readConditionData`: `` `0x${string}` `` - 읽기 조건에 전달되는 ABI 인코딩된 데이터
+- `params.accessAuxData`: `` `0x${string}` `` - 쓰기 중 조건에 전달되는 보조 데이터
+- `params.allocateFeeOverride` *(선택)*: `bigint` - 수수료 쿼리를 건너뛰고 이 값을 사용
+- `params.writeFeeOverride` *(선택)*: `bigint` - 수수료 쿼리를 건너뛰고 이 값을 사용
+
+```typescript Example
+import { encodeAbiParameters } from "viem";
+
+// DATA Foundation license-gated pattern: only the uploader can write, and only callers
+// holding a license token for `ipId` can read. See
+// /developers/cdr-sdk/ip-asset-vaults for the full setup.
+const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
+const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
+
+const writeConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletClient.account!.address],
+);
+
+const readConditionData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [LICENSE_TOKEN, ipId],
+);
+
+const globalPubKey = await client.observer.getGlobalPubKey();
+const dataKey = new TextEncoder().encode("my secret");
+
+const { uuid, ciphertext, txHashes } = await client.uploader.uploadCDR({
+  dataKey,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: OWNER_WRITE_CONDITION,
+  readConditionAddr: LICENSE_READ_CONDITION,
+  writeConditionData,
+  readConditionData,
+  accessAuxData: "0x",
+});
+
+console.log(`Vault UUID: ${uuid}`);
+console.log(`Allocate tx: ${txHashes.allocate}`);
+console.log(`Write tx: ${txHashes.write}`);
+```
+
+<Note>
+  `OwnerWriteCondition`은 `checkWriteCondition`만 구현하므로,
+  `readConditionAddr`로 사용할 수 없습니다. 동일한 지갑이 암호화하고 복호화하는
+  소유자 전용 흐름의 경우, 두 조건 모두에 지갑(EOA) 주소를 사용하고
+  `skipConditionValidation: true`로 설정하여 아래의 저수준 `allocate()` 예시를
+  사용하세요.
+</Note>
+
+<Note>
+  `uploadCDR()` 페이로드는 결과 TDH2 ciphertext가 볼트 한도
+  (`observer.getMaxEncryptedDataSize()`, Aeneid에서는 1024 바이트)에 맞도록 충분히 작게 유지하세요.
+</Note>
+
+```typescript UploadCDRResponse
+interface UploadCDRResponse {
+  uuid: number;
+  ciphertext: TDH2Ciphertext;
+  txHashes: {
+    allocate: `0x${string}`;
+    write: `0x${string}`;
+  };
+}
+```
+
+---
+
+### uploadFile
+
+파일 바이트를 로컬에서 암호화하고, `StorageProvider`를 통해 암호화된 blob을 업로드하며,
+암호화된 파일 키와 콘텐츠 포인터를 한 번의 호출로 CDR에 쓰는 고수준 메서드.
+
+매개변수:
+
+- `params.content`: `Uint8Array` - 암호화하고 업로드할 파일 바이트
+- `params.storageProvider`: `StorageProvider` - 업로드 및 다운로드에 사용되는 백엔드
+- `params.globalPubKey` *(선택)*: `Uint8Array` - DKG global public key. 생략하면 Observer를 통해 자동 쿼리됩니다.
+- `params.updatable`: `boolean` - 볼트를 재기록할 수 있는지 여부
+- `params.writeConditionAddr`: `` `0x${string}` `` - 쓰기 조건 컨트랙트의 주소
+- `params.readConditionAddr`: `` `0x${string}` `` - 읽기 조건 컨트랙트의 주소
+- `params.writeConditionData`: `` `0x${string}` `` - ABI 인코딩된 쓰기 조건 데이터
+- `params.readConditionData`: `` `0x${string}` `` - ABI 인코딩된 읽기 조건 데이터
+- `params.accessAuxData`: `` `0x${string}` `` - 쓰기 중 조건에 전달되는 보조 데이터
+- `params.pin` *(선택)*: `boolean` - 스토리지 제공자가 업로드된 blob을 고정해야 하는지 여부
+- `params.allocateFeeOverride` *(선택)*: `bigint` - allocate 수수료 쿼리 건너뛰기
+- `params.writeFeeOverride` *(선택)*: `bigint` - write 수수료 쿼리 건너뛰기
+
+```typescript Example
+import { HeliaProvider } from "@piplabs/cdr-sdk";
+import { readFile } from "node:fs/promises";
+import { createHelia } from "helia";
+import { unixfs } from "@helia/unixfs";
+import { CID } from "multiformats/cid";
+import { encodeAbiParameters } from "viem";
+
+const helia = await createHelia();
+const storage = new HeliaProvider({
+  helia,
+  unixfs: unixfs(helia),
+  CID: (s) => CID.parse(s),
+});
+
+// DATA Foundation license-gated pattern: see /developers/cdr-sdk/ip-asset-vaults for
+// the full license setup. For an owner-only file flow, use the low-level
+// `allocate()` path with your wallet (EOA) address as both conditions.
+const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
+const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
+const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
+
+const writeConditionData = encodeAbiParameters(
+  [{ type: "address" }],
+  [walletClient.account!.address],
+);
+
+const readConditionData = encodeAbiParameters(
+  [{ type: "address" }, { type: "address" }],
+  [LICENSE_TOKEN, ipId],
+);
+
+const fileBytes = await readFile("./example.pdf");
+const globalPubKey = await client.observer.getGlobalPubKey();
+const { uuid, cid } = await client.uploader.uploadFile({
+  content: new Uint8Array(fileBytes),
+  storageProvider: storage,
+  globalPubKey,
+  updatable: false,
+  writeConditionAddr: OWNER_WRITE_CONDITION,
+  readConditionAddr: LICENSE_READ_CONDITION,
+  writeConditionData,
+  readConditionData,
+  accessAuxData: "0x",
+});
+
+console.log(`Vault UUID: ${uuid}`);
+console.log(`Stored CID: ${cid}`);
+```
+
+<Note>
+  `HeliaProvider`는 현재 릴리즈에서 Aeneid에 완전히 테스트된 유일한 스토리지
+  백엔드입니다. `GatewayProvider`, `StorachaProvider`, `SynapseProvider`는
+  구현되어 있지만 이번 릴리즈 실행에서 아직 엔드 투 엔드 검증되지 않았습니다.
+</Note>
+
+<Note>
+  `uploadFile()`은 파일 바이트를 오프체인에 보관합니다. 볼트는 `{ cid, key }`를 포함하는
+  작은 JSON 페이로드의 TDH2 ciphertext를 저장합니다.
+</Note>
+
+<Note>
+  브라우저 코드에서는 `readFile(...)` 대신
+  `new Uint8Array(await file.arrayBuffer())`에서 파일 바이트를 전달하세요.
+</Note>
+
+---
+
+### allocate
+
+지정된 액세스 제어 조건으로 온체인에 새 CDR 볼트를 생성합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `allocate` | `(params: AllocateParams) => Promise<AllocateResponse>` |
+
+매개변수:
+
+- `params.updatable`: `boolean` - 볼트를 재기록할 수 있는지 여부
+- `params.writeConditionAddr`: `` `0x${string}` `` - 쓰기 조건 컨트랙트 주소
+- `params.readConditionAddr`: `` `0x${string}` `` - 읽기 조건 컨트랙트 주소
+- `params.writeConditionData`: `` `0x${string}` `` - ABI 인코딩된 쓰기 조건 데이터
+- `params.readConditionData`: `` `0x${string}` `` - ABI 인코딩된 읽기 조건 데이터
+- `params.feeOverride` *(선택)*: `bigint` - 수수료 쿼리 건너뛰기
+- `params.skipConditionValidation` *(선택)*: `boolean` - EOA 조건 주소를 의도적으로 사용할 때 인터페이스 검증 건너뛰기
+
+```typescript Example
+const userAddress = walletClient.account!.address;
+
+const { txHash, uuid } = await client.uploader.allocate({
+  updatable: false,
+  writeConditionAddr: userAddress,
+  readConditionAddr: userAddress,
+  writeConditionData: "0x",
+  readConditionData: "0x",
+  skipConditionValidation: true,
+});
+
+console.log(`Vault ${uuid} allocated at tx: ${txHash}`);
+```
+
+<Note>
+  `uploadCDR()`과 `uploadFile()`은 `skipConditionValidation`을 노출하지 않으므로,
+  이러한 고수준 헬퍼와는 실제 조건 컨트랙트를 사용하세요.
+</Note>
+
+```typescript AllocateResponse
+interface AllocateResponse {
+  txHash: `0x${string}`;
+  uuid: number; // parsed from VaultAllocated event
+}
+```
+
+---
+
+### write
+
+기존 볼트에 암호화된 데이터를 씁니다. 호출자는 볼트의 쓰기 조건을 충족해야 합니다.
+
+| Method | Type |
+| ------ | ---- |
+| `write` | `(params: WriteParams) => Promise<WriteResponse>` |
+
+매개변수:
+
+- `params.uuid`: `number` - 볼트 UUID
+- `params.accessAuxData`: `` `0x${string}` `` - 쓰기 조건에 전달되는 보조 데이터
+- `params.encryptedData`: `` `0x${string}` `` - 16진수로 인코딩된 TDH2 ciphertext
+- `params.feeOverride` *(선택)*: `bigint` - 수수료 쿼리 건너뛰기
+
+```typescript Example
+import { toHex } from "viem";
+
+const { txHash } = await client.uploader.write({
+  uuid: 42,
+  accessAuxData: "0x",
+  encryptedData: toHex(ciphertext.raw),
+});
+```
+
+```typescript WriteResponse
+interface WriteResponse {
+  txHash: `0x${string}`;
+}
+```
+
+---
+
+### encryptDataKey
+
+TDH2 threshold encryption을 사용하여 로컬에서 데이터를 암호화합니다. 블록체인 상호 작용이 없습니다.
+
+| Method | Type |
+| ------ | ---- |
+| `encryptDataKey` | `(params: EncryptParams) => Promise<TDH2Ciphertext>` |
+
+매개변수:
+
+- `params.dataKey`: `Uint8Array` - 암호화할 평문 데이터
+- `params.globalPubKey` *(선택)*: `Uint8Array` - DKG global public key (34 bytes). 생략하면 Observer를 통해 자동 쿼리됩니다.
+- `params.label`: `Uint8Array` - 볼트에 ciphertext를 바인딩하는 32바이트 label (`uuidToLabel(uuid)` 사용)
+
+```typescript Example
+import { uuidToLabel } from "@piplabs/cdr-sdk";
+
+const label = uuidToLabel(uuid);
+const ciphertext = await client.uploader.encryptDataKey({
+  dataKey: new TextEncoder().encode("secret"),
+  globalPubKey,
+  label,
+});
+
+console.log(ciphertext.raw); // Uint8Array - serialized TDH2 ciphertext
+console.log(ciphertext.label); // Uint8Array - the label used
+```
+
+```typescript TDH2Ciphertext
+interface TDH2Ciphertext {
+  raw: Uint8Array;   // serialized ciphertext (cb-mpc format)
+  label: Uint8Array; // 32-byte context binding
+}
+```

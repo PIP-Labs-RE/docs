@@ -1,0 +1,20 @@
+---
+title: "IP 트랜잭션 목록 조회"
+description: "페이지네이션 및 필터링 옵션과 함께 IP 트랜잭션 목록을 조회합니다. 'where' 필드는 선택 사항이며, 특정 트랜잭션 해시, 이벤트 유형 또는 블록 범위로 필터링할 때만 제공해야 합니다. 이 엔드포인트는 txHashes 필터에 해시를 전달하여 특정 트랜잭션을 가져오는 데에도 사용할 수 있습니다."
+openapi: "https://api.dataapis.io/api/v4/openapi.json POST /transactions"
+---
+
+<Note>
+
+이 엔드포인트는 이벤트 유형을 기준으로 필터링할 수 있습니다. `where.eventTypes[]` 필드에 사용할 수 있는 문자열 값은 다음과 같습니다:
+
+- "IPRegistered": IP asset이 등록될 때
+- "LicenseTermsAttached": IP asset에 라이선스 조건이 첨부될 때
+- "DerivativeRegistered": 파생 IP asset이 등록될 때
+- "DisputeRaised": IP asset에 대한 분쟁이 제기될 때
+- "DisputeResolved": 분쟁이 해결될 때
+- "DisputeCancelled": 분쟁이 취소될 때
+- "DisputeJudgementSet": 분쟁에 대한 판결이 설정될 때
+- "RoyaltyPaid": 로열티 지급이 이루어질 때
+
+</Note>

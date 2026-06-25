@@ -1,0 +1,281 @@
+---
+title: WIP
+description: DATA Foundation 내에서 WIP(Wrapped IP) 토큰의 래핑/언래핑을 처리하는 데 사용됩니다.
+---
+
+## WIP
+
+### Methods
+
+- deposit
+- withdraw
+- approve
+- balance_of
+- transfer
+- transfer_from
+- allowance
+
+### deposit
+
+선택한 양의 IP를 WIP로 래핑합니다. WIP는 IP를 전송한 지갑에 입금됩니다.
+
+| Method    |
+| --------- |
+| `deposit` |
+
+Parameters:
+
+- `amount`: 입금할 양입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+from web3 import Web3
+
+response = story_client.WIP.deposit(
+    amount=Web3.to_wei(10, 'ether'),  # 10 DATA tokens
+    tx_options={"wait_for_transaction": True}
+)
+print(f"Deposited IP to WIP at transaction hash {response['tx_hash']}")
+```
+
+```python Request Parameters
+amount: int  # The amount to deposit
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### withdraw
+
+선택한 양의 WIP를 IP로 언래핑합니다.
+
+| Method     |
+| ---------- |
+| `withdraw` |
+
+Parameters:
+
+- `amount`: 출금할 양입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+from web3 import Web3
+
+response = story_client.WIP.withdraw(
+    amount=Web3.to_wei(5, 'ether'),  # 5 WIP tokens
+    tx_options={"wait_for_transaction": True}
+)
+print(f"Withdrew WIP to IP at transaction hash {response['tx_hash']}")
+```
+
+```python Request Parameters
+amount: int  # The amount to withdraw
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### approve
+
+지갑의 WIP 잔액을 사용할 수 있도록 spender를 승인합니다.
+
+| Method    |
+| --------- |
+| `approve` |
+
+Parameters:
+
+- `amount`: 승인할 WIP 토큰의 양입니다.
+- `spender`: WIP 토큰을 사용할 주소입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+from web3 import Web3
+
+response = story_client.WIP.approve(
+    spender="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+    amount=Web3.to_wei(20, 'ether'),  # 20 WIP tokens
+    tx_options={"wait_for_transaction": True}
+)
+print(f"Approved WIP spending at transaction hash {response['tx_hash']}")
+```
+
+```python Request Parameters
+spender: str  # The address that will use the WIP tokens
+amount: int  # The amount of WIP tokens to approve
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### balance_of
+
+주소의 WIP 잔액을 반환합니다.
+
+| Method       |
+| ------------ |
+| `balance_of` |
+
+Parameters:
+
+- `address`: 잔액을 확인할 주소입니다.
+
+<CodeGroup>
+
+```python Python
+balance = story_client.WIP.balance_of("0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba")
+print(f"WIP balance: {balance}")
+```
+
+```python Request Parameters
+address: str  # The address to check the balance for
+```
+
+```python Response
+int  # The WIP balance of the address
+```
+
+</CodeGroup>
+
+### transfer
+
+수신자 `to`에게 `amount`만큼의 WIP를 전송합니다.
+
+| Method     |
+| ---------- |
+| `transfer` |
+
+Parameters:
+
+- `to`: 전송 대상입니다.
+- `amount`: 전송할 양입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+from web3 import Web3
+
+response = story_client.WIP.transfer(
+    to="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+    amount=Web3.to_wei(3, 'ether'),  # 3 WIP tokens
+    tx_options={"wait_for_transaction": True}
+)
+print(f"Transferred WIP at transaction hash {response['tx_hash']}")
+```
+
+```python Request Parameters
+to: str  # The recipient address
+amount: int  # The amount to transfer
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### transfer_from
+
+`from`에서 수신자 `to`에게 `amount`만큼의 WIP를 전송합니다.
+
+| Method          |
+| --------------- |
+| `transfer_from` |
+
+Parameters:
+
+- `to`: 전송 대상입니다.
+- `amount`: 전송할 양입니다.
+- `from_address`: 전송 출발 주소입니다.
+- `tx_options`: [Optional] 트랜잭션 옵션 딕셔너리입니다.
+
+<CodeGroup>
+
+```python Python
+from web3 import Web3
+
+response = story_client.WIP.transfer_from(
+    to="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+    amount=Web3.to_wei(2, 'ether'),  # 2 WIP tokens
+    from_address="0x6B86B39F03558A8a4E9252d73F2bDeBfBedf5b68",
+    tx_options={"wait_for_transaction": True}
+)
+print(f"Transferred WIP from another account at transaction hash {response['tx_hash']}")
+```
+
+```python Request Parameters
+to: str  # The recipient address
+amount: int  # The amount to transfer
+from_address: str  # The address to transfer from
+tx_options: dict = None  # Optional: Transaction options
+```
+
+```python Response
+{
+  "tx_hash": str  # The transaction hash
+}
+```
+
+</CodeGroup>
+
+### allowance
+
+`spender`가 `owner`를 대신하여 사용할 수 있도록 허용된 WIP 토큰의 양을 반환합니다.
+
+| Method      |
+| ----------- |
+| `allowance` |
+
+Parameters:
+
+- `owner`: 토큰 소유자의 주소입니다.
+- `spender`: spender의 주소입니다.
+
+<CodeGroup>
+
+```python Python
+response = story_client.WIP.allowance(
+    owner="0xC92EC2f4c86458AFee7DD9EB5d8c57920BfCD0Ba",
+    spender="0x6B86B39F03558A8a4E9252d73F2bDeBfBedf5b68"
+)
+print(f"Allowance: {response}")
+```
+
+```python Request Parameters
+owner: str  # The owner address
+spender: str  # The spender address
+```
+
+```python Response
+int  # The allowance amount
+```
+
+</CodeGroup>
