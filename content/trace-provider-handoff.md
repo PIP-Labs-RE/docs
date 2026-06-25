@@ -1,12 +1,14 @@
+# Trace Provider Data Audit Staging Handoff
+
 This document describes the current staging API shape for Trace data audit ingestion and reads. It reflects the latest Trace Schema.
 
-The API and Trace Schema described here are provider-agnostic: every provider integrates through the same endpoints, headers, and schema. The concrete examples below use Kled, a live provider, to make the request and response shapes easier to follow. Substitute your own provider identity (the `X-Provider` value, source IDs, URLs, and policy references) wherever Kled appears.
+The API and Trace Schema described here are provider-agnostic — every provider integrates through the same endpoints, headers, and schema. The concrete examples below use Kled, a live provider, to make the request and response shapes easier to follow. Substitute your own provider identity (the `X-Provider` value, source IDs, URLs, and policy references) wherever Kled appears.
 
 ## Getting Access
 
-Write access is gated. Before integrating, a provider must contact the DATA Foundation team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
+Write access is gated. Before integrating, a provider must contact the Story team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
 
-To request access, reach out to the DATA Foundation team to start the onboarding process.
+To request access, reach out to the Story team to start the onboarding process.
 
 Base URL:
 
@@ -19,7 +21,7 @@ https://staging-api.storyprotocol.net
 ```text
 Provider client
   -> story-api webhook batch endpoint
-  -> asynchronous DATA Foundation processing
+  -> asynchronous Story processing
   -> story-api read/search endpoints
 ```
 
@@ -37,9 +39,7 @@ X-Batch-Id: <stable batch id>
 
 Use the provided staging API key for write testing. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
 
-For backlog ingestion, add `X-Ingestion-Source: backlog`. For normal live ingestion, omit the header; explicit `live` is not accepted.
-
-Read APIs are keyed by global DATA Foundation `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
+Read APIs are keyed by global Story `data_id`. Provider is returned as a field and can be used as an optional filter or searchable field.
 
 ## Current Provider / Trace Alignment
 
@@ -81,17 +81,17 @@ Current staging behavior:
 
 ## Trace Schema v1.0
 
-DATA Foundation stores a provider-normalized trace metadata object instead of treating the provider's raw payload as the top-level DATA Foundation contract. The provider's full original public payload should be preserved under `provider_payload`.
+Story stores a provider-normalized trace metadata object instead of treating the provider's raw payload as the top-level Story contract. The provider's full original public payload should be preserved under `provider_payload`.
 
-The provider should populate the standardized Trace Schema fields directly. DATA Foundation also preserves the provider's full original public payload under `provider_payload`, but the normalized fields are the portable Trace contract that other providers and the frontend should use.
+The provider should populate the standardized Trace Schema fields directly. Story also preserves the provider's full original public payload under `provider_payload`, but the normalized fields are the portable Trace contract that other providers and the frontend should use.
 
-Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`. DATA Foundation canonicalizes metadata JSON before computing internal event hashes, so object key order does not affect idempotency or conflict detection.
+Use `schema_version: trace-v1.0` in `initial_metadata_json` and `metadata_json`. Story canonicalizes metadata JSON before computing internal event hashes, so object key order does not affect idempotency or conflict detection.
 
-A provider does not need to send a transaction hash in write payloads. DATA Foundation owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until DATA Foundation fills it after broadcast.
+A provider does not need to send a transaction hash in write payloads. Story owns `tx_hash` and returns it on read responses for registration, metadata update, and search result rows. It is returned as an empty string until Story fills it after broadcast.
 
-Initial registrations and metadata updates must include one canonical content
-hash. Accepted fields are `asset.hash`, `content_hash`, `file.content_sha256`,
-or `file.hashes.sha256`; all normalize to `sha256:<64-lowercase-hex>`. If more
+Initial registrations must include one canonical content hash. Accepted fields
+are `asset.hash`, `content_hash`, `file.content_sha256`, or
+`file.hashes.sha256`; all normalize to `sha256:<64-lowercase-hex>`. If more
 than one alias is present, they must represent the same hash.
 
 Recommended top-level shape:
@@ -253,7 +253,7 @@ GET /api/v1/data-audit/providers/kled/policies/privacy_policy/sha256:<64-hex-pol
 
 ### Register records
 
-Use this endpoint for initial backlog and live registration batches. The provider sends its stable `source_record_id`; DATA Foundation generates the `data_id` and returns the mapping.
+Use this endpoint for initial backlog and live registration batches. The provider sends its stable `source_record_id`; Story generates the `data_id` and returns the mapping.
 
 ```http
 POST /webhook/v1/data-audit/records:batch
@@ -261,10 +261,7 @@ Content-Type: application/json
 X-API-Key: <provider staging key>
 X-Provider: kled
 X-Batch-Id: kled-records-000001
-X-Ingestion-Source: backlog
 ```
-
-Only use `X-Ingestion-Source: backlog` for backlog batches. Live batches do not need an ingestion-source header.
 
 Request body is a JSON array:
 
@@ -355,7 +352,7 @@ Request body is a JSON array:
 ]
 ```
 
-`initial_metadata_root` should be the provider's deterministic non-zero hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, DATA Foundation stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
+`initial_metadata_root` should be the provider's deterministic hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
 
 Successful response:
 
@@ -385,11 +382,11 @@ Successful response:
 }
 ```
 
-The returned `data_id` is the DATA Foundation ID for future metadata updates and reads. Re-sending the same `X-Provider` + `source_record_id` generates the same `data_id`.
+The returned `data_id` is the Story ID for future metadata updates and reads. Re-sending the same `X-Provider` + `source_record_id` generates the same `data_id`.
 
 If a record was already persisted with the exact same initial registration payload, the item returns `status: "duplicate"` and is not re-enqueued. If the same `source_record_id` was already persisted with different initial metadata, the item returns `status: "conflict"` and is not enqueued. An overlapping retry while the first request is still queued may return `accepted`; downstream ingestion remains idempotent. Other valid items in the same batch can still return `accepted`.
 
-If a caller already has DATA Foundation-assigned UUIDs, the lower-level endpoint is:
+If a caller already has Story-assigned UUIDs, the lower-level endpoint is:
 
 ```http
 POST /webhook/v1/data-audit/data-ids:batch
@@ -401,7 +398,7 @@ That endpoint requires `data_id` on every record and is not the recommended vend
 
 Use this endpoint for later corrections or mutable metadata changes. `seq` must be between `1` and `100` for the same `data_id`.
 
-`metadata_json` must include a canonical content hash and should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets DATA Foundation rebuild the latest state without provider-specific merge rules.
+`metadata_json` should be the full latest Trace metadata state after the change, not a partial diff or JSON patch. For example, if only KYC changes, the provider should still include the unchanged file, asset, app, consent, and provider payload fields that remain part of the current metadata state. This keeps each metadata event independently verifiable against `metadata_root` and lets Story rebuild the latest state without provider-specific merge rules.
 
 ```http
 POST /webhook/v1/data-audit/metadata-updates:batch
@@ -409,7 +406,6 @@ Content-Type: application/json
 X-API-Key: <provider staging key>
 X-Provider: kled
 X-Batch-Id: kled-metadata-000001
-X-Ingestion-Source: backlog
 ```
 
 Request body is a JSON array:
@@ -423,9 +419,6 @@ Request body is a JSON array:
     "metadata_root": "sha256:<new-canonical-trace-schema-v1-json>",
     "metadata_json": {
       "schema_version": "trace-v1.0",
-      "asset": {
-        "hash": "sha256:<64-hex>"
-      },
       "contributor": {
         "anon_id": "kup_123",
         "kyc_status": "unverified",
@@ -451,7 +444,7 @@ Request body is a JSON array:
 ]
 ```
 
-`metadata_root` should be the provider's deterministic non-zero hash of the canonical full updated Trace Schema v1.0 metadata JSON. `prev_metadata_root` must also be a non-zero root. In the current staging API, DATA Foundation stores these values as submitted; hash verification against `metadata_json` is not enforced yet.
+`metadata_root` should be the provider's deterministic hash of the canonical full updated Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `metadata_json` is not enforced yet.
 
 ### Optional backlog file endpoints
 
@@ -489,7 +482,7 @@ Metadata update CSV columns:
 data_id,seq,prev_metadata_root,metadata_root,metadata_json,occurred_at
 ```
 
-`initial_metadata_json` and `metadata_json` must be valid JSON in a quoted CSV field and include one canonical content hash.
+`initial_metadata_json` and `metadata_json` must be valid JSON in a quoted CSV field when present.
 
 TXT requires `Content-Type: text/plain` and accepts line-delimited JSON, a JSON array, or header-delimited comma/tab text using the same CSV columns.
 
@@ -501,9 +494,9 @@ Read model:
 
 - `GET /data-ids/{data_id}` returns the registration profile plus the latest raw metadata event. The latest metadata event is not guaranteed to be a diff; it is the exact update payload submitted for the highest sequence currently stored.
 - `GET /data-ids/{data_id}/metadatas` returns the full append-only metadata history, including registration at `seq: 0` and later metadata updates.
-- Search, asset receipt lookup, and scoped-group summaries use DATA Foundation's normalized latest-state projection derived from those events. This projection is what powers fields such as MIME type, media category, KYC status, TOS/privacy versions, lifecycle status, and `tx_hash`.
+- Search, asset receipt lookup, and scoped-group summaries use Story's normalized latest-state projection derived from those events. This projection is what powers fields such as MIME type, media category, KYC status, TOS/privacy versions, lifecycle status, and `tx_hash`.
 
-### Get trace by DATA Foundation data ID
+### Get trace by Story data ID
 
 ```http
 GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
@@ -646,7 +639,7 @@ Accepted hash forms are `sha256:<64-hex>`, plain `<64-hex>`, `0x<64-hex>`, and `
 
 ### Scoped groups
 
-Scoped groups let the Trace frontend or a partner reviewer create a public snapshot over a review set. For provider review workflows, labs should use the provider's `source_record_id` values, not DATA Foundation-generated `data_id`s or content hashes. Trace computes the deterministic `data_id`, verifies every submitted record exists, and only creates the group if the full set is valid.
+Scoped groups let the Trace frontend or a partner reviewer create a public snapshot over a review set. For provider review workflows, labs should use the provider's `source_record_id` values, not Story-generated `data_id`s or content hashes. Trace computes the deterministic `data_id`, verifies every submitted record exists, and only creates the group if the full set is valid.
 
 Create from source record IDs:
 
@@ -797,6 +790,5 @@ Retry guidance:
 - Retry `502`, `503`, `504`, network timeouts, and `429` with exponential backoff and jitter.
 - Do not retry validation/auth `4xx` until the request is fixed.
 - Keep `data_id`, request body, and `X-Batch-Id` stable across retries.
-- Use `X-Ingestion-Source: backlog` only for backlog work; omit it for live work.
 - The write path is idempotent for the same `data_id`, event key, and event hash.
 - If the same `data_id` and event key are retried with different metadata, the record is treated as a conflict and rejected.
