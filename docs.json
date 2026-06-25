@@ -454,9 +454,9 @@
               {
                 "group": "시작하기",
                 "pages": [
-                  "introduction",
-                  "quickstart",
-                  "faq"
+                  "ko/introduction",
+                  "ko/quickstart",
+                  "ko/faq"
                 ]
               },
               {
@@ -466,58 +466,58 @@
                     "group": "출처 증명 (Trace)",
                     "icon": "fingerprint",
                     "pages": [
-                      "trace/overview"
+                      "ko/trace/overview"
                     ]
                   },
                   {
                     "group": "기밀성 (CDR)",
                     "icon": "lock",
                     "pages": [
-                      "cdr/overview"
+                      "ko/cdr/overview"
                     ]
                   },
                   {
                     "group": "권리 (IP 및 라이선싱)",
                     "icon": "scroll",
                     "pages": [
-                      "concepts/overview",
+                      "ko/concepts/overview",
                       {
                         "group": "IP 자산",
                         "icon": "puzzle",
                         "pages": [
-                          "concepts/ip-asset/overview",
-                          "concepts/ip-asset/ip-account",
-                          "concepts/ip-asset/ipa-modifications",
-                          "concepts/ip-asset/ipa-metadata-standard"
+                          "ko/concepts/ip-asset/overview",
+                          "ko/concepts/ip-asset/ip-account",
+                          "ko/concepts/ip-asset/ipa-modifications",
+                          "ko/concepts/ip-asset/ipa-metadata-standard"
                         ]
                       },
                       {
                         "group": "라이선싱",
                         "icon": "scroll",
                         "pages": [
-                          "concepts/licensing-module/overview",
-                          "concepts/licensing-module/license-template",
-                          "concepts/licensing-module/license-terms",
-                          "concepts/licensing-module/license-token",
-                          "concepts/licensing-module/license-config"
+                          "ko/concepts/licensing-module/overview",
+                          "ko/concepts/licensing-module/license-template",
+                          "ko/concepts/licensing-module/license-terms",
+                          "ko/concepts/licensing-module/license-token",
+                          "ko/concepts/licensing-module/license-config"
                         ]
                       },
                       {
                         "group": "Programmable IP License",
                         "icon": "file-certificate",
                         "pages": [
-                          "concepts/programmable-ip-license/overview",
-                          "concepts/programmable-ip-license/pil-terms",
-                          "concepts/programmable-ip-license/pil-flavors"
+                          "ko/concepts/programmable-ip-license/overview",
+                          "ko/concepts/programmable-ip-license/pil-terms",
+                          "ko/concepts/programmable-ip-license/pil-flavors"
                         ]
                       },
-                      "concepts/hooks",
+                      "ko/concepts/hooks",
                       {
                         "group": "SPG (Periphery)",
                         "icon": "box-open",
                         "pages": [
-                          "concepts/spg/overview",
-                          "concepts/spg/batch-spg-function-calls"
+                          "ko/concepts/spg/overview",
+                          "ko/concepts/spg/batch-spg-function-calls"
                         ]
                       }
                     ]
@@ -527,74 +527,74 @@
               {
                 "group": "DATA Network",
                 "pages": [
-                  "network/overview",
+                  "ko/network/overview",
                   {
                     "group": "연결",
                     "icon": "network-wired",
                     "pages": [
-                      "network/connect/mainnet",
-                      "network/connect/aeneid"
+                      "ko/network/connect/mainnet",
+                      "ko/network/connect/aeneid"
                     ]
                   },
                   {
                     "group": "알아보기",
                     "icon": "books",
                     "pages": [
-                      "network/learn/overview",
-                      "network/learn/whitepaper",
+                      "ko/network/learn/overview",
+                      "ko/network/learn/whitepaper",
                       {
                         "group": "노드 소프트웨어",
                         "icon": "code",
                         "pages": [
-                          "network/learn/node-software/overview",
-                          "network/learn/node-software/execution_layer",
-                          "network/learn/node-software/consensus_layer",
-                          "network/learn/node-software/engine_api",
+                          "ko/network/learn/node-software/overview",
+                          "ko/network/learn/node-software/execution_layer",
+                          "ko/network/learn/node-software/consensus_layer",
+                          "ko/network/learn/node-software/engine_api",
                           {
                             "group": "Cosmos 모듈",
                             "icon": "puzzle-piece-simple",
                             "pages": [
-                              "network/learn/node-software/cosmos-modules/cosmos-module-overview",
-                              "network/learn/node-software/cosmos-modules/evmengine-module",
-                              "network/learn/node-software/cosmos-modules/evmstaking-module",
-                              "network/learn/node-software/cosmos-modules/mint-module",
-                              "network/learn/node-software/cosmos-modules/staking-module"
+                              "ko/network/learn/node-software/cosmos-modules/cosmos-module-overview",
+                              "ko/network/learn/node-software/cosmos-modules/evmengine-module",
+                              "ko/network/learn/node-software/cosmos-modules/evmstaking-module",
+                              "ko/network/learn/node-software/cosmos-modules/mint-module",
+                              "ko/network/learn/node-software/cosmos-modules/staking-module"
                             ]
                           },
-                          "network/learn/node-software/localnet",
-                          "network/learn/node-software/precompiled-contracts"
+                          "ko/network/learn/node-software/localnet",
+                          "ko/network/learn/node-software/precompiled-contracts"
                         ]
                       },
-                      "network/learn/token-economy"
+                      "ko/network/learn/token-economy"
                     ]
                   },
                   {
                     "group": "참여하기",
                     "icon": "handshake",
                     "pages": [
-                      "network/participate/overview",
+                      "ko/network/participate/overview",
                       {
                         "group": "Become a Validator",
                         "icon": "computer",
                         "pages": [
-                          "network/participate/validators/overview",
-                          "network/participate/validators/node-setup-mainnet",
-                          "network/participate/validators/operate-your-node",
-                          "network/participate/validators/node-upgrade",
+                          "ko/network/participate/validators/overview",
+                          "ko/network/participate/validators/node-setup-mainnet",
+                          "ko/network/participate/validators/operate-your-node",
+                          "ko/network/participate/validators/node-upgrade",
                           {
                             "group": "DKG",
                             "pages": [
-                              "network/participate/validators/dkg/dkg-validator-guide",
-                              "network/participate/validators/dkg/kernel-upgrade"
+                              "ko/network/participate/validators/dkg/dkg-validator-guide",
+                              "ko/network/participate/validators/dkg/kernel-upgrade"
                             ]
                           },
-                          "network/participate/validators/release-notes",
-                          "network/participate/validators/troubleshooting"
+                          "ko/network/participate/validators/release-notes",
+                          "ko/network/participate/validators/troubleshooting"
                         ]
                       },
-                      "network/participate/governance",
-                      "network/participate/forum",
-                      "network/participate/sip"
+                      "ko/network/participate/governance",
+                      "ko/network/participate/forum",
+                      "ko/network/participate/sip"
                     ]
                   }
                 ]
@@ -602,7 +602,7 @@
               {
                 "group": "Notices",
                 "pages": [
-                  "notices"
+                  "ko/notices"
                 ]
               }
             ]
@@ -613,9 +613,9 @@
               {
                 "group": "시작하기",
                 "pages": [
-                  "developers/overview",
-                  "developers/deployed-smart-contracts",
-                  "developers/releases"
+                  "ko/developers/overview",
+                  "ko/developers/deployed-smart-contracts",
+                  "ko/developers/releases"
                 ]
               },
               {
@@ -625,18 +625,18 @@
                     "group": "CDR SDK",
                     "icon": "lock",
                     "pages": [
-                      "developers/cdr-sdk/overview",
-                      "developers/cdr-sdk/setup",
-                      "developers/cdr-sdk/encrypt-and-decrypt",
-                      "developers/cdr-sdk/ip-asset-vaults",
-                      "developers/cdr-sdk/advanced-configuration"
+                      "ko/developers/cdr-sdk/overview",
+                      "ko/developers/cdr-sdk/setup",
+                      "ko/developers/cdr-sdk/encrypt-and-decrypt",
+                      "ko/developers/cdr-sdk/ip-asset-vaults",
+                      "ko/developers/cdr-sdk/advanced-configuration"
                     ]
                   },
                   {
                     "group": "Trace",
                     "icon": "fingerprint",
                     "pages": [
-                      "trace/integration"
+                      "ko/trace/integration"
                     ]
                   },
                   {
@@ -647,42 +647,42 @@
                         "group": "TypeScript SDK",
                         "icon": "screwdriver-wrench",
                         "pages": [
-                          "developers/typescript-sdk/overview",
-                          "developers/typescript-sdk/setup",
-                          "developers/typescript-sdk/register-ip-asset",
-                          "developers/typescript-sdk/attach-terms",
-                          "developers/typescript-sdk/mint-license"
+                          "ko/developers/typescript-sdk/overview",
+                          "ko/developers/typescript-sdk/setup",
+                          "ko/developers/typescript-sdk/register-ip-asset",
+                          "ko/developers/typescript-sdk/attach-terms",
+                          "ko/developers/typescript-sdk/mint-license"
                         ]
                       },
                       {
                         "group": "React / Next.js",
                         "icon": "atom",
                         "pages": [
-                          "developers/react-guide/overview",
+                          "ko/developers/react-guide/overview",
                           {
                             "group": "설정",
                             "pages": [
-                              "developers/react-guide/setup/overview",
-                              "developers/react-guide/setup/dynamic-setup",
-                              "developers/react-guide/setup/rainbowkit-setup",
-                              "developers/react-guide/setup/reown-setup",
-                              "developers/react-guide/setup/tomo-setup"
+                              "ko/developers/react-guide/setup/overview",
+                              "ko/developers/react-guide/setup/dynamic-setup",
+                              "ko/developers/react-guide/setup/rainbowkit-setup",
+                              "ko/developers/react-guide/setup/reown-setup",
+                              "ko/developers/react-guide/setup/tomo-setup"
                             ]
                           },
-                          "developers/react-guide/using-the-sdk-in-react"
+                          "ko/developers/react-guide/using-the-sdk-in-react"
                         ]
                       },
                       {
                         "group": "Smart Contracts",
                         "icon": "file-contract",
                         "pages": [
-                          "developers/smart-contracts-guide/overview",
-                          "developers/smart-contracts-guide/setup",
-                          "developers/smart-contracts-guide/register-ip-asset",
-                          "developers/smart-contracts-guide/register-terms",
-                          "developers/smart-contracts-guide/attach-terms",
-                          "developers/smart-contracts-guide/mint-license",
-                          "developers/smart-contracts-guide/example"
+                          "ko/developers/smart-contracts-guide/overview",
+                          "ko/developers/smart-contracts-guide/setup",
+                          "ko/developers/smart-contracts-guide/register-ip-asset",
+                          "ko/developers/smart-contracts-guide/register-terms",
+                          "ko/developers/smart-contracts-guide/attach-terms",
+                          "ko/developers/smart-contracts-guide/mint-license",
+                          "ko/developers/smart-contracts-guide/example"
                         ]
                       }
                     ]
@@ -692,7 +692,7 @@
               {
                 "group": "글로벌 지갑",
                 "pages": [
-                  "developers/global-wallet/overview"
+                  "ko/developers/global-wallet/overview"
                 ]
               },
               {
@@ -702,16 +702,16 @@
                     "group": "Registration",
                     "icon": "file-certificate",
                     "pages": [
-                      "developers/tutorials/how-to-register-ip",
-                      "developers/tutorials/how-to-register-music"
+                      "ko/developers/tutorials/how-to-register-ip",
+                      "ko/developers/tutorials/how-to-register-music"
                     ]
                   },
                   {
                     "group": "Wallet-less & Onboarding",
                     "icon": "wallet",
                     "pages": [
-                      "developers/tutorials/privy-tutorial",
-                      "developers/tutorials/easy-ip-onboarding"
+                      "ko/developers/tutorials/privy-tutorial",
+                      "ko/developers/tutorials/easy-ip-onboarding"
                     ]
                   }
                 ]
@@ -728,28 +728,28 @@
                   {
                     "group": "시작하기",
                     "pages": [
-                      "sdk-reference/overview"
+                      "ko/sdk-reference/overview"
                     ]
                   },
                   {
                     "group": "CDR SDK",
                     "pages": [
-                      "sdk-reference/cdr/overview",
-                      "sdk-reference/cdr/observer",
-                      "sdk-reference/cdr/uploader",
-                      "sdk-reference/cdr/consumer",
-                      "sdk-reference/cdr/crypto"
+                      "ko/sdk-reference/cdr/overview",
+                      "ko/sdk-reference/cdr/observer",
+                      "ko/sdk-reference/cdr/uploader",
+                      "ko/sdk-reference/cdr/consumer",
+                      "ko/sdk-reference/cdr/crypto"
                     ]
                   },
                   {
                     "group": "Protocol SDK (IP & Licensing)",
                     "pages": [
-                      "sdk-reference/ipasset",
-                      "sdk-reference/ipaccount",
-                      "sdk-reference/license",
-                      "sdk-reference/permissions",
-                      "sdk-reference/nftclient",
-                      "sdk-reference/wipclient"
+                      "ko/sdk-reference/ipasset",
+                      "ko/sdk-reference/ipaccount",
+                      "ko/sdk-reference/license",
+                      "ko/sdk-reference/permissions",
+                      "ko/sdk-reference/nftclient",
+                      "ko/sdk-reference/wipclient"
                     ]
                   }
                 ]
@@ -761,18 +761,18 @@
                   {
                     "group": "시작하기",
                     "pages": [
-                      "sdk-reference/python/overview"
+                      "ko/sdk-reference/python/overview"
                     ]
                   },
                   {
                     "group": "Protocol SDK (IP & Licensing)",
                     "pages": [
-                      "sdk-reference/python/ipasset",
-                      "sdk-reference/python/ipaccount",
-                      "sdk-reference/python/license",
-                      "sdk-reference/python/permissions",
-                      "sdk-reference/python/nftclient",
-                      "sdk-reference/python/wipclient"
+                      "ko/sdk-reference/python/ipasset",
+                      "ko/sdk-reference/python/ipaccount",
+                      "ko/sdk-reference/python/license",
+                      "ko/sdk-reference/python/permissions",
+                      "ko/sdk-reference/python/nftclient",
+                      "ko/sdk-reference/python/wipclient"
                     ]
                   }
                 ]
@@ -789,8 +789,8 @@
                   {
                     "group": "Protocol API Overview",
                     "pages": [
-                      "api-reference/protocol/introduction",
-                      "api-reference/blockscout-api"
+                      "ko/api-reference/protocol/introduction",
+                      "ko/api-reference/blockscout-api"
                     ]
                   },
                   {
@@ -801,8 +801,8 @@
                       "POST /assets/edges",
                       "POST /collections",
                       "POST /licenses/tokens",
-                      "api-reference/protocol/search",
-                      "api-reference/protocol/transactions"
+                      "ko/api-reference/protocol/search",
+                      "ko/api-reference/protocol/transactions"
                     ]
                   }
                 ]
@@ -814,7 +814,7 @@
                   {
                     "group": "Consensus Client API Overview",
                     "pages": [
-                      "api-reference/consensus-client/introduction"
+                      "ko/api-reference/consensus-client/introduction"
                     ]
                   },
                   {
@@ -831,10 +831,10 @@
               {
                 "group": "개요",
                 "pages": [
-                  "foundation/governance",
-                  "foundation/disclaimer",
-                  "foundation/mica",
-                  "foundation/security-council"
+                  "ko/foundation/governance",
+                  "ko/foundation/disclaimer",
+                  "ko/foundation/mica",
+                  "ko/foundation/security-council"
                 ]
               }
             ]
