@@ -1,20 +1,23 @@
-# Trace Provider Data Audit — Staging Handoff & API Reference
+# Trace Provider Data Audit — Integration & API Reference
 
 This is the single source of truth for the Trace data audit API. It serves both provider integrators (onboarding, auth, schema shape, field guidance, examples) and frontend/backend consumers (endpoints, limits, validation rules, search, stats, scoped groups).
 
 The API and Trace Schema described here are provider-agnostic — every provider integrates through the same endpoints, headers, and schema. The concrete examples below use Kled, a live provider, to make the request and response shapes easier to follow. Substitute your own provider identity (the `X-Provider` value, source IDs, URLs, and policy references) wherever Kled appears.
 
+## Environments
+
+| Environment | Base URL | Auth |
+| --- | --- | --- |
+| **Staging** | `https://staging-api.storyprotocol.net` | Write gated by staging API key. Reads are public. |
+| **Production** | `https://api.dataapis.io` | Write gated by production API key. Reads are public. |
+
+Staging is the active integration and testing environment where new provider integrations are onboarded. Production is deployed but may not yet have provider data; contact the Story team for current production readiness before sending production traffic.
+
 ## Getting Access
 
-Write access is gated. Before integrating, a provider must contact the Story team to be onboarded. We whitelist your provider identity, issue a staging API key, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
+Write access is gated. Before integrating, a provider must contact the Story team to be onboarded. We whitelist your provider identity, issue staging and production API keys, and assign the `X-Provider` value your write requests must use. Until that is done, write requests will be rejected. Read, search, and scoped-group endpoints are public audit views and do not require a key.
 
 To request access, reach out to the Story team to start the onboarding process.
-
-Base URL:
-
-```text
-https://staging-api.storyprotocol.net
-```
 
 ## Versioning
 
@@ -46,12 +49,12 @@ A `records:batch` response always includes per-item statuses. `202 Accepted` mea
 Every write request must include:
 
 ```text
-X-API-Key: <provider staging key>
+X-API-Key: <provider API key for the target environment>
 X-Provider: kled
 X-Batch-Id: <stable batch id>
 ```
 
-Use the provided staging API key for write testing. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
+Use the staging API key for integration testing, and the production API key when sending to production. The API key must be associated with your provider, and `X-Provider` must match that provider on write requests. Read/search/scoped-group endpoints are public audit views.
 
 For backlog ingestion, add `X-Ingestion-Source: backlog`. For normal live ingestion, omit the header; explicit `live` is not accepted.
 
@@ -72,7 +75,7 @@ These fields are part of the current Trace v1.0 working shape:
 
 Provider-level active ToS and Privacy Policy are set through the provider policy endpoint, not inside each record payload. Trace stores the active policy version, hash, and URI so records and stats can link accepted policy references to the provider's current policy documents.
 
-These fields are stored in the payload but are not indexed in the current staging implementation:
+These fields are stored in the payload but are not indexed in the current implementation:
 
 - `app.legal_entity`
 - `file.behavior.*`
@@ -85,15 +88,15 @@ These fields are stored in the payload but are not indexed in the current stagin
 
 The current exact-match indexes cover the fields needed by the Trace frontend and audit flows. The richer provider fields are still stored so they can be surfaced or indexed later without asking the provider to resend old data.
 
-Current staging behavior:
+Current behavior:
 
-- Metadata update cap is now `100` per `data_id` on staging. Multiple mutable field changes can be coalesced into one metadata update with one `seq` when they are part of the same provider-side revision.
-- Read/search/scoped-group APIs are public audit views in the current staging build. Do not put enterprise-only or sensitive fields into the public Trace payload. If a future provider-only or partner-only read tier is needed, it should be a separate API/product decision.
+- Metadata update cap is `100` per `data_id` on both staging and production. Multiple mutable field changes can be coalesced into one metadata update with one `seq` when they are part of the same provider-side revision.
+- Read/search/scoped-group APIs are public audit views. Do not put enterprise-only or sensitive fields into the public Trace payload. If a future provider-only or partner-only read tier is needed, it should be a separate API/product decision.
 - The only searchable hash type is canonical content SHA-256. `phash64`, `dhash64`, `ahash64`, and `keyframe_phashes` should still be sent when useful, but they are stored-only for now.
 - Recommended `contributor.tax_status` values are `submitted`, `not_submitted`, `not_applicable`, and `unknown`. A provider can map `tax_form_on_file=true` to `submitted` and `false` to `not_submitted`.
 - Recommended `contributor.account_verification_status` values are `verified`, `pending`, `failed`, and `unverified`.
 - Attestation signature is optional on staging. For production verification, the provider should send `payload_hash`, `signature`, `key_id`, `key_url`, and `signed_at_utc`.
-- `source_record_id` should contain the provider's stable public media ID, for example `kmf_...`. Staging trims surrounding whitespace, preserves case, rejects control characters, and accepts source IDs up to 512 bytes.
+- `source_record_id` should contain the provider's stable public media ID, for example `kmf_...`. The service trims surrounding whitespace, preserves case, rejects control characters, and accepts source IDs up to 512 bytes.
 
 ## Trace Schema v1.0
 
@@ -211,11 +214,11 @@ tos_hash                    (also accepts contributor.consent.tos_hash)
 privacy_policy_hash         (also accepts contributor.consent.privacy_policy_hash)
 ```
 
-Fields like `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_specific.base.motion`, `file.hashes.phash64`, `dhash64`, `ahash64`, `md5`, and `keyframe_phashes` may be preserved in the stored payload, but they are not exact-match indexed in the current staging implementation. Use `/stats` for distributions and use `provider` as an optional query scope for Trace frontend/audit views.
+Fields like `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_specific.base.motion`, `file.hashes.phash64`, `dhash64`, `ahash64`, `md5`, and `keyframe_phashes` may be preserved in the stored payload, but they are not exact-match indexed in the current implementation. Use `/stats` for distributions and use `provider` as an optional query scope for Trace frontend/audit views.
 
 ### Field guidance
 
-- `source_record_id`: provider-owned stable public media ID. The provider's `kmf_...` value belongs here. Staging accepts this value up to 512 bytes.
+- `source_record_id`: provider-owned stable public media ID. The provider's `kmf_...` value belongs here. Accepted up to 512 bytes.
 - `contributor.anon_id`: provider-owned public anonymized contributor ID.
 - `contributor.kyc_status`: recommended values are `verified`, `pending`, `failed`, `unverified`.
 - `contributor.kyc_country`: ISO 3166-1 alpha-2 country code from KYC, if available. Country only; no address or GPS-derived country.
@@ -232,13 +235,12 @@ Fields like `app.platform_name`, `app.legal_entity`, `file.behavior`, `file_spec
 ### Set active provider policies
 
 Use this endpoint when the provider publishes a new current Terms of Service or Privacy Policy. Trace stores the active version, SHA-256 hash, and URI so the frontend can link to the policy document and stats can compare record-level accepted policy references to the provider's current policies.
-
 The policy document rows are stored for audit/visibility only. They are not indexed or aggregated directly. Record payloads should still include `contributor.consent.tos_*` and `contributor.consent.privacy_policy_*`; those record-level accepted policy references are what `/stats`, scoped-group summaries, and policy hash search use.
 
 ```http
 PUT /webhook/v1/data-audit/provider-policy
 Content-Type: application/json
-X-API-Key: <provider staging key>
+X-API-Key: <provider API key>
 X-Provider: kled
 ```
 
@@ -274,7 +276,7 @@ Use this endpoint for initial backlog and live registration batches. The provide
 ```http
 POST /webhook/v1/data-audit/records:batch
 Content-Type: application/json
-X-API-Key: <provider staging key>
+X-API-Key: <provider API key>
 X-Provider: kled
 X-Batch-Id: kled-records-000001
 X-Ingestion-Source: backlog
@@ -371,7 +373,7 @@ Request body is a JSON array:
 ]
 ```
 
-`initial_metadata_root` should be the provider's deterministic non-zero hash of the canonical Trace Schema v1.0 metadata JSON. In the current staging API, Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
+`initial_metadata_root` should be the provider's deterministic non-zero hash of the canonical Trace Schema v1.0 metadata JSON. Story stores this value as submitted; hash verification against `initial_metadata_json` is not enforced yet.
 
 Successful response:
 
@@ -411,7 +413,7 @@ If a caller already has Story-assigned UUIDs, the lower-level endpoint is:
 POST /webhook/v1/data-audit/data-ids:batch
 ```
 
-That endpoint requires `data_id` on every record and is not the recommended vendor path.
+That endpoint requires `data_id` on every record and is not the recommended provider path.
 
 ### Submit metadata updates
 
@@ -422,7 +424,7 @@ Use this endpoint for later corrections or mutable metadata changes. `seq` must 
 ```http
 POST /webhook/v1/data-audit/metadata-updates:batch
 Content-Type: application/json
-X-API-Key: <provider staging key>
+X-API-Key: <provider API key>
 X-Provider: kled
 X-Batch-Id: kled-metadata-000001
 X-Ingestion-Source: backlog
@@ -467,7 +469,7 @@ Request body is a JSON array:
 ]
 ```
 
-`metadata_root` should be the provider's deterministic non-zero hash of the canonical full updated Trace Schema v1.0 metadata JSON. `prev_metadata_root` must also be a non-zero root. In the current staging API, Story stores these values as submitted; hash verification against `metadata_json` is not enforced yet.
+`metadata_root` should be the provider's deterministic non-zero hash of the canonical full updated Trace Schema v1.0 metadata JSON. `prev_metadata_root` must also be a non-zero root. Story stores these values as submitted; hash verification against `metadata_json` is not enforced yet.
 
 ### Optional backlog file endpoints
 
@@ -796,7 +798,7 @@ If the group is still queued or processing, `profile.status` is `pending` or `pr
 
 ## Limits and Retry Behavior
 
-Current staging limits:
+Current limits:
 
 | Limit | Value |
 | --- | --- |
