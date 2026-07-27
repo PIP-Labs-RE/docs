@@ -134,6 +134,11 @@ Initial registrations and metadata updates must include one canonical content ha
     "image": {},
     "document": {}
   },
+  "asset": {
+    "collection_id": "kled-collection-2026-05",
+    "customer_id": "kled-customer-001",
+    "task_id": "kled-task-0042"
+  },
   "contributor": {
     "anon_id": "kled-public-user-id",
     "kyc_status": "verified",
@@ -200,6 +205,7 @@ The only searchable hash is the canonical content SHA-256 — perceptual hashes 
 
 - `source_record_id` — provider-owned stable public media ID (for example `kmf_...`). The service trims surrounding whitespace, preserves case, rejects control characters, and accepts up to 512 bytes.
 - `contributor.anon_id` — provider-owned public anonymized contributor ID.
+- `asset.collection_id`, `asset.customer_id`, `asset.task_id` — optional provider-assigned grouping IDs: a collection or batch of records, the customer or campaign they were produced for, and the task they belong to. Each is exact-match searchable, and matching is case-sensitive like `source_record_id`. Send them at the top level (as in the shape above) or inside `provider_payload` — both are read. Omit any that don't apply.
 - `contributor.kyc_status` — recommended values: `verified`, `pending`, `failed`, `unverified`.
 - `contributor.kyc_country` — ISO 3166-1 alpha-2 country code from KYC, if available. Country only; no address or GPS-derived country.
 - `contributor.tax_status` — recommended values: `submitted`, `not_submitted`, `not_applicable`, `unknown`. For a boolean like `tax_form_on_file`, map `true` to `submitted` and `false` to `not_submitted`.
@@ -512,7 +518,7 @@ Each metadata row includes `tx_hash`, initially as an empty string:
 GET /api/v1/data-audit/search?field=source_record_id&value=kmf_8a9c2e7d4b1f0e23
 ```
 
-Search is exact-match on the [searchable fields](#searchable-fields); `source_record_id` search is exact and case-sensitive. Each match includes `tx_hash` (initially an empty string), and responses include `next_cursor` for pagination. `limit` defaults to `100` and is capped at `1000` — larger values are silently clamped, not rejected.
+Search is exact-match on the [searchable fields](#searchable-fields). Matching is case-sensitive for `source_record_id`, `contributor.anon_id`, `collection_id`, `customer_id`, and `task_id`; other fields match case-insensitively, and content-hash values are canonicalized before matching. Each match includes `tx_hash` (initially an empty string), and responses include `next_cursor` for pagination. `limit` defaults to `100` and is capped at `1000` — larger values are silently clamped, not rejected.
 
 Typical flow: use `/search` to locate records by an exact field value, then `/data-ids/{data_id}` or `/data-ids/{data_id}/metadatas` for the canonical event payload used in audit verification. Use `/stats` for distribution counts, and `/recent` or `/feed` when the UI needs the newest records.
 
