@@ -12,6 +12,19 @@ You want to start building on the DATA Foundation quickly... so let's get starte
 
 ---
 
+## Prove Data Provenance With Trace
+
+If you're a data provider, [Trace](/trace/overview) gives you verifiable, provider-normalized provenance for the data you handle (content hashes, contributor consent, and KYC signals, with public audit views) through a simple REST integration.
+
+<CardGroup cols={2}>
+  <Card title="Trace Overview" icon="fingerprint" href="/trace/overview">
+    Understand how Trace records and audits data provenance.
+  </Card>
+  <Card title="Trace Integration Guide" icon="plug" href="/trace/integration">
+    The full write, read, and search API for providers.
+  </Card>
+</CardGroup>
+
 ## Add Network
 
 Enable DATA Foundation's mainnet or testnet for your wallet.
@@ -33,157 +46,23 @@ Enable DATA Foundation's mainnet or testnet for your wallet.
   </Card>
 </CardGroup>
 
-## Skip everything. Go to the code.
+## Build with CDR
 
-<CardGroup cols={3}>
-  <Card
-    title="TypeScript Code Example"
-    icon="screwdriver-wrench"
-    href="https://github.com/thedatafoundation/typescript-tutorial/tree/main"
-  >
-    This is a clone-able quickstart for you to check out. You can clone it
-    directly and follow the associated README.
+[Confidential Data Rails (CDR)](/cdr/overview) lets you encrypt, store, and control access to confidential data on the DATA Foundation using `@piplabs/cdr-sdk`.
+
+<CardGroup cols={2}>
+  <Card title="CDR SDK Setup" icon="screwdriver-wrench" href="/developers/cdr-sdk/setup">
+    Install the SDK and initialize a client on Aeneid testnet.
   </Card>
-  <Card
-    title="React Quickstart"
-    icon="react"
-    href="https://github.com/thedatafoundation/react-quickstart"
-  >
-    This is a clone-able quickstart for you to check out. You can clone it
-    directly and follow the associated README.
-  </Card>
-  <Card
-    title="Smart Contract Code Example"
-    icon="scroll"
-    href="https://github.com/thedatafoundation/story-protocol-boilerplate"
-  >
-    This is a boilerplate for you to check out. You can clone it directly, study
-    the example smart contracts, and follow the associated README for running
-    the tests.
+  <Card title="Encrypt & Decrypt" icon="lock" href="/developers/cdr-sdk/encrypt-and-decrypt">
+    Encrypt a secret or file and recover it through threshold decryption.
   </Card>
 </CardGroup>
+
+See the [CDR SDK Reference](/sdk-reference/cdr/overview) for method parameters and examples.
 
 ## DATA Network Infra
 
-See [Network Info](/network/overview) for all RPC, explorer, and faucet info.
-
-## Use Our SDKs
-
-For confidential data, [🔒 Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) is the primary way to encrypt, store, and gate access to data on the DATA Foundation. Start with the [CDR SDK Guide](/developers/cdr-sdk/overview) (`@piplabs/cdr-sdk`).
-
-For IP and licensing, check out the entire [SDK Reference](/sdk-reference) to see an explanation + example for every function in our 🛠️ **TypeScript SDK** (can use this in React as well) and 🐍 **Python SDK**. We have also built a [🛠️ TypeScript SDK Guide](/developers/typescript-sdk), a step-by-step walkthrough for registering IP and attaching licenses.
-
-## Deployed Smart Contracts
-
-Check out the addresses for the deployed smart contracts [here](/developers/deployed-smart-contracts). Note that there are two different kinds of contracts:
-
-- [DATA Foundation Core](https://github.com/thedatafoundation/protocol-core-v1) - This repository contains the core protocol logic, consisting of a thin IP registry (the IP Asset Registry), a set of modules defining logic around [📜 Licensing](/concepts/licensing-module), and a module manager for administering module and user access control.
-- [DATA Foundation Periphery](https://github.com/thedatafoundation/protocol-periphery-v1)- Whereas the core contracts deal with the underlying protocol logic, the periphery contracts deal with protocol extensions that greatly increase UX and simplify IPA management. This is mostly handled through the [📦 SPG](/concepts/spg).
-
-## Use Our API
-
-Check out the entire [API Reference](/api-reference) for learning how to use our API. For common things like fetching gas price, average block time, market cap, token price, and more, check out the [Blockscout API](/api-reference/blockscout-api).
-
-## Register IP on the DATA Foundation
-
-Let's start with the most basic question: _"What does it take to register IP on the DATA Foundation in my app? How do I do this?"_
-
-To register IP on the DATA Foundation, you'll first need an NFT. If your IP is an ERC-721 NFT (ex. an Azuki or Pudgy Penguin on the DATA Foundation), you're already set. If not, you must mint an NFT to represent your off-chain IP. And don't worry, we'll help you do this in the following tutorials.
-
-Next you'd register that NFT on the DATA Foundation, ultimately creating an [🧩 IP Asset](/concepts/ip-asset). An "IP Asset" is your IP registered on the DATA Foundation, empowered by:
-
-- the DATA Foundation's [📜 Licensing Module](/concepts/licensing-module), enabling transparent on-chain licensing
-- IP protection through the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license)
-- the ability to gate [confidential data (CDR)](/developers/cdr-sdk/overview) on the licenses minted from it
-
-Follow the below tutorials to register IP on the DATA Foundation:
-
-<CardGroup cols={2}>
-  <Card
-    title="Using the SDK"
-    icon="thumbs-up"
-    href="/developers/typescript-sdk/register-ip-asset"
-  >
-    Learn how to register IP on the DATA Foundation using the TypeScript SDK.
-  </Card>
-  <Card
-    title="Using the Smart Contracts"
-    icon="thumbs-up"
-    href="/developers/smart-contracts-guide/register-ip-asset"
-  >
-    Learn how to register IP on the DATA Foundation using the Smart Contracts.
-  </Card>
-</CardGroup>
-
-### Difference Between IP Metadata vs. NFT Metadata
-
-A common question we get from developers while registering their IP on the DATA Foundation is: _"What metadata should be/is expected to be attached to the NFT, and then separately, the IP Asset?"_
-
-To answer that question, please see [NFT vs. IP Metadata](/concepts/ip-asset/overview#nft-vs-ip-metadata).
-
-## Licensing Your IP
-
-You may be wondering, _"How do I take advantage of the DATA Foundation's on-chain licensing? How do I make sure my registered IP has a license ready to go?"_
-
-Before you attach any sort of licenses or license terms to your [🧩 IP Asset](/concepts/ip-asset), it would be best to first understand what the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license) actually is. This "PIL" is what defines the available [License Terms](/concepts/licensing-module/license-terms) on the DATA Foundation, which in turn - when attached to an IP Asset - is what defines how others can use (commercially, create derivatives, etc) that IP Asset.
-
-Our tutorials will show you exactly how to attach license terms to your IP Asset:
-
-<CardGroup cols={2}>
-  <Card
-    title="Using the SDK"
-    icon="thumbs-up"
-    href="/developers/typescript-sdk/attach-terms"
-  >
-    Learn how to attach license terms to your IP on the DATA Foundation using the TypeScript
-    SDK.
-  </Card>
-  <Card
-    title="Using the Smart Contracts"
-    icon="thumbs-up"
-    href="/developers/smart-contracts-guide/attach-terms"
-  >
-    Learn how to attach license terms to your IP on the DATA Foundation using the Smart
-    Contracts.
-  </Card>
-</CardGroup>
-
-<Note>
-
-For more information on licensing and the terminology behind it, check out the [📜 Licensing Module](/concepts/licensing-module).
-
-</Note>
-
-## Gate the License Token to Confidential Data
-
-The License Token you minted above is the key primitive CDR uses for **IP-gated content**: you can encrypt data with [Confidential Data Rails (CDR)](/developers/cdr-sdk/overview) and require a wallet to hold a License Token for a given IP Asset before it can decrypt. This ties confidential data directly to the on-chain licensing terms you defined.
-
-<CardGroup cols={2}>
-  <Card
-    title="IP-gated data with CDR"
-    icon="lock"
-    href="/developers/cdr-sdk/ip-asset-vaults"
-  >
-    Encrypt data and gate decryption on holding a License Token.
-  </Card>
-  <Card
-    title="CDR SDK Setup"
-    icon="screwdriver-wrench"
-    href="/developers/cdr-sdk/setup"
-  >
-    Install the CDR SDK and run your first encrypt/decrypt flow.
-  </Card>
-</CardGroup>
-
-## Prove Data Provenance With Trace
-
-If you're a data provider, [Trace](/trace/overview) gives you verifiable, provider-normalized provenance for the data you handle (content hashes, contributor consent, and KYC signals, with public audit views) through a simple REST integration.
-
-<CardGroup cols={2}>
-  <Card title="Trace Overview" icon="fingerprint" href="/trace/overview">
-    Understand how Trace records and audits data provenance.
-  </Card>
-  <Card title="Trace Integration Guide" icon="plug" href="/trace/integration">
-    The full write, read, and search API for providers.
-  </Card>
-</CardGroup>
+See [Network Info](/network/overview) for RPC, explorer, and faucet information.
+Use the [Blockscout API](/api-reference/blockscout-api) for network statistics
+and the [Consensus Client API](/api-reference/consensus-client/introduction) for node queries.

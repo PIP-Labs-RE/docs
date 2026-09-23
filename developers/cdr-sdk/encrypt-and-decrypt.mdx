@@ -24,15 +24,8 @@ This guide walks through the two main CDR flows:
 
 ## Encrypt a Secret
 
-The diagram below shows the on-chain secret flow: allocate a vault, encrypt the
-secret locally with TDH2, and write the ciphertext to the vault.
-
-<Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-encryption-flow-text.png"
-    alt="CDR encryption flow showing vault allocation, local encryption, and writing the ciphertext to the vault"
-  />
-</Frame>
+The on-chain secret flow allocates a vault, encrypts the
+secret locally with TDH2, and writes the ciphertext to the vault.
 
 The simplest "owner-only" pattern uses your wallet (EOA) address as both the
 write and read condition. The CDR contract bypasses the condition check when
@@ -93,12 +86,9 @@ console.log(`Write tx: ${writeTx}`);
 <Note>
   Any EOA address works as a write or read condition; only that EOA can
   perform the matching action. To gate just one side, set your wallet address
-  on that side and a condition contract (such as `LicenseReadCondition`) on the
-  other. The high-level `uploadCDR()` helper expects deployed condition
-  contracts on both sides and does not support EOA conditions, so use it for
-  patterns like DATA Foundation license-gated reads (see [IP Asset
-  Vaults](/developers/cdr-sdk/ip-asset-vaults)) and use the low-level
-  `allocate()` + `write()` flow above for owner-only EOA conditions.
+  on that side and a custom condition contract on the other. The high-level
+  `uploadCDR()` helper requires deployed condition contracts on both sides.
+  Use the low-level `allocate()` + `write()` flow above for EOA conditions.
 </Note>
 
 <Note>The value of the transaction must be exactly the same as the fee.</Note>
@@ -119,13 +109,6 @@ console.log(`Write tx: ${writeTx}`);
 
 Decryption requires submitting a read request on-chain, collecting partial
 decryptions from validators, and combining them client-side.
-
-<Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-decryption-flow-text.png"
-    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
-  />
-</Frame>
 
 ```typescript
 const { consumer } = client;
@@ -185,37 +168,19 @@ console.log(new TextDecoder().decode(dataKey));
 
 ## Encrypt and Download a File
 
-<Columns cols={2}>
-
-<Frame>
-<img
-  src="/images/developers/cdr-sdk/cdr-encryption-flow-file.png"
-  alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
-/>
-</Frame>
-
-<Frame>
-<img
-  src="/images/developers/cdr-sdk/cdr-decryption-flow-file.png"
-  alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
-/>
-</Frame>
-
-</Columns>
-
 Use the file workflow when the encrypted payload should live off-chain and only
 the encrypted file key plus pointer should be stored in the vault.
 
 Upload happens once by the data owner. Download happens later by an authorized
 reader who recovers the vault payload and then decrypts the stored file.
 
-The `uploadFile()` helper requires deployed condition contracts on both sides,
-so the example below uses DATA Foundation's `OwnerWriteCondition` for the write side and
-`LicenseReadCondition` for the read side. License token holders can decrypt
-the file (see [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults) for the
-end-to-end license setup). For an owner-only file flow, replicate the
-low-level steps shown earlier with your wallet (EOA) address as both
-conditions.
+The `uploadFile()` helper requires deployed condition contracts on both sides.
+The example uses the deployed `OwnerWriteCondition` for writes. Before running
+it, configure `readConditionAddr` with your own deployed contract implementing
+`checkReadCondition`, and `readConditionData` with that contract's ABI-encoded
+configuration. Set `readAccessAuxData` to the auxiliary data it expects from the
+reader (or `"0x"` if none is needed). The wallet used for `downloadFile()` must
+satisfy that condition.
 
 ```typescript
 import { HeliaProvider } from "@piplabs/cdr-sdk";
@@ -227,18 +192,14 @@ import { encodeAbiParameters } from "viem";
 
 const uploaderAddress = walletClient.account!.address;
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
-const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
 
 const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [uploaderAddress],
 );
 
-const readConditionData = encodeAbiParameters(
-  [{ type: "address" }, { type: "address" }],
-  [LICENSE_TOKEN, ipId],
-);
+// readConditionAddr, readConditionData, and readAccessAuxData are
+// configured for your deployed read condition as described above.
 
 // Pure read
 const globalPubKey = await client.observer.getGlobalPubKey();
@@ -259,7 +220,7 @@ const { uuid, cid } = await client.uploader.uploadFile({
   globalPubKey,
   updatable: false,
   writeConditionAddr: OWNER_WRITE_CONDITION,
-  readConditionAddr: LICENSE_READ_CONDITION,
+  readConditionAddr,
   writeConditionData,
   readConditionData,
   accessAuxData: "0x",
@@ -268,7 +229,7 @@ const { uuid, cid } = await client.uploader.uploadFile({
 // 1 on-chain read transaction + off-chain download + local AES decryption
 const { content, txHash } = await client.consumer.downloadFile({
   uuid,
-  accessAuxData: "0x",
+  accessAuxData: readAccessAuxData,
   storageProvider: storage,
   timeoutMs: 120_000,
 });

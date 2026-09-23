@@ -121,11 +121,6 @@ console.log("Saved ./example.decrypted.pdf");
 ```
 
 <Note>
-  For DATA Foundation license-gated reads, `accessAuxData` should encode the caller's
-  license token IDs as `abi.encode(uint256[] licenseTokenIds)`.
-</Note>
-
-<Note>
   `downloadFile()` inherits the same optional key auto-management behavior as
   `accessCDR()`, and returns `cid` and `txHash` alongside `content`.
 </Note>

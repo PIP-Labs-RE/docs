@@ -41,11 +41,6 @@ yarn add @piplabs/cdr-sdk viem
   or `@filoz/synapse-sdk` for `SynapseProvider`.
 </Note>
 
-<Note>
-  If you plan to mint DATA Foundation license tokens in an IP-gated flow, also install
-  `@story-protocol/core-sdk`.
-</Note>
-
 ## Initialize WASM
 
 The CDR SDK uses a WebAssembly module for threshold cryptography. You must initialize it once before performing any encryption or decryption operations.
@@ -375,8 +370,8 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 <Note>
   This example sends three transactions total: `allocate()`, `write()`, and
   `read()`. For larger payloads, switch to `uploadFile()` / `downloadFile()`
-  with deployed condition contracts (such as the DATA Foundation license-gated pattern
-  in [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)).
+  with deployed condition contracts. See
+  [Encrypt and Download a File](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
 </Note>
 
 <Note>

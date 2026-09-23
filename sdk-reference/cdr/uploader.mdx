@@ -53,25 +53,22 @@ Parameters:
 - `params.allocateFeeOverride` *(optional)*: `bigint` - Skip fee query and use this value
 - `params.writeFeeOverride` *(optional)*: `bigint` - Skip fee query and use this value
 
+Before running this example, set `readConditionAddr` to your deployed contract
+implementing `checkReadCondition`, and `readConditionData` to its ABI-encoded
+configuration. The write condition below restricts writes to the uploader.
+
 ```typescript Example
 import { encodeAbiParameters } from "viem";
 
-// DATA Foundation license-gated pattern: only the uploader can write, and only callers
-// holding a license token for `ipId` can read. See
-// /developers/cdr-sdk/ip-asset-vaults for the full setup.
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
-const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
 
 const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [walletClient.account!.address],
 );
 
-const readConditionData = encodeAbiParameters(
-  [{ type: "address" }, { type: "address" }],
-  [LICENSE_TOKEN, ipId],
-);
+// readConditionAddr and readConditionData are configured for your
+// deployed read condition before running this example.
 
 const globalPubKey = await client.observer.getGlobalPubKey();
 const dataKey = new TextEncoder().encode("my secret");
@@ -81,7 +78,7 @@ const { uuid, ciphertext, txHashes } = await client.uploader.uploadCDR({
   globalPubKey,
   updatable: false,
   writeConditionAddr: OWNER_WRITE_CONDITION,
-  readConditionAddr: LICENSE_READ_CONDITION,
+  readConditionAddr,
   writeConditionData,
   readConditionData,
   accessAuxData: "0x",
@@ -140,6 +137,11 @@ Parameters:
 - `params.allocateFeeOverride` *(optional)*: `bigint` - Skip the allocate fee query
 - `params.writeFeeOverride` *(optional)*: `bigint` - Skip the write fee query
 
+As in `uploadCDR()`, configure `readConditionAddr` and `readConditionData`
+for your deployed read condition before running this example. Readers must
+satisfy that condition and provide any required auxiliary data to
+`downloadFile()`.
+
 ```typescript Example
 import { HeliaProvider } from "@piplabs/cdr-sdk";
 import { readFile } from "node:fs/promises";
@@ -155,22 +157,15 @@ const storage = new HeliaProvider({
   CID: (s) => CID.parse(s),
 });
 
-// DATA Foundation license-gated pattern: see /developers/cdr-sdk/ip-asset-vaults for
-// the full license setup. For an owner-only file flow, use the low-level
-// `allocate()` path with your wallet (EOA) address as both conditions.
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
-const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
 
 const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [walletClient.account!.address],
 );
 
-const readConditionData = encodeAbiParameters(
-  [{ type: "address" }, { type: "address" }],
-  [LICENSE_TOKEN, ipId],
-);
+// readConditionAddr and readConditionData are configured for your
+// deployed read condition before running this example.
 
 const fileBytes = await readFile("./example.pdf");
 const globalPubKey = await client.observer.getGlobalPubKey();
@@ -180,7 +175,7 @@ const { uuid, cid } = await client.uploader.uploadFile({
   globalPubKey,
   updatable: false,
   writeConditionAddr: OWNER_WRITE_CONDITION,
-  readConditionAddr: LICENSE_READ_CONDITION,
+  readConditionAddr,
   writeConditionData,
   readConditionData,
   accessAuxData: "0x",

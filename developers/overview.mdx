@@ -12,7 +12,7 @@ Can't find something? Ask the writer of our docs for help in our [Builder Discor
 
 </Tip>
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
 
 <Card
   title="Testnet Block Explorer"
@@ -20,15 +20,6 @@ Can't find something? Ask the writer of our docs for help in our [Builder Discor
   icon="house"
 >
   View all testnet block & transaction data on the DATA Foundation.
-</Card>
-
-<Card
-  title="IP-related Explorer"
-  href="https://aeneid.explorer.datafdn.org"
-  icon="user"
->
-  View testnet transaction data specifically related to IP interactions like
-  registering, licensing, etc.
 </Card>
 
 <Card
@@ -42,31 +33,16 @@ Can't find something? Ask the writer of our docs for help in our [Builder Discor
   
 </CardGroup>
 
-## Confidential Data Rails (CDR)
-
-CDR is the primary way to encrypt, store, and gate access to confidential data on the DATA Foundation.
-
-- [CDR SDK Guide](/developers/cdr-sdk/overview) - a step-by-step walkthrough of the `@piplabs/cdr-sdk`, from setup to encrypting data and gating it on IP Asset licenses **_(includes working code)_**
-- [CDR SDK Reference](/sdk-reference/cdr/overview) - detailed **explanations and examples** for every function in the CDR SDK
-
 ## Trace
 
 [Trace](/trace/overview) is the data-provenance and audit layer. Providers integrate over a simple REST API. See the [Trace Integration Guide](/trace/integration).
 
-## IP & Licensing SDK
+## Confidential Data Rails (CDR)
 
-The rights layer that CDR builds on:
+CDR is the primary way to encrypt, store, and gate access to confidential data on the DATA Foundation.
 
-- [SDK Reference](/sdk-reference) - view the entire SDK reference with detailed **explanations and examples** for each function **_(includes working code so you can jump right to coding)_**
-- [TypeScript SDK Guide](/developers/typescript-sdk/overview) - a detailed, step-by-step walkthrough of how to register IP, attach terms, and mint licenses **_(includes working code so you can jump right to coding)_**
-- [Tutorials](/developers/tutorials/how-to-register-ip) - more specific topics like "How do I register music on the DATA Foundation?" and "How do I implement wallet-less onboarding with the SDK?" **_(includes working code so you can jump right to coding)_**
-
-## Smart Contracts
-
-Check out the following resources to learn the protocol:
-
-- [Smart Contract Guide](/developers/smart-contracts-guide/overview) - a walkthrough of how to set up and implement the most popular uses of the protocol **_(includes working code so you can jump right to coding)_**
-- [Deployed Smart Contracts](/developers/deployed-smart-contracts) - all the deployed protocol addresses
+- [CDR SDK Guide](/developers/cdr-sdk/overview) - a step-by-step walkthrough of the `@piplabs/cdr-sdk`, from setup to encrypting data and configuring access control **_(includes working code)_**
+- [CDR SDK Reference](/sdk-reference/cdr/overview) - detailed **explanations and examples** for every function in the CDR SDK
 
 <Warning>
   Do not use `RANDAO` for pseudo-randomness, instead use onchain VRF (Pyth or
@@ -76,4 +52,4 @@ Check out the following resources to learn the protocol:
 
 ## API
 
-View our [API Reference](/api-reference).
+Use the [Trace Integration Guide](/trace/integration) for data provenance, the [Blockscout API](/api-reference/blockscout-api) for network statistics, or the [Consensus Client API](/api-reference/consensus-client/introduction) for node queries.
