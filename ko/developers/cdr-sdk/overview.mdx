@@ -14,14 +14,14 @@ description: CDR SDK를 사용하여 Confidential Data Rails(CDR)를 애플리�
     icon="robot"
     href="https://github.com/jacob-tucker/cdr-skill"
   >
-    Claude 및 기타 에이전트를 위한 드롭인 스킬과, 온체인 비밀, 암호화된 파일,
-    IP 게이트 흐름을 다루는 세 가지 엔드 투 엔드 예제를 제공합니다. 작동하는
-    CDR 통합을 얻는 가장 빠른 방법입니다.
+    Claude 및 기타 에이전트를 위한 드롭인 스킬과, 온체인 비밀 및 암호화된
+    파일을 다루는 예제를 제공합니다. 작동하는 CDR 통합을 얻는 가장 빠른
+    방법입니다.
   </Card>
   <Card
     title="CDR 백서"
     icon="file-lines"
-    href="https://www.story.foundation/confidentialdatarails.pdf"
+    href="https://datafdn.org/confidentialdatarails.pdf"
   >
     Confidential Data Rails의 전체 설계: 암호학, 검증자 프로토콜 및 위협 모델.
   </Card>
@@ -42,7 +42,6 @@ CDR은 다음과 같은 강력한 사용 사례를 가능하게 합니다:
 - **비밀 공유** - 특정 지갑만 복호화할 수 있는 비밀을 암호화하고 공유합니다
 - **암호화된 파일 전달** - 큰 파일은 오프체인에 보관하면서 암호화된 파일 키는 온체인에 저장합니다
 - **데이터 마켓플레이스** - 온체인 결제 시행과 함께 암호화된 데이터에 대한 접근권을 판매합니다
-- **IP 게이트 콘텐츠** - 암호화된 데이터를 IP Asset에 묶고 복호화에 라이선스 토큰을 요구합니다
 
 ## 보안 및 신뢰 모델
 
@@ -101,7 +100,7 @@ CDR은 **볼트**를 중심으로 회전합니다. 각 볼트는 암호화된 �
 4. 암호화된 암호문을 온체인 볼트에 **씁니다**
 
 자세한 과정:
-[비밀 암호화하기](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
+[비밀 암호화하기](/ko/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret).
 
 ### 암호화된 파일 흐름
 
@@ -118,7 +117,7 @@ CDR은 **볼트**를 중심으로 회전합니다. 각 볼트는 암호화된 �
 3. 복구된 AES 키로 클라이언트 측에서 파일을 **복호화**합니다
 
 자세한 과정:
-[파일 암호화 및 다운로드](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
+[파일 암호화 및 다운로드](/ko/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file).
 
 ### 복호화 흐름
 
@@ -147,24 +146,13 @@ await uploader.allocate({
 ```
 
 엔드 투 엔드 예제는
-[비밀 암호화하기](/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret)를 참조하세요.
+[비밀 암호화하기](/ko/developers/cdr-sdk/encrypt-and-decrypt#encrypt-a-secret)를 참조하세요.
 
 <Note>
   이 EOA 단축키는 `allocate()`와 함께 사용할 때 가장 유용합니다. 고수준
-  `uploadCDR()` / `uploadFile()` 헬퍼는 조건 컨트랙트를 검증하므로 예제에서는
-  배포된 소유자 전용 조건 컨트랙트를 사용합니다.
+  `uploadCDR()` / `uploadFile()` 헬퍼는 조건 컨트랙트를 검증하며, 적절한 읽기 및
+  쓰기 인터페이스를 구현한 컨트랙트를 요구합니다.
 </Note>
-
-### 라이선스 토큰 (IP 게이트)
-
-Aeneid에 배포된 `LicenseReadCondition` 컨트랙트를 사용하고
-`abi.encode(licenseTokenAddress, ipId)`를 `readConditionData`로 인코딩합니다.
-볼트 작성자는 일반적으로 업로더만 쓸 수 있도록 배포된 `OwnerWriteCondition`
-컨트랙트를 사용하며, 독자는 `accessAuxData`에서 유효한 DATA Foundation 라이선스
-토큰 ID를 제시해야 합니다.
-
-기술적 가이드:
-[DATA Foundation 라이선스 읽기 패턴이 작동하는 방식](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
 
 ### 사용자 정의 조건 컨트랙트
 
@@ -192,40 +180,29 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
   Aeneid에서는 오늘날 `ownerOnly()` 및 `custom()`이 실용적인 내장 패턴입니다.
   `open()`, `tokenGate()` 및 `merkle()`은 조건 데이터를 인코딩하는 데 도움이
   되지만, 여전히 매칭되는 조건 컨트랙트를 직접 배포해야 합니다.
-  `conditions.storyLicense()`는 아직 사용할 수 없습니다.
 </Note>
-
-배포된 DATA Foundation 라이선스 게이트 패턴은
-[DATA Foundation 라이선스 읽기 패턴이 작동하는 방식](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works)을 참조하세요.
 
 ## 다음 단계
 
 <CardGroup cols={2}>
-  <Card title="설정" icon="gear" href="/developers/cdr-sdk/setup">
+  <Card title="설정" icon="gear" href="/ko/developers/cdr-sdk/setup">
     npm에서 SDK를 설치하고 Aeneid용 클라이언트를 초기화합니다.
   </Card>
   <Card
     title="런타임 구성"
     icon="sliders"
-    href="/developers/cdr-sdk/advanced-configuration"
+    href="/ko/developers/cdr-sdk/advanced-configuration"
   >
     DKG 백엔드, 검증 RPC, 시스템 주소 및 릴리스 노트.
   </Card>
   <Card
     title="암호화 및 복호화"
     icon="lock"
-    href="/developers/cdr-sdk/encrypt-and-decrypt"
+    href="/ko/developers/cdr-sdk/encrypt-and-decrypt"
   >
     온체인 비밀과 암호화된 파일 워크플로 모두를 사용합니다.
   </Card>
-  <Card
-    title="IP Asset Vaults"
-    icon="certificate"
-    href="/developers/cdr-sdk/ip-asset-vaults"
-  >
-    Aeneid에서 DATA Foundation 라이선스 토큰으로 라이선스 게이트 읽기를 구성합니다.
-  </Card>
-  <Card title="SDK 참조" icon="book" href="/sdk-reference/cdr/overview">
+  <Card title="SDK 참조" icon="book" href="/ko/sdk-reference/cdr/overview">
     모든 CDR SDK 메서드에 대한 전체 API 참조.
   </Card>
   <Card
@@ -233,6 +210,6 @@ conditions.merkle({ address: conditionAddr, root: "0x..." });
     icon="robot"
     href="https://github.com/jacob-tucker/cdr-skill"
   >
-    AI 에이전트용 CDR 스킬을 설치하고 세 가지 엔드 투 엔드 예제를 살펴봅니다.
+    AI 에이전트용 CDR 스킬을 설치하고 통합 예제를 살펴봅니다.
   </Card>
 </CardGroup>

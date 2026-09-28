@@ -41,11 +41,6 @@ yarn add @piplabs/cdr-sdk viem
   `SynapseProvider`의 경우 `@filoz/synapse-sdk`.
 </Note>
 
-<Note>
-  IP 게이트 흐름에서 DATA Foundation 라이선스 토큰을 발행할 계획이라면
-  `@story-protocol/core-sdk`도 설치하세요.
-</Note>
-
 ## WASM 초기화
 
 CDR SDK는 임계값 암호학을 위해 WebAssembly 모듈을 사용합니다. 암호화 또는 복호화 작업을 수행하기 전에 한 번 초기화해야 합니다.
@@ -372,8 +367,8 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 <Note>
   이 예제는 총 세 개의 트랜잭션을 전송합니다: `allocate()`, `write()` 및
   `read()`. 더 큰 페이로드의 경우 배포된 조건 컨트랙트와 함께 `uploadFile()` /
-  `downloadFile()`로 전환하세요(예: [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)의
-  DATA Foundation 라이선스 게이트 패턴).
+  `downloadFile()`로 전환하세요.
+  [파일 암호화 및 다운로드](/ko/developers/cdr-sdk/encrypt-and-decrypt#encrypt-and-download-a-file)를 참조하세요.
 </Note>
 
 <Note>
@@ -387,9 +382,9 @@ console.log("Recovered secret:", new TextDecoder().decode(dataKey));
 ## 다음 단계
 
 - 네트워크 측 런타임 동작은
-  [런타임 구성](/developers/cdr-sdk/advanced-configuration)을 참조하세요.
+  [런타임 구성](/ko/developers/cdr-sdk/advanced-configuration)을 참조하세요.
 - 주요 통합 흐름은
-  [암호화 및 복호화](/developers/cdr-sdk/encrypt-and-decrypt)로 계속하세요.
+  [암호화 및 복호화](/ko/developers/cdr-sdk/encrypt-and-decrypt)로 계속하세요.
 
 ## 오류 처리
 
