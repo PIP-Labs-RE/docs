@@ -74,9 +74,7 @@ The current Aeneid release uses the following core system addresses:
 | DKG      | `0xCcCcCC0000000000000000000000000000000004` |
 | CDR      | `0xCcCcCC0000000000000000000000000000000005` |
 
-The SDK already knows these addresses. For DATA Foundation license-gated condition
-contracts, see
-[How the DATA Foundation License Read Pattern Works](/developers/cdr-sdk/ip-asset-vaults#how-the-data-foundation-license-read-pattern-works).
+The SDK already knows these addresses.
 
 ## Release Posture and Availability
 
@@ -90,9 +88,6 @@ contracts, see
 
 ## Current Release Notes
 
-- DATA Foundation license-gated vaults still require manual condition encoding.
-- The CDR SDK does not auto-wrap IP to WIP or auto-approve WIP for license
-  minting.
 - `accessCDR()` can auto-generate the ephemeral keypair and query `threshold`
   when those params are omitted.
 - `createVault` / `readVault` / `createFileVault` / `readFileVault` are

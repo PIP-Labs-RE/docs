@@ -1,7 +1,7 @@
 ---
 title: "Introduction"
 sidebarTitle: "Introduction"
-description: "The DATA Foundation: prove where data came from, keep it confidential, and define the rights over it."
+description: "The DATA Foundation: prove where data came from and keep it confidential."
 icon: hand-wave
 ---
 
@@ -11,22 +11,21 @@ icon: hand-wave
 
 ## The DATA Foundation
 
-The DATA Foundation is the home for data, built on a purpose-built layer 1 blockchain. It's where data is given an origin, a level of confidentiality, and a clear set of rights, all programmable through a simple API.
+The DATA Foundation is the home for data, built on a purpose-built layer 1 blockchain. It provides verifiable data provenance and programmable confidentiality.
 
 Every piece of data on the DATA Foundation can be:
 
 - **Proven**: a verifiable, portable record of where it came from and under what terms it was contributed
 - **Confidential**: encrypted so only the parties you authorize can ever decrypt it
-- **Governed**: owned, licensed, and monetized under transparent on-chain terms
 
 <Note>
   Data could be an image, a song, a dataset, an RWA, AI training data, or
   anything in-between.
 </Note>
 
-## The Three Layers
+## The Data Stack
 
-<CardGroup cols={3}>
+<CardGroup cols={2}>
   <Card title="Trace: provenance" icon="fingerprint" href="/trace/overview">
     Verifiable, provider-normalized provenance: content hashes, contributor
     consent, and KYC signals, with public audit views over the whole dataset.
@@ -39,20 +38,19 @@ Every piece of data on the DATA Foundation can be:
     Confidential Data Rails: threshold-encrypt data and gate decryption with
     on-chain access control: no single party ever holds the full key.
   </Card>
-  <Card title="IP & Licensing: rights" icon="scroll" href="/concepts/overview">
-    Register data as IP and attach on-chain license terms that define who can
-    use it and how, the rights layer the other two build on.
-  </Card>
 </CardGroup>
 
-Together they let you put data on the DATA Foundation that is **provable** (Trace),
-**confidential** (CDR), and **governed by clear usage rights** (IP & Licensing).
+Together they let you put data on the DATA Foundation that is **provable** (Trace) and
+**confidential** (CDR).
 
 ## Start Building
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="flag-checkered" href="/quickstart">
     Add the network, grab the code examples, and ship your first integration.
+  </Card>
+  <Card title="Trace Integration" icon="plug" href="/trace/integration">
+    Register data provenance over a simple REST API, no SDK required.
   </Card>
   <Card
     title="CDR SDK"
@@ -62,28 +60,24 @@ Together they let you put data on the DATA Foundation that is **provable** (Trac
     Encrypt, store, and gate access to confidential data with
     `@piplabs/cdr-sdk`.
   </Card>
-  <Card title="Trace Integration" icon="plug" href="/trace/integration">
-    Register data provenance over a simple REST API, no SDK required.
-  </Card>
   <Card title="SDK Reference" icon="book" href="/sdk-reference">
-    Every function in the CDR, Protocol, and Python SDKs, with working examples.
+    CDR SDK functions for encryption, vaults, and access control, with examples.
   </Card>
 </CardGroup>
 
 ## How It Fits Together
 
-The DATA Network is a purpose-built layer 1 that combines the best of the EVM and the Cosmos SDK. It is 100% EVM-compatible, with execution-layer optimizations for traversing complex data structures (like IP graphs) in seconds at marginal cost, and a CometBFT-based consensus layer for fast finality and cheap transactions.
+The DATA Network is a purpose-built layer 1 that combines the best of the EVM and the Cosmos SDK. It is 100% EVM-compatible, with a CometBFT-based consensus layer for fast finality and cheap transactions.
 
-On top of the network, the three layers compose:
+On top of the network, Trace and CDR work together:
 
 - **Trace** records where data came from and the terms it was contributed under.
-- **CDR** keeps that data encrypted and gates decryption on-chain, often on the very licenses defined below.
-- **IP & Licensing** registers data as an [🧩 IP Asset](/concepts/ip-asset) and attaches transparent terms through the [📜 Licensing Module](/concepts/licensing-module). Although enforced on-chain, these terms map to an off-chain legal contract, the [💊 Programmable IP License (PIL)](/concepts/programmable-ip-license).
+- **CDR** keeps that data encrypted and gates decryption on-chain.
 
 <Accordion title="Why a DATA Foundation?" icon="face-thinking">
 Data is the most valuable asset of the AI era, yet the systems we use to share it weren't built for it. Creators lose control and credit the moment their work goes online; AI is trained on copyrighted and unconsented data; and there's no portable, verifiable record of where any of it came from.
 
-The DATA Foundation fixes this. Data registered on it carries its provenance with it (Trace), can stay confidential until access is earned (CDR), and is governed by transparent, programmable rights (IP & Licensing), so contributors are credited and fairly rewarded when their data is used, including by AI.
+Data registered on the DATA Foundation carries its provenance with it through Trace and can stay confidential through CDR, with access controlled on-chain.
 
 </Accordion>
 

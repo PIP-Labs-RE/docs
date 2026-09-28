@@ -79,52 +79,6 @@
                     "pages": [
                       "cdr/overview"
                     ]
-                  },
-                  {
-                    "group": "Rights (IP & Licensing)",
-                    "icon": "scroll",
-                    "pages": [
-                      "concepts/overview",
-                      {
-                        "group": "IP Asset",
-                        "icon": "puzzle",
-                        "pages": [
-                          "concepts/ip-asset/overview",
-                          "concepts/ip-asset/ip-account",
-                          "concepts/ip-asset/ipa-modifications",
-                          "concepts/ip-asset/ipa-metadata-standard"
-                        ]
-                      },
-                      {
-                        "group": "Licensing",
-                        "icon": "scroll",
-                        "pages": [
-                          "concepts/licensing-module/overview",
-                          "concepts/licensing-module/license-template",
-                          "concepts/licensing-module/license-terms",
-                          "concepts/licensing-module/license-token",
-                          "concepts/licensing-module/license-config"
-                        ]
-                      },
-                      {
-                        "group": "Programmable IP License",
-                        "icon": "file-certificate",
-                        "pages": [
-                          "concepts/programmable-ip-license/overview",
-                          "concepts/programmable-ip-license/pil-terms",
-                          "concepts/programmable-ip-license/pil-flavors"
-                        ]
-                      },
-                      "concepts/hooks",
-                      {
-                        "group": "SPG (Periphery)",
-                        "icon": "box-open",
-                        "pages": [
-                          "concepts/spg/overview",
-                          "concepts/spg/batch-spg-function-calls"
-                        ]
-                      }
-                    ]
                   }
                 ]
               },
@@ -218,24 +172,12 @@
                 "group": "Get Started",
                 "pages": [
                   "developers/overview",
-                  "developers/deployed-smart-contracts",
                   "developers/releases"
                 ]
               },
               {
                 "group": "Integration Guides",
                 "pages": [
-                  {
-                    "group": "CDR SDK",
-                    "icon": "lock",
-                    "pages": [
-                      "developers/cdr-sdk/overview",
-                      "developers/cdr-sdk/setup",
-                      "developers/cdr-sdk/encrypt-and-decrypt",
-                      "developers/cdr-sdk/ip-asset-vaults",
-                      "developers/cdr-sdk/advanced-configuration"
-                    ]
-                  },
                   {
                     "group": "Trace",
                     "icon": "fingerprint",
@@ -244,78 +186,13 @@
                     ]
                   },
                   {
-                    "group": "IP & Licensing",
-                    "icon": "scroll",
+                    "group": "CDR SDK",
+                    "icon": "lock",
                     "pages": [
-                      {
-                        "group": "TypeScript SDK",
-                        "icon": "screwdriver-wrench",
-                        "pages": [
-                          "developers/typescript-sdk/overview",
-                          "developers/typescript-sdk/setup",
-                          "developers/typescript-sdk/register-ip-asset",
-                          "developers/typescript-sdk/attach-terms",
-                          "developers/typescript-sdk/mint-license"
-                        ]
-                      },
-                      {
-                        "group": "React / Next.js",
-                        "icon": "atom",
-                        "pages": [
-                          "developers/react-guide/overview",
-                          {
-                            "group": "Setup",
-                            "pages": [
-                              "developers/react-guide/setup/overview",
-                              "developers/react-guide/setup/dynamic-setup",
-                              "developers/react-guide/setup/rainbowkit-setup",
-                              "developers/react-guide/setup/reown-setup",
-                              "developers/react-guide/setup/tomo-setup"
-                            ]
-                          },
-                          "developers/react-guide/using-the-sdk-in-react"
-                        ]
-                      },
-                      {
-                        "group": "Smart Contracts",
-                        "icon": "file-contract",
-                        "pages": [
-                          "developers/smart-contracts-guide/overview",
-                          "developers/smart-contracts-guide/setup",
-                          "developers/smart-contracts-guide/register-ip-asset",
-                          "developers/smart-contracts-guide/register-terms",
-                          "developers/smart-contracts-guide/attach-terms",
-                          "developers/smart-contracts-guide/mint-license",
-                          "developers/smart-contracts-guide/example"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "Global Wallet",
-                "pages": [
-                  "developers/global-wallet/overview"
-                ]
-              },
-              {
-                "group": "Tutorials",
-                "pages": [
-                  {
-                    "group": "Registration",
-                    "icon": "file-certificate",
-                    "pages": [
-                      "developers/tutorials/how-to-register-ip",
-                      "developers/tutorials/how-to-register-music"
-                    ]
-                  },
-                  {
-                    "group": "Wallet-less & Onboarding",
-                    "icon": "wallet",
-                    "pages": [
-                      "developers/tutorials/privy-tutorial",
-                      "developers/tutorials/easy-ip-onboarding"
+                      "developers/cdr-sdk/overview",
+                      "developers/cdr-sdk/setup",
+                      "developers/cdr-sdk/encrypt-and-decrypt",
+                      "developers/cdr-sdk/advanced-configuration"
                     ]
                   }
                 ]
@@ -344,40 +221,6 @@
                       "sdk-reference/cdr/consumer",
                       "sdk-reference/cdr/crypto"
                     ]
-                  },
-                  {
-                    "group": "Protocol SDK (IP & Licensing)",
-                    "pages": [
-                      "sdk-reference/ipasset",
-                      "sdk-reference/ipaccount",
-                      "sdk-reference/license",
-                      "sdk-reference/permissions",
-                      "sdk-reference/nftclient",
-                      "sdk-reference/wipclient"
-                    ]
-                  }
-                ]
-              },
-              {
-                "dropdown": "Python",
-                "icon": "python",
-                "groups": [
-                  {
-                    "group": "Get Started",
-                    "pages": [
-                      "sdk-reference/python/overview"
-                    ]
-                  },
-                  {
-                    "group": "Protocol SDK (IP & Licensing)",
-                    "pages": [
-                      "sdk-reference/python/ipasset",
-                      "sdk-reference/python/ipaccount",
-                      "sdk-reference/python/license",
-                      "sdk-reference/python/permissions",
-                      "sdk-reference/python/nftclient",
-                      "sdk-reference/python/wipclient"
-                    ]
                   }
                 ]
               }
@@ -387,26 +230,13 @@
             "tab": "API Reference",
             "dropdowns": [
               {
-                "dropdown": "Protocol API (IP & Licensing)",
-                "icon": "link",
+                "dropdown": "Blockscout API",
+                "icon": "magnifying-glass",
                 "groups": [
                   {
-                    "group": "Protocol API Overview",
+                    "group": "Blockscout API",
                     "pages": [
-                      "api-reference/protocol/introduction",
                       "api-reference/blockscout-api"
-                    ]
-                  },
-                  {
-                    "group": "Endpoints",
-                    "openapi": "https://api.dataapis.io/api/v4/openapi.json",
-                    "pages": [
-                      "POST /assets",
-                      "POST /assets/edges",
-                      "POST /collections",
-                      "POST /licenses/tokens",
-                      "api-reference/protocol/search",
-                      "api-reference/protocol/transactions"
                     ]
                   }
                 ]
@@ -474,52 +304,6 @@
                     "icon": "lock",
                     "pages": [
                       "ko/cdr/overview"
-                    ]
-                  },
-                  {
-                    "group": "권리 (IP 및 라이선싱)",
-                    "icon": "scroll",
-                    "pages": [
-                      "ko/concepts/overview",
-                      {
-                        "group": "IP 자산",
-                        "icon": "puzzle",
-                        "pages": [
-                          "ko/concepts/ip-asset/overview",
-                          "ko/concepts/ip-asset/ip-account",
-                          "ko/concepts/ip-asset/ipa-modifications",
-                          "ko/concepts/ip-asset/ipa-metadata-standard"
-                        ]
-                      },
-                      {
-                        "group": "라이선싱",
-                        "icon": "scroll",
-                        "pages": [
-                          "ko/concepts/licensing-module/overview",
-                          "ko/concepts/licensing-module/license-template",
-                          "ko/concepts/licensing-module/license-terms",
-                          "ko/concepts/licensing-module/license-token",
-                          "ko/concepts/licensing-module/license-config"
-                        ]
-                      },
-                      {
-                        "group": "Programmable IP License",
-                        "icon": "file-certificate",
-                        "pages": [
-                          "ko/concepts/programmable-ip-license/overview",
-                          "ko/concepts/programmable-ip-license/pil-terms",
-                          "ko/concepts/programmable-ip-license/pil-flavors"
-                        ]
-                      },
-                      "ko/concepts/hooks",
-                      {
-                        "group": "SPG (Periphery)",
-                        "icon": "box-open",
-                        "pages": [
-                          "ko/concepts/spg/overview",
-                          "ko/concepts/spg/batch-spg-function-calls"
-                        ]
-                      }
                     ]
                   }
                 ]
@@ -614,24 +398,12 @@
                 "group": "시작하기",
                 "pages": [
                   "ko/developers/overview",
-                  "ko/developers/deployed-smart-contracts",
                   "ko/developers/releases"
                 ]
               },
               {
                 "group": "Integration Guides",
                 "pages": [
-                  {
-                    "group": "CDR SDK",
-                    "icon": "lock",
-                    "pages": [
-                      "ko/developers/cdr-sdk/overview",
-                      "ko/developers/cdr-sdk/setup",
-                      "ko/developers/cdr-sdk/encrypt-and-decrypt",
-                      "ko/developers/cdr-sdk/ip-asset-vaults",
-                      "ko/developers/cdr-sdk/advanced-configuration"
-                    ]
-                  },
                   {
                     "group": "Trace",
                     "icon": "fingerprint",
@@ -640,78 +412,13 @@
                     ]
                   },
                   {
-                    "group": "IP & Licensing",
-                    "icon": "scroll",
+                    "group": "CDR SDK",
+                    "icon": "lock",
                     "pages": [
-                      {
-                        "group": "TypeScript SDK",
-                        "icon": "screwdriver-wrench",
-                        "pages": [
-                          "ko/developers/typescript-sdk/overview",
-                          "ko/developers/typescript-sdk/setup",
-                          "ko/developers/typescript-sdk/register-ip-asset",
-                          "ko/developers/typescript-sdk/attach-terms",
-                          "ko/developers/typescript-sdk/mint-license"
-                        ]
-                      },
-                      {
-                        "group": "React / Next.js",
-                        "icon": "atom",
-                        "pages": [
-                          "ko/developers/react-guide/overview",
-                          {
-                            "group": "설정",
-                            "pages": [
-                              "ko/developers/react-guide/setup/overview",
-                              "ko/developers/react-guide/setup/dynamic-setup",
-                              "ko/developers/react-guide/setup/rainbowkit-setup",
-                              "ko/developers/react-guide/setup/reown-setup",
-                              "ko/developers/react-guide/setup/tomo-setup"
-                            ]
-                          },
-                          "ko/developers/react-guide/using-the-sdk-in-react"
-                        ]
-                      },
-                      {
-                        "group": "Smart Contracts",
-                        "icon": "file-contract",
-                        "pages": [
-                          "ko/developers/smart-contracts-guide/overview",
-                          "ko/developers/smart-contracts-guide/setup",
-                          "ko/developers/smart-contracts-guide/register-ip-asset",
-                          "ko/developers/smart-contracts-guide/register-terms",
-                          "ko/developers/smart-contracts-guide/attach-terms",
-                          "ko/developers/smart-contracts-guide/mint-license",
-                          "ko/developers/smart-contracts-guide/example"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "글로벌 지갑",
-                "pages": [
-                  "ko/developers/global-wallet/overview"
-                ]
-              },
-              {
-                "group": "튜토리얼",
-                "pages": [
-                  {
-                    "group": "Registration",
-                    "icon": "file-certificate",
-                    "pages": [
-                      "ko/developers/tutorials/how-to-register-ip",
-                      "ko/developers/tutorials/how-to-register-music"
-                    ]
-                  },
-                  {
-                    "group": "Wallet-less & Onboarding",
-                    "icon": "wallet",
-                    "pages": [
-                      "ko/developers/tutorials/privy-tutorial",
-                      "ko/developers/tutorials/easy-ip-onboarding"
+                      "ko/developers/cdr-sdk/overview",
+                      "ko/developers/cdr-sdk/setup",
+                      "ko/developers/cdr-sdk/encrypt-and-decrypt",
+                      "ko/developers/cdr-sdk/advanced-configuration"
                     ]
                   }
                 ]
@@ -740,40 +447,6 @@
                       "ko/sdk-reference/cdr/consumer",
                       "ko/sdk-reference/cdr/crypto"
                     ]
-                  },
-                  {
-                    "group": "Protocol SDK (IP & Licensing)",
-                    "pages": [
-                      "ko/sdk-reference/ipasset",
-                      "ko/sdk-reference/ipaccount",
-                      "ko/sdk-reference/license",
-                      "ko/sdk-reference/permissions",
-                      "ko/sdk-reference/nftclient",
-                      "ko/sdk-reference/wipclient"
-                    ]
-                  }
-                ]
-              },
-              {
-                "dropdown": "Python",
-                "icon": "python",
-                "groups": [
-                  {
-                    "group": "시작하기",
-                    "pages": [
-                      "ko/sdk-reference/python/overview"
-                    ]
-                  },
-                  {
-                    "group": "Protocol SDK (IP & Licensing)",
-                    "pages": [
-                      "ko/sdk-reference/python/ipasset",
-                      "ko/sdk-reference/python/ipaccount",
-                      "ko/sdk-reference/python/license",
-                      "ko/sdk-reference/python/permissions",
-                      "ko/sdk-reference/python/nftclient",
-                      "ko/sdk-reference/python/wipclient"
-                    ]
                   }
                 ]
               }
@@ -783,26 +456,13 @@
             "tab": "API 레퍼런스",
             "dropdowns": [
               {
-                "dropdown": "Protocol API (IP & Licensing)",
-                "icon": "link",
+                "dropdown": "Blockscout API",
+                "icon": "magnifying-glass",
                 "groups": [
                   {
-                    "group": "Protocol API Overview",
+                    "group": "Blockscout API",
                     "pages": [
-                      "ko/api-reference/protocol/introduction",
                       "ko/api-reference/blockscout-api"
-                    ]
-                  },
-                  {
-                    "group": "Endpoints",
-                    "openapi": "https://api.dataapis.io/api/v4/openapi.json",
-                    "pages": [
-                      "POST /assets",
-                      "POST /assets/edges",
-                      "POST /collections",
-                      "POST /licenses/tokens",
-                      "ko/api-reference/protocol/search",
-                      "ko/api-reference/protocol/transactions"
                     ]
                   }
                 ]
@@ -940,200 +600,8 @@
       "destination": "/network/participate/validators/troubleshooting"
     },
     {
-      "source": "/overview",
-      "destination": "/concepts/overview"
-    },
-    {
-      "source": "/ip-asset",
-      "destination": "/concepts/ip-asset"
-    },
-    {
-      "source": "/ip-account",
-      "destination": "/concepts/ip-asset/ip-account"
-    },
-    {
-      "source": "/ipa-metadata-standard",
-      "destination": "/concepts/ip-asset/ipa-metadata-standard"
-    },
-    {
-      "source": "/ipa-modifications",
-      "destination": "/concepts/ip-asset/ipa-modifications"
-    },
-    {
-      "source": "/story-modules",
-      "destination": "/concepts/licensing-module"
-    },
-    {
-      "source": "/base-module",
-      "destination": "/concepts/licensing-module"
-    },
-    {
-      "source": "/concepts/modules",
-      "destination": "/concepts/licensing-module"
-    },
-    {
-      "source": "/concepts/modules/overview",
-      "destination": "/concepts/licensing-module/overview"
-    },
-    {
-      "source": "/hooks",
-      "destination": "/concepts/hooks"
-    },
-    {
-      "source": "/licensing-module",
-      "destination": "/concepts/licensing-module"
-    },
-    {
-      "source": "/license-template",
-      "destination": "/concepts/licensing-module/license-template"
-    },
-    {
-      "source": "/license-terms",
-      "destination": "/concepts/licensing-module/license-terms"
-    },
-    {
-      "source": "/license-token",
-      "destination": "/concepts/licensing-module/license-token"
-    },
-    {
-      "source": "/license-config-hook",
-      "destination": "/concepts/licensing-module/license-config"
-    },
-    {
-      "source": "/programmable-ip-license",
-      "destination": "/concepts/programmable-ip-license"
-    },
-    {
-      "source": "/pil-terms",
-      "destination": "/concepts/programmable-ip-license/pil-terms"
-    },
-    {
-      "source": "/pil-flavors",
-      "destination": "/concepts/programmable-ip-license/pil-flavors"
-    },
-    {
-      "source": "/spg",
-      "destination": "/concepts/spg"
-    },
-    {
-      "source": "/batch-spg-function-calls",
-      "destination": "/concepts/spg/batch-spg-function-calls"
-    },
-    {
       "source": "/dev-overview",
       "destination": "/developers/overview"
-    },
-    {
-      "source": "/tutorials",
-      "destination": "/developers/tutorials/how-to-register-ip"
-    },
-    {
-      "source": "/developers/tutorials",
-      "destination": "/developers/tutorials/how-to-register-ip"
-    },
-    {
-      "source": "/developers/tutorials/overview",
-      "destination": "/developers/tutorials/how-to-register-ip"
-    },
-    {
-      "source": "/how-to-register-ip-on-story",
-      "destination": "/developers/tutorials/how-to-register-ip"
-    },
-    {
-      "source": "/how-to-register-music-on-story",
-      "destination": "/developers/tutorials/how-to-register-music"
-    },
-    {
-      "source": "/developers/tutorials/how-to-register-ip-on-story",
-      "destination": "/developers/tutorials/how-to-register-ip"
-    },
-    {
-      "source": "/developers/tutorials/how-to-register-music-on-story",
-      "destination": "/developers/tutorials/how-to-register-music"
-    },
-    {
-      "source": "/privy-tutorial",
-      "destination": "/developers/tutorials/privy-tutorial"
-    },
-    {
-      "source": "/typescript-sdk",
-      "destination": "/developers/typescript-sdk"
-    },
-    {
-      "source": "/typescript-sdk-setup",
-      "destination": "/developers/typescript-sdk/setup"
-    },
-    {
-      "source": "/register-an-ip-asset",
-      "destination": "/developers/typescript-sdk/register-ip-asset"
-    },
-    {
-      "source": "/attach-terms-to-an-ip-asset",
-      "destination": "/developers/typescript-sdk/attach-terms"
-    },
-    {
-      "source": "/typescript-sdk/mint-a-license",
-      "destination": "/developers/typescript-sdk/mint-license"
-    },
-    {
-      "source": "/react-guide",
-      "destination": "/developers/react-guide"
-    },
-    {
-      "source": "/react-setup",
-      "destination": "/developers/react-guide/setup/overview"
-    },
-    {
-      "source": "/dynamic-setup",
-      "destination": "/developers/react-guide/setup/dynamic-setup"
-    },
-    {
-      "source": "/rainbowkit-setup",
-      "destination": "/developers/react-guide/setup/rainbowkit-setup"
-    },
-    {
-      "source": "/reown-setup",
-      "destination": "/developers/react-guide/setup/reown-setup"
-    },
-    {
-      "source": "/tomo-setup",
-      "destination": "/developers/react-guide/setup/tomo-setup"
-    },
-    {
-      "source": "/using-the-sdk-in-react",
-      "destination": "/developers/react-guide/using-the-sdk-in-react"
-    },
-    {
-      "source": "/get-started-with-the-smart-contracts",
-      "destination": "/developers/smart-contracts-guide"
-    },
-    {
-      "source": "/sc-setup",
-      "destination": "/developers/smart-contracts-guide/setup"
-    },
-    {
-      "source": "/sc-register-an-ip-asset",
-      "destination": "/developers/smart-contracts-guide/register-ip-asset"
-    },
-    {
-      "source": "/sc-register-license-terms",
-      "destination": "/developers/smart-contracts-guide/register-terms"
-    },
-    {
-      "source": "/sc-attach-license-terms",
-      "destination": "/developers/smart-contracts-guide/attach-terms"
-    },
-    {
-      "source": "/sc-mint-a-license",
-      "destination": "/developers/smart-contracts-guide/mint-license"
-    },
-    {
-      "source": "/sc-example",
-      "destination": "/developers/smart-contracts-guide/example"
-    },
-    {
-      "source": "/deployed-smart-contracts",
-      "destination": "/developers/deployed-smart-contracts"
     },
     {
       "source": "/releases-page",
@@ -1144,40 +612,16 @@
       "destination": "/sdk-reference"
     },
     {
-      "source": "/sdk-ipasset",
-      "destination": "/sdk-reference/ipasset"
-    },
-    {
-      "source": "/sdk-ipaccount",
-      "destination": "/sdk-reference/ipaccount"
-    },
-    {
-      "source": "/sdk-license",
-      "destination": "/sdk-reference/license"
-    },
-    {
-      "source": "/sdk-permissions",
-      "destination": "/sdk-reference/permissions"
-    },
-    {
-      "source": "/sdk-nftclient",
-      "destination": "/sdk-reference/nftclient"
-    },
-    {
-      "source": "/sdk-wipclient",
-      "destination": "/sdk-reference/wipclient"
-    },
-    {
       "source": "/reference",
-      "destination": "/api-reference"
+      "destination": "/api-reference/blockscout-api"
     },
     {
       "source": "/reference/api-introduction",
-      "destination": "/api-reference"
+      "destination": "/api-reference/blockscout-api"
     },
     {
       "source": "/reference/:slug*",
-      "destination": "/api-reference"
+      "destination": "/api-reference/blockscout-api"
     },
     {
       "source": "/reference/blockscout-api",
@@ -1198,26 +642,6 @@
     {
       "source": "/cdr",
       "destination": "/developers/cdr-sdk/overview"
-    },
-    {
-      "source": "/royalty-module",
-      "destination": "/concepts/overview"
-    },
-    {
-      "source": "/dispute-module",
-      "destination": "/concepts/overview"
-    },
-    {
-      "source": "/registry",
-      "destination": "/concepts/overview"
-    },
-    {
-      "source": "/grouping-module",
-      "destination": "/concepts/overview"
-    },
-    {
-      "source": "/access-controller",
-      "destination": "/concepts/overview"
     },
     {
       "source": "/ai-agents",

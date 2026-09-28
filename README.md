@@ -1,6 +1,6 @@
 # DATA Foundation Documentation
 
-This repository contains the official documentation for **DATA Foundation**, a purpose-built layer 1 blockchain designed specifically for intellectual property.
+This repository contains the official documentation for **DATA Foundation**, a purpose-built layer 1 blockchain for data provenance and confidentiality.
 
 📚 [Official Documentation](https://docs.datafdn.org)
 
