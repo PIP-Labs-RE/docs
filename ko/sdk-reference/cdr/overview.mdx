@@ -16,7 +16,7 @@ CDR SDK (`@piplabs/cdr-sdk`)는 DATA Foundation의 Confidential Data Rails 시�
 
 ---
 
-<Card title="단계별 가이드" icon="house" href="/developers/cdr-sdk">
+<Card title="단계별 가이드" icon="house" href="/ko/developers/cdr-sdk">
   CDR SDK 통합 가이드의 일련의 튜토리얼을 통해 CDR을 배워보세요.
 </Card>
 
@@ -67,7 +67,7 @@ client.consumer; // decryption & read requests
 | DATA Foundation API REST | `apiUrl` | DKG 상태: active round, global public key, threshold, 검증자, attestation |
 
 `apiUrl`은 필수 매개변수입니다. 운영 가이드와 선택적 `minThresholdRatio` 재정의(override)에 대해서는
-[Runtime Configuration](/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-data-foundation-api-endpoint)을 참조하세요.
+[Runtime Configuration](/ko/developers/cdr-sdk/advanced-configuration#dkg-state-and-the-data-foundation-api-endpoint)을 참조하세요.
 
 ## Attestation 유틸리티
 
@@ -83,13 +83,13 @@ SDK는 또한 crypto 모듈에 SGX 헬퍼 함수를 제공합니다:
 ## 하위 클라이언트
 
 <CardGroup cols={3}>
-  <Card title="Observer" icon="eye" href="/sdk-reference/cdr/observer">
+  <Card title="Observer" icon="eye" href="/ko/sdk-reference/cdr/observer">
     볼트 데이터, 수수료, DKG 상태에 대한 읽기 전용 쿼리.
   </Card>
-  <Card title="Uploader" icon="lock" href="/sdk-reference/cdr/uploader">
+  <Card title="Uploader" icon="lock" href="/ko/sdk-reference/cdr/uploader">
     데이터 암호화, 암호화된 파일 업로드, CDR 볼트에 쓰기.
   </Card>
-  <Card title="Consumer" icon="lock-open" href="/sdk-reference/cdr/consumer">
+  <Card title="Consumer" icon="lock-open" href="/ko/sdk-reference/cdr/consumer">
     복호화 요청, 암호화된 파일 다운로드, 평문 복구.
   </Card>
 </CardGroup>
@@ -97,7 +97,7 @@ SDK는 또한 crypto 모듈에 SGX 헬퍼 함수를 제공합니다:
 ## Crypto 유틸리티
 
 <CardGroup cols={2}>
-  <Card title="Crypto" icon="key" href="/sdk-reference/cdr/crypto">
+  <Card title="Crypto" icon="key" href="/ko/sdk-reference/cdr/crypto">
     저수준 TDH2 및 ECIES 암호 기본 요소.
   </Card>
 </CardGroup>

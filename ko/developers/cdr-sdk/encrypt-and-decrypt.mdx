@@ -10,7 +10,7 @@ description: CDR 임계값 복호화를 사용하여 비밀을 암호화하고 �
 
 ### 사전 요구 사항
 
-- WASM이 초기화되고 클라이언트가 생성된 [CDR SDK 설정](/developers/cdr-sdk/setup) 완료
+- WASM이 초기화되고 클라이언트가 생성된 [CDR SDK 설정](/ko/developers/cdr-sdk/setup) 완료
 
 ## 온체인 vs 오프체인에서 실행되는 작업
 
@@ -24,15 +24,8 @@ description: CDR 임계값 복호화를 사용하여 비밀을 암호화하고 �
 
 ## 비밀 암호화하기
 
-아래 다이어그램은 온체인 비밀 흐름을 보여줍니다: 볼트를 할당하고, TDH2로 비밀을
-로컬에서 암호화한 다음, 암호문을 볼트에 기록합니다.
-
-<Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-encryption-flow-text.png"
-    alt="CDR encryption flow showing vault allocation, local encryption, and writing the ciphertext to the vault"
-  />
-</Frame>
+온체인 비밀 흐름은 볼트를 할당하고, TDH2로 비밀을 로컬에서 암호화한 다음,
+암호문을 볼트에 기록합니다.
 
 가장 간단한 "소유자 전용" 패턴은 지갑(EOA) 주소를 쓰기 조건과 읽기 조건 모두로
 사용합니다. CDR 컨트랙트는 `msg.sender`가 구성된 조건 주소와 같으면 조건 검사를
@@ -92,12 +85,9 @@ console.log(`Write tx: ${writeTx}`);
 <Note>
   어떤 EOA 주소든 쓰기 또는 읽기 조건으로 작동하며, 해당 EOA만이 매칭되는
   동작을 수행할 수 있습니다. 한쪽만 게이팅하려면 해당 측에 지갑 주소를
-  설정하고 다른 측에 조건 컨트랙트(예: `LicenseReadCondition`)를 설정하세요.
-  고수준 `uploadCDR()` 헬퍼는 양쪽 모두에 배포된 조건 컨트랙트가 있을 것을
-  기대하며 EOA 조건을 지원하지 않으므로, DATA Foundation 라이선스 게이트
-  읽기와 같은 패턴([IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults) 참조)에는
-  헬퍼를 사용하고, 소유자 전용 EOA 조건에는 위에 표시된 저수준 `allocate()` +
-  `write()` 흐름을 사용하세요.
+  설정하고 다른 측에 커스텀 조건 컨트랙트를 설정하세요. 고수준 `uploadCDR()`
+  헬퍼는 양쪽 모두에 배포된 조건 컨트랙트가 필요합니다. EOA 조건에는 위의
+  저수준 `allocate()` + `write()` 흐름을 사용하세요.
 </Note>
 
 <Note>트랜잭션의 값은 수수료와 정확히 동일해야 합니다.</Note>
@@ -118,13 +108,6 @@ console.log(`Write tx: ${writeTx}`);
 
 복호화는 온체인에서 읽기 요청을 제출하고, 검증자들로부터 부분 복호화를 수집한 다음,
 클라이언트 측에서 조합하는 과정이 필요합니다.
-
-<Frame>
-  <img
-    src="/images/developers/cdr-sdk/cdr-decryption-flow-text.png"
-    alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
-  />
-</Frame>
 
 ```typescript
 const { consumer } = client;
@@ -183,36 +166,19 @@ console.log(new TextDecoder().decode(dataKey));
 
 ## 파일 암호화 및 다운로드
 
-<Columns cols={2}>
-
-<Frame>
-<img
-  src="/images/developers/cdr-sdk/cdr-encryption-flow-file.png"
-  alt="CDR encryption flow showing vault allocation, local encryption, and writing the encrypted key plus data URL to the vault"
-/>
-</Frame>
-
-<Frame>
-<img
-  src="/images/developers/cdr-sdk/cdr-decryption-flow-file.png"
-  alt="CDR decryption flow showing ephemeral key generation, access control check, partial decryptions from validators, and client-side combination"
-/>
-</Frame>
-
-</Columns>
-
 암호화된 페이로드는 오프체인에 보관하고 암호화된 파일 키와 포인터만 볼트에
 저장해야 할 때 파일 워크플로를 사용하세요.
 
 업로드는 데이터 소유자가 한 번 수행합니다. 다운로드는 나중에 권한이 있는
 독자가 볼트 페이로드를 복구한 후 저장된 파일을 복호화하여 수행합니다.
 
-`uploadFile()` 헬퍼는 양쪽 모두에 배포된 조건 컨트랙트가 필요하므로, 아래
-예제에서는 쓰기 측에 DATA Foundation의 `OwnerWriteCondition`을, 읽기 측에
-`LicenseReadCondition`을 사용합니다. 라이선스 토큰 보유자는 파일을 복호화할 수
-있습니다(엔드 투 엔드 라이선스 설정은 [IP Asset Vaults](/developers/cdr-sdk/ip-asset-vaults)
-참조). 소유자 전용 파일 흐름의 경우, 지갑(EOA) 주소를 양쪽 조건 모두로 사용하여
-앞서 표시된 저수준 단계를 복제하세요.
+`uploadFile()` 헬퍼는 양쪽 모두에 배포된 조건 컨트랙트가 필요합니다. 이
+예제에서는 쓰기에 배포된 `OwnerWriteCondition`을 사용합니다. 실행하기 전에
+`readConditionAddr`를 `checkReadCondition`을 구현한 직접 배포한 컨트랙트로,
+`readConditionData`를 해당 컨트랙트의 ABI 인코딩된 구성으로 설정하세요.
+`readAccessAuxData`는 해당 컨트랙트가 독자에게 기대하는 보조 데이터로 설정하세요
+(필요하지 않으면 `"0x"`). `downloadFile()`에 사용하는 지갑은 해당 조건을
+충족해야 합니다.
 
 ```typescript
 import { HeliaProvider } from "@piplabs/cdr-sdk";
@@ -224,18 +190,14 @@ import { encodeAbiParameters } from "viem";
 
 const uploaderAddress = walletClient.account!.address;
 const OWNER_WRITE_CONDITION = "0x4C9bFC96d7092b590D497A191826C3dA2277c34B";
-const LICENSE_READ_CONDITION = "0xC0640AD4CF2CaA9914C8e5C44234359a9102f7a3";
-const LICENSE_TOKEN = "0xFe3838BFb30B34170F00030B52eA4893d8aAC6bC";
 
 const writeConditionData = encodeAbiParameters(
   [{ type: "address" }],
   [uploaderAddress],
 );
 
-const readConditionData = encodeAbiParameters(
-  [{ type: "address" }, { type: "address" }],
-  [LICENSE_TOKEN, ipId],
-);
+// readConditionAddr, readConditionData, and readAccessAuxData are
+// configured for your deployed read condition as described above.
 
 // Pure read
 const globalPubKey = await client.observer.getGlobalPubKey();
@@ -256,7 +218,7 @@ const { uuid, cid } = await client.uploader.uploadFile({
   globalPubKey,
   updatable: false,
   writeConditionAddr: OWNER_WRITE_CONDITION,
-  readConditionAddr: LICENSE_READ_CONDITION,
+  readConditionAddr,
   writeConditionData,
   readConditionData,
   accessAuxData: "0x",
@@ -265,7 +227,7 @@ const { uuid, cid } = await client.uploader.uploadFile({
 // 1 on-chain read transaction + off-chain download + local AES decryption
 const { content, txHash } = await client.consumer.downloadFile({
   uuid,
-  accessAuxData: "0x",
+  accessAuxData: readAccessAuxData,
   storageProvider: storage,
   timeoutMs: 120_000,
 });
@@ -274,7 +236,7 @@ console.log(`Stored at CID: ${cid}`);
 console.log(`Read tx: ${txHash}`);
 await writeFile("./example.decrypted.pdf", Buffer.from(content));
 console.log("Decrypted file written to ./example.decrypted.pdf");
-````
+```
 
 <Note>
   `HeliaProvider`는 현재 릴리스에서 Aeneid에서 완전히 테스트된 유일한 스토리지
