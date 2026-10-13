@@ -24,8 +24,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Integrate Trace",
-      "href": "https://docs.datafdn.org/trace/integration"
+      "label": "Open Trace",
+      "href": "https://trace.datafdn.org"
     }
   },
   "navigation": {
@@ -35,6 +35,11 @@
           "anchor": "Help & Support",
           "icon": "discord",
           "href": "https://discord.gg/databuilders"
+        },
+        {
+          "anchor": "DATA Foundation",
+          "icon": "globe",
+          "href": "https://www.datafdn.org"
         }
       ]
     },
@@ -332,23 +337,23 @@
     },
     {
       "source": "/story-architect-overview",
-      "destination": "/network/learn"
+      "destination": "/network/learn/overview"
     },
     {
       "source": "/story-node-structure",
-      "destination": "/network/learn/node-software"
+      "destination": "/network/learn/node-software/overview"
     },
     {
       "source": "/engine-api",
-      "destination": "/network/learn/node-software/engine-api"
+      "destination": "/network/learn/node-software/engine_api"
     },
     {
       "source": "/cosmos-module-overview",
-      "destination": "/network/learn/node-software/cosmos-modules"
+      "destination": "/network/learn/node-software/cosmos-modules/cosmos-module-overview"
     },
     {
       "source": "/evmengine-module",
-      "destination": "/network/learn/nnode-software/cosmos-modules/evmengine-module"
+      "destination": "/network/learn/node-software/cosmos-modules/evmengine-module"
     },
     {
       "source": "/evmstaking-module",
@@ -368,7 +373,7 @@
     },
     {
       "source": "/network",
-      "destination": "/network/connect"
+      "destination": "/network/overview"
     },
     {
       "source": "/mainnet",
@@ -400,11 +405,11 @@
     },
     {
       "source": "/become-a-validator",
-      "destination": "/network/participate/validators/"
+      "destination": "/network/participate/validators/overview"
     },
     {
       "source": "/tokenomics-staking",
-      "destination": "/network/learn/tokenomics-economy"
+      "destination": "/network/learn/token-economy"
     },
     {
       "source": "/network/more/network-faq",
@@ -440,7 +445,7 @@
     },
     {
       "source": "/what-is-story-protocol",
-      "destination": "/"
+      "destination": "/introduction"
     },
     {
       "source": "/network-info",
