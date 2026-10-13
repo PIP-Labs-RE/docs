@@ -191,6 +191,7 @@
                 "group": "시작하기",
                 "pages": [
                   "ko/introduction",
+                  "ko/data-on-sui",
                   "ko/faq"
                 ]
               },
