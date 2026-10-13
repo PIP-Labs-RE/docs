@@ -1,0 +1,56 @@
+---
+title: "DATA on Sui"
+description: "The DATA Network and Trace are joining the Sui stack."
+icon: rocket
+---
+
+The DATA Network and Trace are joining the [Sui](https://sui.io) stack, bringing a live supply of rights-cleared AI training data to infrastructure built for AI workloads.
+
+<Card
+  title="Read the announcement"
+  icon="newspaper"
+  href="https://www.sui.io/blog/data-network-joins-sui-walrus"
+>
+  The DATA Network joins Sui and Walrus.
+</Card>
+
+## What's Changing
+
+In the coming months:
+
+- **The DATA Network will be upgraded to run as a protocol natively on Sui.** Its independent layer 1 chain will be retired once the upgrade is complete.
+- **Walrus becomes the default storage layer** for DATA Foundation apps.
+- **$DATA remains the token of the DATA protocol**, carried over one-to-one, with holder economics and governance rights at least equivalent to today's.
+
+A detailed timeline and transition plan will be published before the upgrade. Until then, the existing DATA Network keeps running as normal. Its documentation lives under the [Legacy Network](/network/overview) tab.
+
+## Why Sui
+
+Trace is growing into the data layer for AI, end to end. Sui already has many of the components it needs:
+
+<CardGroup cols={3}>
+  <Card title="Storage" icon="database" href="https://walrus.xyz">
+    **Walrus**: decentralized storage for the underlying data.
+  </Card>
+  <Card title="Access control" icon="key" href="https://docs.sui.io/sui-stack/seal">
+    **Seal**: dynamic, programmable access control.
+  </Card>
+  <Card title="Verifiable compute" icon="microchip" href="https://docs.sui.io/sui-stack/nautilus">
+    **Nautilus**: verifiable off-chain compute, like inference in TEEs.
+  </Card>
+</CardGroup>
+
+With sourcing, access control, processing, and inference all on the same stack, Trace's audit layer can prove and verify every step. That gives more depth and weight to the metadata Trace stores, and makes Trace a source of truth for AI data.
+
+## Trace Today
+
+Trace has registered **250M+ contributions** since launch and processes over **3M receipts per day**. Through Trace, AI labs can source real-world data with verifiable provenance, while Walrus provides the underlying storage layer.
+
+<CardGroup cols={2}>
+  <Card title="Trace Overview" icon="fingerprint" href="/trace/overview">
+    How Trace records and audits data provenance.
+  </Card>
+  <Card title="Trace Integration Guide" icon="plug" href="/trace/integration">
+    The full write, read, and search API for providers.
+  </Card>
+</CardGroup>

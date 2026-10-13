@@ -24,8 +24,8 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Quickstart",
-      "href": "https://docs.datafdn.org/quickstart"
+      "label": "Open Trace",
+      "href": "https://trace.datafdn.org"
     }
   },
   "navigation": {
@@ -37,14 +37,9 @@
           "href": "https://discord.gg/databuilders"
         },
         {
-          "anchor": "Network Status",
-          "icon": "signal-bars",
-          "href": "https://status.datafdn.org"
-        },
-        {
-          "anchor": "Explorer",
-          "icon": "magnifying-glass",
-          "href": "https://www.datanetscan.io/"
+          "anchor": "Website",
+          "icon": "globe",
+          "href": "https://www.datafdn.org"
         }
       ]
     },
@@ -59,202 +54,21 @@
                 "group": "Get Started",
                 "pages": [
                   "introduction",
-                  "quickstart",
+                  "data-on-sui",
                   "faq"
                 ]
               },
               {
-                "group": "The Data Stack",
+                "group": "Trace",
                 "pages": [
-                  {
-                    "group": "Provenance (Trace)",
-                    "icon": "fingerprint",
-                    "pages": [
-                      "trace/overview"
-                    ]
-                  },
-                  {
-                    "group": "Confidentiality (CDR)",
-                    "icon": "lock",
-                    "pages": [
-                      "cdr/overview"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "DATA Network",
-                "pages": [
-                  "network/overview",
-                  {
-                    "group": "Connect",
-                    "icon": "network-wired",
-                    "pages": [
-                      "network/connect/mainnet",
-                      "network/connect/aeneid"
-                    ]
-                  },
-                  {
-                    "group": "Learn",
-                    "icon": "books",
-                    "pages": [
-                      "network/learn/overview",
-                      "network/learn/whitepaper",
-                      {
-                        "group": "Node Software",
-                        "icon": "code",
-                        "pages": [
-                          "network/learn/node-software/overview",
-                          "network/learn/node-software/execution_layer",
-                          "network/learn/node-software/consensus_layer",
-                          "network/learn/node-software/engine_api",
-                          {
-                            "group": "Cosmos Modules",
-                            "icon": "puzzle-piece-simple",
-                            "pages": [
-                              "network/learn/node-software/cosmos-modules/cosmos-module-overview",
-                              "network/learn/node-software/cosmos-modules/evmengine-module",
-                              "network/learn/node-software/cosmos-modules/evmstaking-module",
-                              "network/learn/node-software/cosmos-modules/mint-module",
-                              "network/learn/node-software/cosmos-modules/staking-module"
-                            ]
-                          },
-                          "network/learn/node-software/localnet",
-                          "network/learn/node-software/precompiled-contracts"
-                        ]
-                      },
-                      "network/learn/token-economy"
-                    ]
-                  },
-                  {
-                    "group": "Participate",
-                    "icon": "handshake",
-                    "pages": [
-                      "network/participate/overview",
-                      {
-                        "group": "Become a Validator",
-                        "icon": "computer",
-                        "pages": [
-                          "network/participate/validators/overview",
-                          "network/participate/validators/node-setup-mainnet",
-                          "network/participate/validators/operate-your-node",
-                          "network/participate/validators/node-upgrade",
-                          {
-                            "group": "DKG",
-                            "pages": [
-                              "network/participate/validators/dkg/dkg-validator-guide",
-                              "network/participate/validators/dkg/kernel-upgrade"
-                            ]
-                          },
-                          "network/participate/validators/release-notes",
-                          "network/participate/validators/troubleshooting"
-                        ]
-                      },
-                      "network/participate/governance",
-                      "network/participate/forum",
-                      "network/participate/sip"
-                    ]
-                  }
+                  "trace/overview",
+                  "trace/integration"
                 ]
               },
               {
                 "group": "Notices",
                 "pages": [
                   "notices"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "Developers",
-            "groups": [
-              {
-                "group": "Get Started",
-                "pages": [
-                  "developers/overview",
-                  "developers/releases"
-                ]
-              },
-              {
-                "group": "Integration Guides",
-                "pages": [
-                  {
-                    "group": "Trace",
-                    "icon": "fingerprint",
-                    "pages": [
-                      "trace/integration"
-                    ]
-                  },
-                  {
-                    "group": "CDR SDK",
-                    "icon": "lock",
-                    "pages": [
-                      "developers/cdr-sdk/overview",
-                      "developers/cdr-sdk/setup",
-                      "developers/cdr-sdk/encrypt-and-decrypt",
-                      "developers/cdr-sdk/advanced-configuration"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "SDK Reference",
-            "dropdowns": [
-              {
-                "dropdown": "TypeScript",
-                "icon": "screwdriver-wrench",
-                "groups": [
-                  {
-                    "group": "Get Started",
-                    "pages": [
-                      "sdk-reference/overview"
-                    ]
-                  },
-                  {
-                    "group": "CDR SDK",
-                    "pages": [
-                      "sdk-reference/cdr/overview",
-                      "sdk-reference/cdr/observer",
-                      "sdk-reference/cdr/uploader",
-                      "sdk-reference/cdr/consumer",
-                      "sdk-reference/cdr/crypto"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "API Reference",
-            "dropdowns": [
-              {
-                "dropdown": "Blockscout API",
-                "icon": "magnifying-glass",
-                "groups": [
-                  {
-                    "group": "Blockscout API",
-                    "pages": [
-                      "api-reference/blockscout-api"
-                    ]
-                  }
-                ]
-              },
-              {
-                "dropdown": "Consensus Client API",
-                "icon": "circle-nodes",
-                "groups": [
-                  {
-                    "group": "Consensus Client API Overview",
-                    "pages": [
-                      "api-reference/consensus-client/introduction"
-                    ]
-                  },
-                  {
-                    "group": "Endpoints",
-                    "openapi": "api-reference/consensus-client/consensus-client-api.json"
-                  }
                 ]
               }
             ]
@@ -272,6 +86,98 @@
                 ]
               }
             ]
+          },
+          {
+            "tab": "Legacy Network",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": [
+                  "network/overview",
+                  "developers/releases"
+                ]
+              },
+              {
+                "group": "Connect",
+                "icon": "network-wired",
+                "pages": [
+                  "network/connect/mainnet",
+                  "network/connect/aeneid"
+                ]
+              },
+              {
+                "group": "Learn",
+                "icon": "books",
+                "pages": [
+                  "network/learn/overview",
+                  "network/learn/whitepaper",
+                  {
+                    "group": "Node Software",
+                    "icon": "code",
+                    "pages": [
+                      "network/learn/node-software/overview",
+                      "network/learn/node-software/execution_layer",
+                      "network/learn/node-software/consensus_layer",
+                      "network/learn/node-software/engine_api",
+                      {
+                        "group": "Cosmos Modules",
+                        "icon": "puzzle-piece-simple",
+                        "pages": [
+                          "network/learn/node-software/cosmos-modules/cosmos-module-overview",
+                          "network/learn/node-software/cosmos-modules/evmengine-module",
+                          "network/learn/node-software/cosmos-modules/evmstaking-module",
+                          "network/learn/node-software/cosmos-modules/mint-module",
+                          "network/learn/node-software/cosmos-modules/staking-module"
+                        ]
+                      },
+                      "network/learn/node-software/localnet",
+                      "network/learn/node-software/precompiled-contracts"
+                    ]
+                  },
+                  "network/learn/token-economy"
+                ]
+              },
+              {
+                "group": "Participate",
+                "icon": "handshake",
+                "pages": [
+                  "network/participate/overview",
+                  {
+                    "group": "Become a Validator",
+                    "icon": "computer",
+                    "pages": [
+                      "network/participate/validators/overview",
+                      "network/participate/validators/node-setup-mainnet",
+                      "network/participate/validators/operate-your-node",
+                      "network/participate/validators/node-upgrade",
+                      {
+                        "group": "DKG",
+                        "pages": [
+                          "network/participate/validators/dkg/dkg-validator-guide",
+                          "network/participate/validators/dkg/kernel-upgrade"
+                        ]
+                      },
+                      "network/participate/validators/release-notes",
+                      "network/participate/validators/troubleshooting"
+                    ]
+                  },
+                  "network/participate/governance",
+                  "network/participate/forum",
+                  "network/participate/sip"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "pages": [
+                  "api-reference/blockscout-api",
+                  "api-reference/consensus-client/introduction"
+                ]
+              },
+              {
+                "group": "Consensus Client Endpoints",
+                "openapi": "api-reference/consensus-client/consensus-client-api.json"
+              }
+            ]
           }
         ]
       },
@@ -285,202 +191,20 @@
                 "group": "시작하기",
                 "pages": [
                   "ko/introduction",
-                  "ko/quickstart",
                   "ko/faq"
                 ]
               },
               {
-                "group": "데이터 스택",
+                "group": "Trace",
                 "pages": [
-                  {
-                    "group": "출처 증명 (Trace)",
-                    "icon": "fingerprint",
-                    "pages": [
-                      "ko/trace/overview"
-                    ]
-                  },
-                  {
-                    "group": "기밀성 (CDR)",
-                    "icon": "lock",
-                    "pages": [
-                      "ko/cdr/overview"
-                    ]
-                  }
-                ]
-              },
-              {
-                "group": "DATA Network",
-                "pages": [
-                  "ko/network/overview",
-                  {
-                    "group": "연결",
-                    "icon": "network-wired",
-                    "pages": [
-                      "ko/network/connect/mainnet",
-                      "ko/network/connect/aeneid"
-                    ]
-                  },
-                  {
-                    "group": "알아보기",
-                    "icon": "books",
-                    "pages": [
-                      "ko/network/learn/overview",
-                      "ko/network/learn/whitepaper",
-                      {
-                        "group": "노드 소프트웨어",
-                        "icon": "code",
-                        "pages": [
-                          "ko/network/learn/node-software/overview",
-                          "ko/network/learn/node-software/execution_layer",
-                          "ko/network/learn/node-software/consensus_layer",
-                          "ko/network/learn/node-software/engine_api",
-                          {
-                            "group": "Cosmos 모듈",
-                            "icon": "puzzle-piece-simple",
-                            "pages": [
-                              "ko/network/learn/node-software/cosmos-modules/cosmos-module-overview",
-                              "ko/network/learn/node-software/cosmos-modules/evmengine-module",
-                              "ko/network/learn/node-software/cosmos-modules/evmstaking-module",
-                              "ko/network/learn/node-software/cosmos-modules/mint-module",
-                              "ko/network/learn/node-software/cosmos-modules/staking-module"
-                            ]
-                          },
-                          "ko/network/learn/node-software/localnet",
-                          "ko/network/learn/node-software/precompiled-contracts"
-                        ]
-                      },
-                      "ko/network/learn/token-economy"
-                    ]
-                  },
-                  {
-                    "group": "참여하기",
-                    "icon": "handshake",
-                    "pages": [
-                      "ko/network/participate/overview",
-                      {
-                        "group": "Become a Validator",
-                        "icon": "computer",
-                        "pages": [
-                          "ko/network/participate/validators/overview",
-                          "ko/network/participate/validators/node-setup-mainnet",
-                          "ko/network/participate/validators/operate-your-node",
-                          "ko/network/participate/validators/node-upgrade",
-                          {
-                            "group": "DKG",
-                            "pages": [
-                              "ko/network/participate/validators/dkg/dkg-validator-guide",
-                              "ko/network/participate/validators/dkg/kernel-upgrade"
-                            ]
-                          },
-                          "ko/network/participate/validators/release-notes",
-                          "ko/network/participate/validators/troubleshooting"
-                        ]
-                      },
-                      "ko/network/participate/governance",
-                      "ko/network/participate/forum",
-                      "ko/network/participate/sip"
-                    ]
-                  }
+                  "ko/trace/overview",
+                  "ko/trace/integration"
                 ]
               },
               {
                 "group": "Notices",
                 "pages": [
                   "ko/notices"
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "개발자",
-            "groups": [
-              {
-                "group": "시작하기",
-                "pages": [
-                  "ko/developers/overview",
-                  "ko/developers/releases"
-                ]
-              },
-              {
-                "group": "Integration Guides",
-                "pages": [
-                  {
-                    "group": "Trace",
-                    "icon": "fingerprint",
-                    "pages": [
-                      "ko/trace/integration"
-                    ]
-                  },
-                  {
-                    "group": "CDR SDK",
-                    "icon": "lock",
-                    "pages": [
-                      "ko/developers/cdr-sdk/overview",
-                      "ko/developers/cdr-sdk/setup",
-                      "ko/developers/cdr-sdk/encrypt-and-decrypt",
-                      "ko/developers/cdr-sdk/advanced-configuration"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "SDK 레퍼런스",
-            "dropdowns": [
-              {
-                "dropdown": "TypeScript",
-                "icon": "screwdriver-wrench",
-                "groups": [
-                  {
-                    "group": "시작하기",
-                    "pages": [
-                      "ko/sdk-reference/overview"
-                    ]
-                  },
-                  {
-                    "group": "CDR SDK",
-                    "pages": [
-                      "ko/sdk-reference/cdr/overview",
-                      "ko/sdk-reference/cdr/observer",
-                      "ko/sdk-reference/cdr/uploader",
-                      "ko/sdk-reference/cdr/consumer",
-                      "ko/sdk-reference/cdr/crypto"
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "tab": "API 레퍼런스",
-            "dropdowns": [
-              {
-                "dropdown": "Blockscout API",
-                "icon": "magnifying-glass",
-                "groups": [
-                  {
-                    "group": "Blockscout API",
-                    "pages": [
-                      "ko/api-reference/blockscout-api"
-                    ]
-                  }
-                ]
-              },
-              {
-                "dropdown": "Consensus Client API",
-                "icon": "circle-nodes",
-                "groups": [
-                  {
-                    "group": "Consensus Client API Overview",
-                    "pages": [
-                      "ko/api-reference/consensus-client/introduction"
-                    ]
-                  },
-                  {
-                    "group": "Endpoints",
-                    "openapi": "api-reference/consensus-client/consensus-client-api.json"
-                  }
                 ]
               }
             ]
@@ -496,6 +220,98 @@
                   "ko/foundation/mica",
                   "ko/foundation/security-council"
                 ]
+              }
+            ]
+          },
+          {
+            "tab": "레거시 네트워크",
+            "groups": [
+              {
+                "group": "시작하기",
+                "pages": [
+                  "ko/network/overview",
+                  "ko/developers/releases"
+                ]
+              },
+              {
+                "group": "연결",
+                "icon": "network-wired",
+                "pages": [
+                  "ko/network/connect/mainnet",
+                  "ko/network/connect/aeneid"
+                ]
+              },
+              {
+                "group": "알아보기",
+                "icon": "books",
+                "pages": [
+                  "ko/network/learn/overview",
+                  "ko/network/learn/whitepaper",
+                  {
+                    "group": "노드 소프트웨어",
+                    "icon": "code",
+                    "pages": [
+                      "ko/network/learn/node-software/overview",
+                      "ko/network/learn/node-software/execution_layer",
+                      "ko/network/learn/node-software/consensus_layer",
+                      "ko/network/learn/node-software/engine_api",
+                      {
+                        "group": "Cosmos 모듈",
+                        "icon": "puzzle-piece-simple",
+                        "pages": [
+                          "ko/network/learn/node-software/cosmos-modules/cosmos-module-overview",
+                          "ko/network/learn/node-software/cosmos-modules/evmengine-module",
+                          "ko/network/learn/node-software/cosmos-modules/evmstaking-module",
+                          "ko/network/learn/node-software/cosmos-modules/mint-module",
+                          "ko/network/learn/node-software/cosmos-modules/staking-module"
+                        ]
+                      },
+                      "ko/network/learn/node-software/localnet",
+                      "ko/network/learn/node-software/precompiled-contracts"
+                    ]
+                  },
+                  "ko/network/learn/token-economy"
+                ]
+              },
+              {
+                "group": "참여하기",
+                "icon": "handshake",
+                "pages": [
+                  "ko/network/participate/overview",
+                  {
+                    "group": "Become a Validator",
+                    "icon": "computer",
+                    "pages": [
+                      "ko/network/participate/validators/overview",
+                      "ko/network/participate/validators/node-setup-mainnet",
+                      "ko/network/participate/validators/operate-your-node",
+                      "ko/network/participate/validators/node-upgrade",
+                      {
+                        "group": "DKG",
+                        "pages": [
+                          "ko/network/participate/validators/dkg/dkg-validator-guide",
+                          "ko/network/participate/validators/dkg/kernel-upgrade"
+                        ]
+                      },
+                      "ko/network/participate/validators/release-notes",
+                      "ko/network/participate/validators/troubleshooting"
+                    ]
+                  },
+                  "ko/network/participate/governance",
+                  "ko/network/participate/forum",
+                  "ko/network/participate/sip"
+                ]
+              },
+              {
+                "group": "API 레퍼런스",
+                "pages": [
+                  "ko/api-reference/blockscout-api",
+                  "ko/api-reference/consensus-client/introduction"
+                ]
+              },
+              {
+                "group": "Consensus Client Endpoints",
+                "openapi": "api-reference/consensus-client/consensus-client-api.json"
               }
             ]
           }
@@ -521,23 +337,23 @@
     },
     {
       "source": "/story-architect-overview",
-      "destination": "/network/learn"
+      "destination": "/network/learn/overview"
     },
     {
       "source": "/story-node-structure",
-      "destination": "/network/learn/node-software"
+      "destination": "/network/learn/node-software/overview"
     },
     {
       "source": "/engine-api",
-      "destination": "/network/learn/node-software/engine-api"
+      "destination": "/network/learn/node-software/engine_api"
     },
     {
       "source": "/cosmos-module-overview",
-      "destination": "/network/learn/node-software/cosmos-modules"
+      "destination": "/network/learn/node-software/cosmos-modules/cosmos-module-overview"
     },
     {
       "source": "/evmengine-module",
-      "destination": "/network/learn/nnode-software/cosmos-modules/evmengine-module"
+      "destination": "/network/learn/node-software/cosmos-modules/evmengine-module"
     },
     {
       "source": "/evmstaking-module",
@@ -557,7 +373,7 @@
     },
     {
       "source": "/network",
-      "destination": "/network/connect"
+      "destination": "/network/overview"
     },
     {
       "source": "/mainnet",
@@ -589,11 +405,11 @@
     },
     {
       "source": "/become-a-validator",
-      "destination": "/network/participate/validators/"
+      "destination": "/network/participate/validators/overview"
     },
     {
       "source": "/tokenomics-staking",
-      "destination": "/network/learn/tokenomics-economy"
+      "destination": "/network/learn/token-economy"
     },
     {
       "source": "/network/more/network-faq",
@@ -601,7 +417,7 @@
     },
     {
       "source": "/dev-overview",
-      "destination": "/developers/overview"
+      "destination": "/trace/integration"
     },
     {
       "source": "/releases-page",
@@ -609,7 +425,7 @@
     },
     {
       "source": "/sdk-overview",
-      "destination": "/sdk-reference"
+      "destination": "/introduction"
     },
     {
       "source": "/reference",
@@ -629,11 +445,23 @@
     },
     {
       "source": "/what-is-story-protocol",
-      "destination": "/"
+      "destination": "/introduction"
     },
     {
       "source": "/network-info",
       "destination": "/network/overview"
+    },
+    {
+      "source": "/quickstart",
+      "destination": "/trace/integration"
+    },
+    {
+      "source": "/developers",
+      "destination": "/trace/integration"
+    },
+    {
+      "source": "/developers/overview",
+      "destination": "/trace/integration"
     },
     {
       "source": "/trace",
@@ -641,7 +469,23 @@
     },
     {
       "source": "/cdr",
-      "destination": "/developers/cdr-sdk/overview"
+      "destination": "/introduction"
+    },
+    {
+      "source": "/cdr/:slug*",
+      "destination": "/introduction"
+    },
+    {
+      "source": "/developers/cdr-sdk/:slug*",
+      "destination": "/introduction"
+    },
+    {
+      "source": "/sdk-reference",
+      "destination": "/introduction"
+    },
+    {
+      "source": "/sdk-reference/:slug*",
+      "destination": "/introduction"
     },
     {
       "source": "/ai-agents",

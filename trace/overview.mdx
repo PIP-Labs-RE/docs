@@ -5,9 +5,9 @@ icon: "fingerprint"
 ---
 
 <Note>
-  Trace is currently available on staging. Build and test integrations against
-  the staging API; treat schemas and endpoints as stable-but-evolving until the
-  production release.
+  Trace is live on staging and production. Write access to both requires
+  onboarding: [contact our team](https://discord.gg/databuilders) to get a
+  provider scope and API keys. Reads are public.
 </Note>
 
 ## What is Trace?
@@ -29,21 +29,15 @@ Provider client
   -> story-api read/search/stats         (public audit views)
 ```
 
-## Where Trace Fits
+## Trace on Sui
 
-<CardGroup cols={2}>
-  <Card title="Trace: provenance" icon="fingerprint">
-    Proves the origin, consent, and lineage of data with a provider-normalized
-    schema and public audit views.
-  </Card>
-  <Card title="CDR: confidentiality" icon="lock" href="/developers/cdr-sdk/overview">
-    Keeps the underlying data encrypted, with threshold decryption gated by
-    on-chain access control.
-  </Card>
-</CardGroup>
+Trace has registered **250M+ contributions** since launch, and it's joining the [Sui](/data-on-sui) stack. Sui brings the other pieces Trace needs to grow into the data layer for AI, end to end:
 
-Together they let a provider register data that is **provable** (Trace) and
-**confidential** (CDR).
+- **[Walrus](https://walrus.xyz)**: storage for the underlying data. Walrus becomes the default storage layer for DATA Foundation apps.
+- **[Seal](https://docs.sui.io/sui-stack/seal)**: dynamic access control over who can use the data.
+- **[Nautilus](https://docs.sui.io/sui-stack/nautilus)**: verifiable off-chain compute, like inference in TEEs.
+
+With sourcing, access control, processing, and inference on the same stack, Trace's audit layer can prove and verify every step. That gives more depth and weight to the metadata Trace stores, and makes Trace a source of truth for AI data.
 
 ## The Trace Schema
 
@@ -78,7 +72,7 @@ required.
     and limits/retry behavior.
   </Card>
   <Card title="Become a provider" icon="discord" href="https://discord.gg/databuilders">
-    Reach out to get a provider scope and staging API key.
+    Reach out to get a provider scope and API keys.
   </Card>
 </CardGroup>
 

@@ -6,50 +6,38 @@ icon: question
 
 <AccordionGroup>
 
-<Accordion title="What's the gas token?">$DATA</Accordion>
-
-<Accordion title="What wallet should I use?">
-
-Your preference obviously, since you can use any EVM-based wallet. But we
-recommend [MetaMask](https://metamask.io/) for [OKX](https://www.okx.com/web3). You can add DATA Foundation's L1 below:
-
-<CardGroup cols={2}>
-
-<Card
-  title="Add DATA Network"
-  icon="globe"
-  href="/network/connect/mainnet"
->
-  Connect your wallet to DATA Network.
-</Card>
-
-<Card
-  title="Add Aeneid testnet"
-  icon="globe"
-  href="/network/connect/aeneid"
->
-  Connect your wallet to the Aeneid testnet.
-</Card>
-
-  </CardGroup>
-
+<Accordion title="What's the token?">
+  $DATA. It remains the token of the DATA protocol on Sui, carried over
+  one-to-one, with holder economics and governance rights at least equivalent
+  to today's.
 </Accordion>
 
-<Accordion title="What are my stablecoin options?">
-
-We don't have a native stablecoin right now. You can use bridge USDC.e powered by [Stargate](https://stargate.finance/bridge).
-
+<Accordion title="What's happening to the DATA Network?">
+  The DATA Network will be upgraded to run as a protocol natively on Sui, and
+  its independent layer 1 chain will be retired. A detailed timeline and
+  transition plan will be published before the upgrade. See [DATA on
+  Sui](/data-on-sui).
 </Accordion>
 
-<Accordion title="How do I bridge and what's the best method?">
+<Accordion title="Do I need to do anything right now?">
+  No. The existing DATA Network keeps running until the upgrade is complete.
+  Its docs are still available under the [Legacy Network](/network/overview)
+  tab.
+</Accordion>
 
-Use [Stargate](https://stargate.finance/bridge), [deBridge](https://app.debridge.finance/?inputChain=1&outputChain=1514&inputCurrency=&outputCurrency=0xf1815bd50389c46847f0bda824ec8da914045d14&dlnMode=simple&address=&amount=1), [Orbiter Finance](https://www.orbiter.finance/en?tgt_chain=1514&src_chain=1&src_token=ETH)
+<Accordion title="Where is data stored?">
+  [Walrus](https://walrus.xyz) becomes the default storage layer for DATA
+  Foundation apps.
+</Accordion>
 
+<Accordion title="How do I integrate with Trace?">
+  Trace is a REST API keyed by an API key and provider scope, no SDK required.
+  [Contact our team](https://discord.gg/databuilders) to get onboarded, then
+  follow the [Trace Integration Guide](/trace/integration).
 </Accordion>
 
 <Accordion title="What are the disclaimers?">
-View the [disclaimers](/foundation/disclaimer).
-
+  View the [disclaimers](/foundation/disclaimer).
 </Accordion>
 
 </AccordionGroup>

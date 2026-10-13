@@ -1,27 +1,49 @@
 ---
-title: Welcome to the DATA Network
+title: Legacy DATA Network
+sidebarTitle: Overview
 icon: globe
 ---
 
-**The DATA Foundation** is a purpose-built Layer 1 blockchain for data provenance and confidentiality, with full EVM compatibility and an optimized execution layer.
+<Info>
+  The DATA Network is being upgraded to run as a protocol natively on Sui. Once
+  the upgrade is complete, this independent layer 1 chain will be retired. It
+  keeps running until then, and these docs remain for node operators,
+  validators, and existing integrations. See [DATA on Sui](/data-on-sui).
+</Info>
+
+The DATA Network is a Layer 1 blockchain for data provenance, with full EVM compatibility and an optimized execution layer.
 
 ## Getting Started
 
-<CardGroup cols={4}>
+<CardGroup cols={3}>
   <Card title="Connect" 
-    href="/network/connect" icon="network-wired">
+    href="/network/connect/mainnet" icon="network-wired">
     Connect and use the network.
   </Card>
   <Card title="Learn" 
-    href="/network/learn" icon="book">
+    href="/network/learn/overview" icon="book">
     Learn more about the architecture.
   </Card>
   <Card title="Participate" 
-    href="/network/participate" icon="handshake">
+    href="/network/participate/overview" icon="handshake">
     Become a validator.
   </Card>
-  <Card title="Build" 
-    href="/developers" icon="wrench">
-    Build applications on the DATA Foundation. 
+  <Card title="Explorer"
+    href="https://www.datanetscan.io/" icon="magnifying-glass">
+    Browse mainnet blocks and transactions.
+  </Card>
+  <Card title="Network Status"
+    href="https://status.datafdn.org" icon="signal-bars">
+    Check the status of network services.
+  </Card>
+  <Card title="Client Releases"
+    href="/developers/releases" icon="github">
+    Consensus and execution client releases.
   </Card>
 </CardGroup>
+
+<Warning>
+  Do not use `RANDAO` for pseudo-randomness, instead use onchain VRF (Pyth or
+  Gelato). Currently, `RANDAO` value is set as the parent block hash and thus is
+  not random for X-1 block.
+</Warning>

@@ -1,6 +1,6 @@
 # DATA Foundation Documentation
 
-This repository contains the official documentation for **DATA Foundation**, a purpose-built layer 1 blockchain for data provenance and confidentiality.
+This repository contains the official documentation for **DATA Foundation**, the source of truth for AI data, built around Trace and becoming a protocol on Sui.
 
 📚 [Official Documentation](https://docs.datafdn.org)
 

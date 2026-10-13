@@ -1,9 +1,15 @@
 ---
 title: "Introduction"
 sidebarTitle: "Introduction"
-description: "The DATA Foundation: prove where data came from and keep it confidential."
+description: "The DATA Foundation: prove where data came from and under what terms."
 icon: hand-wave
 ---
+
+<Callout icon="rocket" color="#16A34A">
+  **The DATA Network is upgrading to run as a protocol on Sui!**
+  Once the move is complete, its independent layer 1 chain will be retired.
+  [Read the announcement →](https://x.com/datafdn/status/2109468220273123382)
+</Callout>
 
 <Frame>
   <img src="/images/df-banner.png" alt="The DATA Foundation" />
@@ -11,73 +17,40 @@ icon: hand-wave
 
 ## The DATA Foundation
 
-The DATA Foundation is the home for data, built on a purpose-built layer 1 blockchain. It provides verifiable data provenance and programmable confidentiality.
+The DATA Foundation is building the source of truth for AI data. Its core product, **Trace**, is an onchain registry for rights-cleared AI training data: it records where each piece of data came from and the rights it was contributed under.
 
-Every piece of data on the DATA Foundation can be:
-
-- **Proven**: a verifiable, portable record of where it came from and under what terms it was contributed
-- **Confidential**: encrypted so only the parties you authorize can ever decrypt it
+DATA is becoming a protocol on [Sui](https://sui.io), joining a stack built for AI workloads: Walrus for storage, Seal for access control, and Nautilus for verifiable compute.
 
 <Note>
   Data could be an image, a song, a dataset, an RWA, AI training data, or
   anything in-between.
 </Note>
 
-## The Data Stack
-
 <CardGroup cols={2}>
-  <Card title="Trace: provenance" icon="fingerprint" href="/trace/overview">
+  <Card title="Trace" icon="fingerprint" href="/trace/overview">
     Verifiable, provider-normalized provenance: content hashes, contributor
     consent, and KYC signals, with public audit views over the whole dataset.
   </Card>
-  <Card
-    title="CDR: confidentiality"
-    icon="lock"
-    href="/developers/cdr-sdk/overview"
-  >
-    Confidential Data Rails: threshold-encrypt data and gate decryption with
-    on-chain access control: no single party ever holds the full key.
+  <Card title="DATA on Sui" icon="rocket" href="/data-on-sui">
+    Why DATA is moving to Sui, what changes, and what stays the same.
   </Card>
 </CardGroup>
-
-Together they let you put data on the DATA Foundation that is **provable** (Trace) and
-**confidential** (CDR).
 
 ## Start Building
 
 <CardGroup cols={2}>
-  <Card title="Quickstart" icon="flag-checkered" href="/quickstart">
-    Add the network, grab the code examples, and ship your first integration.
-  </Card>
-  <Card title="Trace Integration" icon="plug" href="/trace/integration">
+  <Card title="Trace Integration Guide" icon="plug" href="/trace/integration">
     Register data provenance over a simple REST API, no SDK required.
   </Card>
-  <Card
-    title="CDR SDK"
-    icon="screwdriver-wrench"
-    href="/developers/cdr-sdk/overview"
-  >
-    Encrypt, store, and gate access to confidential data with
-    `@piplabs/cdr-sdk`.
-  </Card>
-  <Card title="SDK Reference" icon="book" href="/sdk-reference">
-    CDR SDK functions for encryption, vaults, and access control, with examples.
+  <Card title="Become a provider" icon="discord" href="https://discord.gg/databuilders">
+    Contact our team to get onboarded with a provider scope and API keys.
   </Card>
 </CardGroup>
-
-## How It Fits Together
-
-The DATA Network is a purpose-built layer 1 that combines the best of the EVM and the Cosmos SDK. It is 100% EVM-compatible, with a CometBFT-based consensus layer for fast finality and cheap transactions.
-
-On top of the network, Trace and CDR work together:
-
-- **Trace** records where data came from and the terms it was contributed under.
-- **CDR** keeps that data encrypted and gates decryption on-chain.
 
 <Accordion title="Why a DATA Foundation?" icon="face-thinking">
 Data is the most valuable asset of the AI era, yet the systems we use to share it weren't built for it. Creators lose control and credit the moment their work goes online; AI is trained on copyrighted and unconsented data; and there's no portable, verifiable record of where any of it came from.
 
-Data registered on the DATA Foundation carries its provenance with it through Trace and can stay confidential through CDR, with access controlled on-chain.
+Trace gives every piece of data a portable, verifiable record of where it came from and under what terms it was contributed. On Sui, sourcing, storage, access control, and inference can live on one stack, so Trace can prove and verify every step.
 
 </Accordion>
 
@@ -85,45 +58,17 @@ Data registered on the DATA Foundation carries its provenance with it through Tr
 
 <AccordionGroup>
 
-<Accordion title="What's the gas token?">$DATA</Accordion>
-
-<Accordion title="What wallet should I use?">
-
-Your preference obviously, since you can use any EVM-based wallet. But we
-recommend [MetaMask](https://metamask.io/) or [OKX](https://www.okx.com/web3). You can add DATA Foundation's L1 below:
-
-<CardGroup cols={2}>
-
-<Card
-  title="Add DATA Network"
-  icon="globe"
-  href="/network/connect/mainnet"
->
-  Connect your wallet to DATA Network.
-</Card>
-
-<Card
-  title="Add Aeneid testnet"
-  icon="globe"
-  href="/network/connect/aeneid"
->
-  Connect your wallet to the Aeneid testnet.
-</Card>
-
-  </CardGroup>
-
+<Accordion title="What's the token?">
+  $DATA. It remains the token of the DATA protocol on Sui, carried over
+  one-to-one, with holder economics and governance rights at least equivalent
+  to today's.
 </Accordion>
 
-<Accordion title="What are my stablecoin options?">
-
-You can use bridged USDC.e powered by [Stargate](https://stargate.finance/bridge).
-
-</Accordion>
-
-<Accordion title="How do I bridge and what's the best method?">
-
-Use [Stargate](https://stargate.finance/bridge), [deBridge](https://app.debridge.finance/?inputChain=1&outputChain=1514&inputCurrency=&outputCurrency=0xf1815bd50389c46847f0bda824ec8da914045d14&dlnMode=simple&address=&amount=1), or [Orbiter Finance](https://www.orbiter.finance/en?tgt_chain=1514&src_chain=1&src_token=ETH).
-
+<Accordion title="What happens to the DATA Network?">
+  The DATA Network will be upgraded to run as a protocol natively on Sui, and
+  its independent layer 1 chain will be retired. It keeps running until the
+  upgrade is complete. See [DATA on Sui](/data-on-sui) for details, and the
+  [Legacy Network](/network/overview) docs for the current chain.
 </Accordion>
 
 </AccordionGroup>
