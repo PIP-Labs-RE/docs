@@ -491,6 +491,38 @@
     {
       "source": "/ai-agents",
       "destination": "/introduction"
+    },
+    {
+      "source": "/ko/quickstart",
+      "destination": "/ko/trace/integration"
+    },
+    {
+      "source": "/ko/developers",
+      "destination": "/ko/trace/integration"
+    },
+    {
+      "source": "/ko/developers/overview",
+      "destination": "/ko/trace/integration"
+    },
+    {
+      "source": "/ko/cdr",
+      "destination": "/ko/introduction"
+    },
+    {
+      "source": "/ko/cdr/:slug*",
+      "destination": "/ko/introduction"
+    },
+    {
+      "source": "/ko/developers/cdr-sdk/:slug*",
+      "destination": "/ko/introduction"
+    },
+    {
+      "source": "/ko/sdk-reference",
+      "destination": "/ko/introduction"
+    },
+    {
+      "source": "/ko/sdk-reference/:slug*",
+      "destination": "/ko/introduction"
     }
   ],
   "contextual": {

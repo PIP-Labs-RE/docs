@@ -1,123 +1,71 @@
 ---
 title: "소개"
 sidebarTitle: "소개"
-description: "DATA Foundation: 데이터의 출처를 증명하고 기밀성을 유지합니다."
+description: "DATA Foundation: 데이터가 어디에서 왔고 어떤 조건으로 기여되었는지 증명합니다."
 icon: hand-wave
 ---
+
+<Callout icon="rocket" color="#16A34A">
+  **DATA Network가 Sui 위에서 실행되는 프로토콜로 업그레이드됩니다!**
+  이전이 완료되면 독립적인 레이어 1 체인은 종료됩니다.
+  [공지 읽기 →](https://x.com/datafdn/status/2109468220273123382)
+</Callout>
 
 <Frame>
   <img src="/images/df-banner.png" alt="The DATA Foundation" />
 </Frame>
 
-## DATA Foundation
+## DATA Foundation {#the-data-foundation}
 
-DATA Foundation은 목적에 맞게 설계된 레이어 1 블록체인 위에 구축된, 데이터를 위한 보금자리입니다. 검증 가능한 데이터 출처와 프로그래밍 가능한 기밀성을 제공합니다.
+DATA Foundation은 AI 데이터를 위한 신뢰할 수 있는 원천(source of truth)을 구축하고 있습니다. 핵심 제품인 **Trace**는 권리 처리가 완료된 AI 학습 데이터를 위한 온체인 레지스트리로, 각 데이터가 어디에서 왔는지와 어떤 권리 조건으로 기여되었는지를 기록합니다.
 
-DATA Foundation의 모든 데이터는 다음을 갖출 수 있습니다:
-
-- **증명 가능(Proven)**: 데이터의 출처와 기여 조건에 대한 검증 가능하고 이동성 있는 기록
-- **기밀(Confidential)**: 권한을 부여한 당사자만 복호화할 수 있도록 암호화됨
+DATA는 [Sui](https://sui.io) 위의 프로토콜이 되어, AI 워크로드를 위해 구축된 스택에 합류합니다: 스토리지를 위한 Walrus, 접근 제어를 위한 Seal, 검증 가능한 연산을 위한 Nautilus.
 
 <Note>
   데이터는 이미지, 음악, 데이터셋, RWA, AI 학습 데이터, 또는 그 사이의 어떤 것도 될 수 있습니다.
 </Note>
 
-## 데이터 스택
-
 <CardGroup cols={2}>
-  <Card title="Trace: 출처 증명" icon="fingerprint" href="/ko/trace/overview">
+  <Card title="Trace" icon="fingerprint" href="/ko/trace/overview">
     검증 가능하고 제공자별로 정규화된 출처 정보: 콘텐츠 해시, 기여자 동의, KYC 신호를 제공하며, 전체 데이터셋에 대한 공개 감사 뷰를 지원합니다.
   </Card>
-  <Card
-    title="CDR: 기밀성"
-    icon="lock"
-    href="/ko/developers/cdr-sdk/overview"
-  >
-    Confidential Data Rails: 데이터를 임계값 암호화하고 온체인 접근 제어로 복호화를 게이팅합니다. 어떤 단일 당사자도 전체 키를 보유하지 않습니다.
+  <Card title="Sui 위의 DATA" icon="rocket" href="/ko/data-on-sui">
+    DATA가 Sui로 이전하는 이유, 달라지는 점과 그대로 유지되는 점을 확인하세요.
   </Card>
 </CardGroup>
 
-이 둘이 결합되면 DATA Foundation에 **증명 가능**(Trace)하고 **기밀성이 유지되는**(CDR) 데이터를 올릴 수 있습니다.
-
-## 빌드 시작하기
+## 빌드 시작하기 {#start-building}
 
 <CardGroup cols={2}>
-  <Card title="빠른 시작" icon="flag-checkered" href="/ko/quickstart">
-    네트워크를 추가하고, 코드 예제를 가져와 첫 번째 통합을 출시하세요.
-  </Card>
-  <Card title="Trace 통합" icon="plug" href="/ko/trace/integration">
+  <Card title="Trace 통합 가이드" icon="plug" href="/ko/trace/integration">
     SDK 없이 간단한 REST API로 데이터 출처를 등록하세요.
   </Card>
-  <Card
-    title="CDR SDK"
-    icon="screwdriver-wrench"
-    href="/ko/developers/cdr-sdk/overview"
-  >
-    `@piplabs/cdr-sdk`로 기밀 데이터를 암호화하고, 저장하며, 접근을 제어하세요.
-  </Card>
-  <Card title="SDK 레퍼런스" icon="book" href="/ko/sdk-reference">
-    암호화, 볼트, 접근 제어를 위한 CDR SDK 함수와 예제를 확인하세요.
+  <Card title="제공자 되기" icon="discord" href="https://discord.gg/databuilders">
+    팀에 문의하여 provider 범위와 API 키를 발급받고 온보딩하세요.
   </Card>
 </CardGroup>
-
-## 전체 구성
-
-DATA Network는 EVM과 Cosmos SDK의 장점을 결합한 목적 지향형 레이어 1입니다. 100% EVM 호환이며, 빠른 파이널리티와 저렴한 트랜잭션을 위한 CometBFT 기반 합의 계층을 갖추고 있습니다.
-
-네트워크 위에서 Trace와 CDR이 함께 작동합니다:
-
-- **Trace**는 데이터가 어디서 왔는지와 어떤 조건으로 기여되었는지를 기록합니다.
-- **CDR**은 해당 데이터를 암호화 상태로 유지하고 온체인에서 복호화를 게이팅합니다.
 
 <Accordion title="왜 DATA Foundation인가?" icon="face-thinking">
 데이터는 AI 시대의 가장 가치 있는 자산이지만, 이를 공유하기 위해 사용하는 시스템들은 데이터를 위해 설계되지 않았습니다. 창작자는 자신의 작품이 온라인에 게시되는 순간 통제력과 크레딧을 잃습니다. AI는 저작권이 있고 동의 없는 데이터로 학습되며, 어떤 데이터가 어디서 왔는지에 대한 이동 가능하고 검증 가능한 기록이 존재하지 않습니다.
 
-DATA Foundation에 등록된 데이터는 Trace를 통해 출처를 함께 가지고 다니며, CDR을 통해 기밀로 유지될 수 있고, 접근은 온체인에서 제어됩니다.
+Trace는 모든 데이터에 그 출처와 기여 조건에 대한 이동 가능하고 검증 가능한 기록을 부여합니다. Sui에서는 소싱, 스토리지, 접근 제어, 추론이 하나의 스택 위에 존재할 수 있으므로, Trace가 모든 단계를 증명하고 검증할 수 있습니다.
 
 </Accordion>
 
-## 빠른 FAQ
+## 빠른 FAQ {#quick-faqs}
 
 <AccordionGroup>
 
-<Accordion title="가스 토큰은 무엇인가요?">$DATA</Accordion>
-
-<Accordion title="어떤 지갑을 사용해야 하나요?">
-
-물론 사용자의 선호에 따라 선택할 수 있으며, EVM 기반 지갑이라면 어느 것이든 사용할 수 있습니다. 다만 [MetaMask](https://metamask.io/) 또는 [OKX](https://www.okx.com/web3)를 추천합니다. 아래에서 DATA Foundation의 L1을 추가할 수 있습니다:
-
-<CardGroup cols={2}>
-
-<Card
-  title="DATA Network 추가"
-  icon="globe"
-  href="/ko/network/connect/mainnet"
->
-  지갑을 DATA Network에 연결합니다.
-</Card>
-
-<Card
-  title="Aeneid 테스트넷 추가"
-  icon="globe"
-  href="/ko/network/connect/aeneid"
->
-  지갑을 Aeneid 테스트넷에 연결합니다.
-</Card>
-
-  </CardGroup>
-
+<Accordion title="토큰은 무엇인가요?">
+  $DATA입니다. Sui 위의 DATA 프로토콜 토큰으로 유지되며, 1:1로 이전되고,
+  보유자 경제 및 거버넌스 권리는 최소한 현재와 동등하게 유지됩니다.
 </Accordion>
 
-<Accordion title="스테이블코인 옵션은 무엇이 있나요?">
-
-[Stargate](https://stargate.finance/bridge)를 통해 브릿지된 USDC.e를 사용할 수 있습니다.
-
-</Accordion>
-
-<Accordion title="브릿지는 어떻게 하며, 가장 좋은 방법은 무엇인가요?">
-
-[Stargate](https://stargate.finance/bridge), [deBridge](https://app.debridge.finance/?inputChain=1&outputChain=1514&inputCurrency=&outputCurrency=0xf1815bd50389c46847f0bda824ec8da914045d14&dlnMode=simple&address=&amount=1), 또는 [Orbiter Finance](https://www.orbiter.finance/en?tgt_chain=1514&src_chain=1&src_token=ETH)를 이용하세요.
-
+<Accordion title="DATA Network는 어떻게 되나요?">
+  DATA Network는 Sui에서 네이티브로 실행되는 프로토콜로 업그레이드되며, 독립적인
+  레이어 1 체인은 종료됩니다. 업그레이드가 완료될 때까지는 계속 운영됩니다.
+  자세한 내용은 [Sui 위의 DATA](/ko/data-on-sui)를, 현재 체인에 대해서는
+  [레거시 네트워크](/ko/network/overview) 문서를 참고하세요.
 </Accordion>
 
 </AccordionGroup>
