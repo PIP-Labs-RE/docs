@@ -1,4 +1,4 @@
-# Trace Provider 데이터 감사 — 통합 및 API 레퍼런스
+# Trace Provider 데이터 감사 — 통합 및 API 레퍼런스 {#trace-provider-data-audit-—-integration-&-api-reference}
 
 Trace 데이터 감사 API의 단일 정보 출처(single source of truth): provider 온보딩, 인증, Trace Schema, 쓰기 및 읽기 엔드포인트, 검색, 통계, scoped 그룹, 제한, 그리고 검증에 관한 문서입니다.
 
@@ -6,7 +6,7 @@ Trace 데이터 감사 API의 단일 정보 출처(single source of truth): prov
 이 API와 Trace Schema는 provider에 구애받지 않습니다(provider-agnostic) — 모든 provider는 동일한 엔드포인트, 헤더, 스키마를 통해 통합됩니다. 예제에서는 실제 운영 중인 provider인 **Kled**를 사용합니다. Kled가 등장하는 모든 곳을 본인 provider의 식별 정보로 대체하시면 됩니다.
 </Note>
 
-## 환경(Environments)
+## 환경(Environments) {#environments}
 
 | 환경 | Base URL | 인증 |
 | --- | --- | --- |
@@ -15,13 +15,13 @@ Trace 데이터 감사 API의 단일 정보 출처(single source of truth): prov
 
 Staging은 새로운 provider 통합을 온보딩하고 테스트하는 환경입니다. Production은 배포되어 있지만 아직 provider 데이터가 없을 수 있습니다 — 프로덕션 트래픽을 보내기 전에 DATA Foundation 팀에 확인하십시오.
 
-## 접근 권한 얻기
+## 접근 권한 얻기 {#getting-access}
 
 <Info>
 쓰기 접근은 게이팅되어 있습니다. 통합 전에 DATA Foundation 팀에 연락해 온보딩을 받으십시오. 저희가 provider 식별 정보를 화이트리스트에 등록하고, 스테이징 및 프로덕션 API 키를 발급하며, 쓰기 요청에 사용해야 하는 `X-Provider` 값을 할당합니다. 이 과정이 완료되기 전까지는 쓰기 요청이 거부됩니다. 읽기, 검색, scoped 그룹 엔드포인트는 공개된 감사 뷰이므로 키가 필요하지 않습니다.
 </Info>
 
-## 인증 및 provider 범위
+## 인증 및 provider 범위 {#auth-and-provider-scope}
 
 모든 쓰기 요청에는 다음 헤더가 포함되어야 합니다:
 
@@ -39,7 +39,7 @@ X-Batch-Id: <stable batch id>
 읽기, 검색, scoped 그룹 엔드포인트는 **공개 감사 뷰**입니다. 엔터프라이즈 전용이거나 민감한 필드를 공개 Trace 페이로드에 넣지 마십시오. provider 전용 또는 파트너 전용 읽기 계층이 필요해질 경우, 이는 별도의 API/제품 결정 사항입니다.
 </Warning>
 
-## 적재(Ingestion) 흐름
+## 적재(Ingestion) 흐름 {#ingestion-flow}
 
 <Steps>
   <Step title="배치 전송">
@@ -61,7 +61,7 @@ X-Batch-Id: <stable batch id>
 
 각 항목의 상태를 확인하고, 일시적인 요청 실패는 동일한 페이로드와 동일한 `X-Batch-Id`로 재시도하십시오.
 
-## 레코드 라이프사이클
+## 레코드 라이프사이클 {#record-lifecycle}
 
 각 레코드의 이력은 append-only 이벤트 로그이며, Trace는 이를 타임라인으로 렌더링합니다. 각 단계는 정확히 하나의 값에 매핑되며, 해당 값이 존재하는 시점에 단계가 타임라인에 나타납니다.
 
@@ -70,16 +70,16 @@ X-Batch-Id: <stable batch id>
 | 1 | Captured | `timestamps.captured_at` |
 | 2 | Uploaded | `timestamps.uploaded_at` |
 | 3 | Attested | `attestation.signed_at_utc` |
-| 4 | Registered | `DataRegistered` 이벤트(`seq: 0`)의 최상위 `occurred_at` |
+| 4 | Registered | `DataRegistered` 이벤트(`seq: 0`)의 `ingested_at` — DATA Foundation이 생성 |
 | 5 | Anchored on-chain | `tx_hash` (DATA Foundation이 브로드캐스트하기 전까지 빈 문자열) |
 | 6 | Updated | 각 `MetadataUpdated` 이벤트(`seq` 1–100)의 최상위 `occurred_at` |
 | 7 | Payment credited | `timestamps.payment_credited_at` — 현재 저장되며 곧 타임라인에 표시될 예정 |
 
 1–3단계는 등록 페이로드의 메타데이터에서 옵니다. 4–7단계는 감사 이벤트입니다. 각 마일스톤을 별도의 메타데이터 업데이트로 전송하십시오 — 하나의 마일스톤당 하나의 타임라인 이벤트입니다.
 
-`occurred_at`은 두 위치에 존재하며 모두 provider가 제공합니다: 각 배치 항목의 루트 필드가 필수이며 이벤트의 날짜/시각을 지정합니다. `timestamps.occurred_at`은 attested 페이로드 내부에서 동일한 시점을 담습니다 — 이 둘은 동일하게 유지하십시오. DATA Foundation이 추가하는 값은 `ingested_at`과 `tx_hash`뿐입니다.
+각 배치 항목의 루트 `occurred_at`은 필수이며 provider가 제공하고, 해당 이벤트의 날짜/시각을 지정합니다 — `DataRegistered` 이벤트에서는 등록 시각, 각 `MetadataUpdated` 이벤트에서는 업데이트 시각입니다. Trace는 **Registered** 라이프사이클 단계를 자체 `ingested_at`으로 표시합니다 — DATA Foundation이 레코드를 수락한 시점이며, 레코드별 조회에서 반환됩니다. attested 페이로드 내부의 `timestamps.originated_at`은 레코드의 원본 시점을 담습니다: 등록 시의 루트 `occurred_at`과 동일하게 설정하고, 이후 업데이트에서도 고정된 값으로 유지하십시오(각 업데이트의 루트 `occurred_at`은 업데이트 자체의 시각을 나타냅니다). 이 필드의 이름이 변경되기 전에 등록된 레코드는 동일한 값을 레거시 이름인 `timestamps.occurred_at`으로 담고 있으므로, 읽는 쪽에서는 두 이름을 모두 허용해야 합니다. DATA Foundation이 추가하는 값은 `ingested_at`과 `tx_hash`뿐입니다.
 
-## Trace Schema v1.0
+## Trace Schema v1.0 {#trace-schema-v1-0}
 
 표준화된 Trace Schema 필드를 직접 채우고, 원본 공개 페이로드 전체는 `provider_payload` 아래에 보존하십시오. 정규화된 필드는 프런트엔드와 감사 흐름이 사용하는 이식 가능한 계약이며, provider 고유 정보는 어떤 것도 손실되지 않습니다.
 
@@ -87,11 +87,11 @@ X-Batch-Id: <stable batch id>
 - DATA Foundation은 내부 이벤트 해시 계산 전에 메타데이터 JSON을 canonicalize하므로 객체 키 순서는 idempotency나 충돌 감지에 영향을 주지 않습니다.
 - 쓰기 페이로드에 트랜잭션 해시를 보내지 마십시오. `tx_hash`는 DATA Foundation이 소유하며, 등록, 메타데이터 업데이트, 검색 결과 행에 대한 읽기 응답에 반환됩니다 — 브로드캐스트 후 DATA Foundation이 채우기 전까지는 빈 문자열입니다.
 
-### Canonical content hash (필수)
+### Canonical content hash (필수) {#canonical-content-hash-required}
 
 초기 등록 및 메타데이터 업데이트에는 하나의 canonical content hash가 포함되어야 합니다. 허용되는 필드는 `asset.hash`, `content_hash`, `file.content_sha256`, `file.hashes.sha256`이며, 모두 `sha256:<64-lowercase-hex>` 형태로 정규화됩니다. 두 개 이상의 alias가 존재하는 경우 동일한 해시를 나타내야 합니다.
 
-### 권장 최상위 형태
+### 권장 최상위 형태 {#recommended-top-level-shape}
 
 ```json
 {
@@ -134,6 +134,11 @@ X-Batch-Id: <stable batch id>
     "image": {},
     "document": {}
   },
+  "asset": {
+    "collection_id": "kled-collection-2026-05",
+    "customer_id": "kled-customer-001",
+    "task_id": "kled-task-0042"
+  },
   "contributor": {
     "anon_id": "kled-public-user-id",
     "kyc_status": "verified",
@@ -155,7 +160,7 @@ X-Batch-Id: <stable batch id>
     "legal_entity": "Nitrility Inc. (Delaware, USA)"
   },
   "timestamps": {
-    "occurred_at": "2026-05-13T00:00:00Z",
+    "originated_at": "2026-05-13T00:00:00Z",
     "uploaded_at": "2026-05-13T00:00:00Z",
     "captured_at": "2026-05-12T23:59:00Z",
     "payment_credited_at": "2026-05-20T12:00:00Z"
@@ -173,7 +178,7 @@ X-Batch-Id: <stable batch id>
 }
 ```
 
-### 검색 가능 필드(Searchable fields)
+### 검색 가능 필드(Searchable fields) {#searchable-fields}
 
 현재 exact-match 검색이 가능한 필드입니다:
 
@@ -196,10 +201,11 @@ X-Batch-Id: <stable batch id>
 
 검색 가능한 해시는 canonical content SHA-256뿐입니다 — perceptual 해시(`phash64`, `dhash64`, `ahash64`, `keyframe_phashes`) 및 `md5`는 저장은 되지만 인덱싱되지 않습니다. `app.platform_name`, `app.legal_entity`, `file.behavior.*`, `file_specific.base.motion.*`, `timestamps.payment_credited_at`도 동일합니다: 유용할 때 보내십시오 — 저장된 필드는 이전 데이터를 다시 보내지 않고도 추후 인덱싱이 가능합니다. 분포는 `/stats`를 사용하고, `provider`는 선택적 쿼리 범위로 사용하십시오.
 
-### 필드 가이드
+### 필드 가이드 {#field-guidance}
 
 - `source_record_id` — provider가 소유하는 안정적인 공개 미디어 ID(예: `kmf_...`). 서비스는 주변 공백을 제거하고, 대소문자를 유지하며, 제어 문자는 거부하고, 최대 512바이트까지 허용합니다.
 - `contributor.anon_id` — provider가 소유하는 공개 익명화 기여자 ID.
+- `asset.collection_id`, `asset.customer_id`, `asset.task_id` — 선택적인 provider 할당 그룹화 ID입니다: 레코드의 컬렉션 또는 배치, 레코드가 생성된 대상 고객 또는 캠페인, 레코드가 속한 작업을 나타냅니다. 각 ID는 exact-match로 검색할 수 있으며, `source_record_id`와 마찬가지로 대소문자를 구분하여 매칭됩니다. 위 구조처럼 최상위에 보내거나 `provider_payload` 내부에 보낼 수 있으며, 두 위치 모두 읽힙니다. 해당하지 않는 ID는 생략하십시오.
 - `contributor.kyc_status` — 권장 값: `verified`, `pending`, `failed`, `unverified`.
 - `contributor.kyc_country` — 가능한 경우 KYC에서 얻은 ISO 3166-1 alpha-2 국가 코드. 국가 코드만 사용하며, 주소나 GPS 기반 국가는 포함하지 않습니다.
 - `contributor.tax_status` — 권장 값: `submitted`, `not_submitted`, `not_applicable`, `unknown`. `tax_form_on_file` 같은 boolean은 `true`를 `submitted`로, `false`를 `not_submitted`로 매핑하십시오.
@@ -226,9 +232,9 @@ X-Batch-Id: <stable batch id>
 
 </Accordion>
 
-## 쓰기 API
+## 쓰기 API {#write-api}
 
-### 활성 provider 정책 설정
+### 활성 provider 정책 설정 {#set-active-provider-policies}
 
 provider가 새로운 이용 약관(Terms of Service) 또는 개인정보 처리방침(Privacy Policy)을 게시할 때 이 엔드포인트를 사용하십시오. Trace는 활성 버전, 해시, URI를 저장하여 프런트엔드가 정책에 링크할 수 있게 하고, stats가 레코드를 정책과 비교할 수 있게 합니다.
 
@@ -270,7 +276,7 @@ GET /api/v1/data-audit/providers/kled/policies/tos/sha256:<64-hex-policy-hash>
 GET /api/v1/data-audit/providers/kled/policies/privacy_policy/sha256:<64-hex-policy-hash>
 ```
 
-### 레코드 등록
+### 레코드 등록 {#register-records}
 
 초기 백로그 및 라이브 등록 배치에 이 엔드포인트를 사용하십시오. provider는 안정적인 `source_record_id`를 보내고, DATA Foundation이 `data_id`를 생성하여 매핑을 반환합니다.
 
@@ -283,7 +289,7 @@ X-Batch-Id: kled-records-000001
 X-Ingestion-Source: backlog
 ```
 
-요청 본문은 JSON 배열입니다. `initial_metadata_json`은 위의 [권장 최상위 형태](#권장-최상위-형태)를 따릅니다(여기서는 축약됨):
+요청 본문은 JSON 배열입니다. `initial_metadata_json`은 위의 [권장 최상위 형태](#recommended-top-level-shape)를 따릅니다(여기서는 축약됨):
 
 ```json
 [
@@ -322,7 +328,7 @@ X-Ingestion-Source: backlog
         "legal_entity": "Nitrility Inc. (Delaware, USA)"
       },
       "timestamps": {
-        "occurred_at": "2026-05-13T00:00:00Z",
+        "originated_at": "2026-05-13T00:00:00Z",
         "uploaded_at": "2026-05-13T00:00:00Z"
       },
       "attestation": {
@@ -373,7 +379,7 @@ X-Ingestion-Source: backlog
 
 호출자가 이미 DATA Foundation이 할당한 UUID를 보유하고 있는 경우, 더 낮은 수준의 `POST /webhook/v1/data-audit/data-ids:batch` 엔드포인트가 존재합니다. 이 엔드포인트는 모든 레코드에 `data_id`가 필요하며, 권장되는 provider 경로는 아닙니다.
 
-### 메타데이터 업데이트 제출
+### 메타데이터 업데이트 제출 {#submit-metadata-updates}
 
 이후의 수정이나 변경 가능한 메타데이터 변경에 이 엔드포인트를 사용하십시오. `seq`는 `data_id`별로 `1`–`100` 범위여야 합니다(모든 환경에서 레코드당 업데이트 하드 캡 100회). 동일한 provider 측 리비전에 속하는 변경 사항은 하나의 업데이트와 하나의 `seq`를 공유할 수 있습니다.
 
@@ -453,17 +459,17 @@ POST /webhook/v1/data-audit/metadata-updates:batch-txt
 
 </Accordion>
 
-## 읽기 API
+## 읽기 API {#read-api}
 
 읽기 엔드포인트는 공개 감사 뷰입니다. `provider`는 선택 사항이며 범위를 좁히는 필터로 작동합니다.
 
 읽기 모델:
 
-- `GET /data-ids/{data_id}`는 등록 프로필과 최신 원시(raw) 메타데이터 이벤트를 반환합니다 — 저장된 최상위 시퀀스의 정확한 페이로드이며, 반드시 diff는 아닙니다.
+- `GET /data-ids/{data_id}`는 등록 프로필과 최신 원시(raw) 메타데이터 이벤트를 반환합니다 — 저장된 최상위 시퀀스의 정확한 페이로드이며, 반드시 diff는 아닙니다. 응답에는 최상위 `ingested_at`도 포함됩니다 — 등록(seq 0) 적재 시점에 DATA Foundation이 생성한 타임스탬프이며, 사용할 수 없는 경우 생략됩니다.
 - `GET /data-ids/{data_id}/metadatas`는 `seq: 0`의 등록과 이후의 메타데이터 업데이트를 포함하는 전체 append-only 메타데이터 이력을 반환합니다.
 - 검색, 자산 영수증 조회, scoped 그룹 요약은 DATA Foundation이 해당 이벤트에서 도출한 정규화된 최신 상태 프로젝션을 사용합니다. 이 프로젝션은 MIME 타입, 미디어 카테고리, KYC 상태, TOS/privacy 버전, 라이프사이클 상태, `tx_hash`와 같은 필드를 제공합니다.
 
-### data ID로 trace 조회
+### data ID로 trace 조회 {#get-trace-by-data-id}
 
 ```http
 GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
@@ -473,6 +479,7 @@ GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
 {
   "data_id": "11111111-1111-4111-8111-111111111111",
   "provider": "kled",
+  "ingested_at": "2026-05-13T00:00:01.234567Z",
   "profile": {
     "data_id": "11111111-1111-4111-8111-111111111111",
     "provider": "kled",
@@ -487,7 +494,7 @@ GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111
 }
 ```
 
-### 메타데이터 이력 나열
+### 메타데이터 이력 나열 {#list-metadata-history}
 
 ```http
 GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111/metadatas
@@ -505,13 +512,13 @@ GET /api/v1/data-audit/data-ids/11111111-1111-4111-8111-111111111111/metadatas
 }
 ```
 
-### 인덱싱된 필드로 검색
+### 인덱싱된 필드로 검색 {#search-by-indexed-field}
 
 ```http
 GET /api/v1/data-audit/search?field=source_record_id&value=kmf_8a9c2e7d4b1f0e23
 ```
 
-검색은 [검색 가능 필드](#검색-가능-필드searchable-fields)에서 exact-match로 수행됩니다. `source_record_id` 검색은 exact이며 대소문자를 구분합니다. 각 매치에는 `tx_hash`(초기값은 빈 문자열)가 포함되며, 응답에는 페이지네이션을 위한 `next_cursor`가 포함됩니다. `limit`은 기본 `100`이며 `1000`으로 상한이 설정되어 있습니다 — 그보다 큰 값은 거부되지 않고 조용히 클램프됩니다.
+검색은 [검색 가능 필드](#searchable-fields)에서 exact-match로 수행됩니다. `source_record_id`, `contributor.anon_id`, `collection_id`, `customer_id`, `task_id`는 대소문자를 구분하여 매칭되며, 그 외 필드는 대소문자를 구분하지 않고 매칭되고, content-hash 값은 매칭 전에 정규화(canonicalize)됩니다. 각 매치에는 `tx_hash`(초기값은 빈 문자열)가 포함되며, 응답에는 페이지네이션을 위한 `next_cursor`가 포함됩니다. `limit`은 기본 `100`이며 `1000`으로 상한이 설정되어 있습니다 — 그보다 큰 값은 거부되지 않고 조용히 클램프됩니다.
 
 일반적인 흐름: 정확한 필드 값으로 레코드를 찾을 때는 `/search`를 사용하고, 감사 검증에 사용되는 canonical 이벤트 페이로드를 위해서는 `/data-ids/{data_id}` 또는 `/data-ids/{data_id}/metadatas`를 사용하십시오. 분포 카운트는 `/stats`를 사용하고, UI에 최신 레코드가 필요한 경우 `/recent` 또는 `/feed`를 사용하십시오.
 
@@ -528,7 +535,7 @@ GET /api/v1/data-audit/search?field=contributor.consent.privacy_policy_hash&valu
 GET /api/v1/data-audit/search?field=collection_id&value=<collection-id>&provider=kled&limit=100&cursor=<next_cursor>
 ```
 
-### provider 집계(`/stats`)
+### provider 집계(`/stats`) {#provider-totals-/stats}
 
 ```http
 GET /api/v1/data-audit/stats
@@ -564,7 +571,7 @@ GET /api/v1/data-audit/stats?provider=kled
 
 레코드 총계는 등록된 각 레코드를 한 번씩 카운트합니다. 기여자 총계는 서로 다른 `provider + contributor_anon_id` 값을 카운트합니다. 메타데이터 업데이트는 이 둘을 변경하지 않지만, 분포와 크기 총계는 최신 프로젝션을 따르므로 전체 상태(full-state) 업데이트로 레코드가 버킷 사이에서 이동할 수 있습니다. `average_size_bytes`는 양의 크기를 가진 레코드만 카운트하여 `total_size_bytes / size_record_count`로 계산됩니다. `shard_count`는 예약되어 있으며(현재 `0`), `provider_*` 필드는 `?provider=`와 함께만 나타나고, `active_*`는 해당 provider가 활성 정책을 가지고 있을 때만 나타납니다. 앱/플랫폼 필드는 stats 범위가 아닙니다.
 
-### 최근 적재 피드
+### 최근 적재 피드 {#recent-ingestion-feed}
 
 ```http
 GET /api/v1/data-audit/feed?limit=50
@@ -574,7 +581,7 @@ GET /api/v1/data-audit/feed?provider=kled&limit=50&cursor=<next_cursor>
 
 피드는 최근 감사 이벤트 — 등록 및 메타데이터 업데이트 모두 — 를 적재 시간 기준으로 최신 순으로 반환합니다. 행에는 `event_type`, `seq`, `data_id`, `source_record_id`, `asset_hash`, `occurred_at`, `ingested_at`이 포함됩니다. 더 오래된 행을 가져오려면 `next_cursor`를 사용하십시오.
 
-### 최근 등록된 레코드
+### 최근 등록된 레코드 {#recent-registered-records}
 
 ```http
 GET /api/v1/data-audit/recent?limit=50
@@ -584,7 +591,7 @@ GET /api/v1/data-audit/recent?provider=kled&limit=50&cursor=<next_cursor>
 
 등록된 receipt 행만 적재 시간 기준으로 최신 순으로 반환합니다. 더 오래된 행을 가져오려면 `next_cursor`를 사용하십시오.
 
-### content hash로 자산 receipt 조회
+### content hash로 자산 receipt 조회 {#asset-receipts-by-content-hash}
 
 ```http
 GET /api/v1/data-audit/assets/sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -592,11 +599,11 @@ GET /api/v1/data-audit/assets/sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 허용되는 해시 형식은 `sha256:<64-hex>`, plain `<64-hex>`, `0x<64-hex>`, `0x1220<64-hex>`입니다. 응답은 canonical한 `sha256:<64-lowercase-hex>` 자산 해시와 매치된 모든 receipt 행을 반환합니다.
 
-## Scoped groups
+## Scoped groups {#scoped-groups}
 
 scoped 그룹은 Trace 프런트엔드나 파트너 리뷰어가 리뷰 세트에 대한 공개 스냅샷을 생성할 수 있게 해줍니다. provider 리뷰 워크플로우에서는 랩(lab)이 provider의 `source_record_id` 값을 제출해야 합니다. Trace는 결정적인 `data_id`를 계산하고 모든 레코드의 존재 여부를 검증한 뒤, 전체 세트가 유효한 경우에만 그룹을 생성합니다. (`hashes` / `hashes_text`를 통해 content 해시로부터 그룹을 생성할 수도 있으며, 두 입력 방식은 상호 배타적입니다.) 생성은 비동기적으로 이루어지므로, `GET /scoped-groups/{group_id}`를 폴링하여 `status`가 `complete`가 될 때까지 대기하십시오.
 
-### 그룹 생성
+### 그룹 생성 {#create-a-group}
 
 ```http
 POST /api/v1/data-audit/scoped-groups
@@ -643,7 +650,7 @@ source-record 그룹은 all-or-nothing 방식입니다:
 | 프로필/source 불일치 | `409` |
 | 자산 프로젝션 없이 등록된 레코드 | `422` |
 
-### 더 큰 리뷰 세트를 위한 업로드
+### 더 큰 리뷰 세트를 위한 업로드 {#uploads-for-larger-review-sets}
 
 더 큰 source-record CSV/TXT 입력의 경우 먼저 presigned 업로드 URL을 요청하십시오:
 
@@ -681,7 +688,7 @@ kmf_2
 
 업로드된 CSV에 `provider` 컬럼이 있는 경우에만 create 요청에서 `provider`를 생략하십시오.
 
-### 그룹 읽기
+### 그룹 읽기 {#read-a-group}
 
 ```http
 GET /api/v1/data-audit/scoped-groups/{group_id}
@@ -731,7 +738,7 @@ GET /api/v1/data-audit/scoped-groups/{group_id}/export.csv
 
 `/items`는 제출된 각 `source_record_id`에 대해 확인된 `data_id`, `asset_hash`, receipt 요약과 함께 하나의 행을 반환합니다. cursor 기반 페이지네이션을 사용하며, 더 많은 행이 있는 경우 `next_cursor`를 반환합니다. `/items`와 `/export.csv` 모두 그룹이 `complete` 상태여야 하며, 그 전에는 `409`를 반환합니다. source-record 그룹의 경우 CSV export 컬럼은 `input_type,provider,source_record_id,data_id,asset_hash,status,mime_type,media_category,kyc_status,tos_version,privacy_policy_version,tx_hash`이며, hash-manifest 그룹은 대신 `hash,status,data_id,...`로 시작합니다.
 
-## 제한 및 재시도 동작
+## 제한 및 재시도 동작 {#limits-and-retry-behavior}
 
 | 제한 | 값 |
 | --- | --- |
@@ -755,7 +762,7 @@ GET /api/v1/data-audit/scoped-groups/{group_id}/export.csv
 - 쓰기 경로는 동일한 `data_id`, 이벤트 키, 이벤트 해시에 대해 idempotent합니다.
 - 동일한 `data_id`와 이벤트 키가 다른 메타데이터로 재시도되면 해당 레코드는 충돌로 처리되어 거부됩니다.
 
-## 검증 규칙
+## 검증 규칙 {#validation-rules}
 
 | 규칙 | 동작 |
 | --- | --- |
@@ -775,7 +782,7 @@ GET /api/v1/data-audit/scoped-groups/{group_id}/export.csv
 | `1`–`100` 범위를 벗어나는 메타데이터 `seq` | 요청이 거부됩니다. |
 | 누락되거나, 형식이 잘못되었거나, 0인 필수 metadata root 필드 | 요청이 거부됩니다. |
 
-## 전달 시맨틱(Delivery semantics)
+## 전달 시맨틱(Delivery semantics) {#delivery-semantics}
 
 - 전달은 최소 1회(at least once)이므로 중복 제출이 발생할 수 있습니다.
 - 동일한 이벤트의 중복 제출은 idempotent하게 처리됩니다.

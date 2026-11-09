@@ -5,7 +5,7 @@ description: DATA Foundation 노드 실행 시 일반적인 문제와 해결책
 
 DATA Foundation 노드 문제 해결에 오신 것을 환영합니다! 이 섹션에서는 DATA Foundation 노드 실행 시 일반적인 문제와 해결책을 다룹니다.
 
-### 노드 설정
+### 노드 설정 {#node-setup}
 
 <Accordion title="하드웨어 요구 사항은 무엇인가요?">
 
@@ -19,9 +19,9 @@ DATA Foundation 노드 문제 해결에 오신 것을 환영합니다! 이 섹�
 
 </Accordion>
 
-<Accordion title="완전히 EVM과 호환되나요? IP 블록체인에 이미 적용된 사용자 지정이 있나요? 또는 적용 예정인 사용자 지정이 있나요?">
+<Accordion title="완전히 EVM과 호환되나요? DATA Network에 이미 적용된 사용자 지정이 있나요? 또는 적용 예정인 사용자 지정이 있나요?">
 
-네, EVM과 호환됩니다. DATA Foundation의 실행 클라이언트는 우리의 커스텀 precompile이 있는 Geth의 포크로, 엄격한 EVM 호환성을 유지하면서 IP 그래프의 성능을 향상시킵니다. RETH 및 Erigon과 같은 다른 이더리움 실행 클라이언트는 나중에 지원될 수 있습니다.
+네, EVM과 호환됩니다. DATA Foundation의 실행 클라이언트는 우리의 커스텀 precompile이 있는 Geth의 포크이며, 엄격한 EVM 호환성을 유지합니다. RETH 및 Erigon과 같은 다른 이더리움 실행 클라이언트는 나중에 지원될 수 있습니다.
 
 </Accordion>
 
@@ -82,7 +82,7 @@ RPC 메서드에 따라 1-10분 TTL을 가진 표준 인메모리 캐싱을 사�
 
 <br />
 
-### 일반적인 문제
+### 일반적인 문제 {#common-issues}
 
 <Accordion title="데이터베이스 초기화 실패">
 
@@ -333,7 +333,7 @@ Fatal: Failed to register the Ethereum service: incompatible state scheme, store
   > 🚧 이 파일은 매우 조심히 다루세요. 특히 검증자가 이미 블록을 서명하고 있는 경우에는 더욱 그렇습니다.
 - 상태를 재설정하는 방법은 [여기](/network/more/troubleshooting#error-signing-vote)에 설명되어 있습니다.
 
-## 피어 재연결 실패
+## 피어 재연결 실패 {#failed-to-reconnect-to-peer}
 
 오류:
 
@@ -498,7 +498,7 @@ WRN Processing finalized payload failed: evm fork choice update (will retry) sta
 - 모든 것이 괜찮습니다. 단지 `story-geth`가 동기화 중이라는 의미이며, 이는 시간이 좀 걸립니다.
 - 노드가 크게 뒤처지지 않았다면, 이 경고는 무시할 수 있습니다.
 
-## Dial tcp 127.0.0.1:9090
+## Dial tcp 127.0.0.1:9090 {#dial-tcp-127-0-0-19090}
 
 경고:
 

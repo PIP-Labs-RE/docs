@@ -1,27 +1,49 @@
 ---
-title: DATA Network에 오신 것을 환영합니다
+title: 레거시 DATA Network
+sidebarTitle: 개요
 icon: globe
 ---
 
-**The DATA Foundation**은 데이터 출처 증명(provenance)과 기밀성을 위해 특별히 설계된 Layer 1 블록체인으로, 완전한 EVM 호환성과 최적화된 실행 레이어를 갖추고 있습니다.
+<Info>
+  DATA Network는 Sui에서 네이티브로 실행되는 프로토콜로 업그레이드되고 있습니다.
+  업그레이드가 완료되면 이 독립적인 레이어 1 체인은 종료됩니다. 그때까지는 계속
+  운영되며, 이 문서는 노드 운영자, Validator, 기존 통합을 위해 유지됩니다.
+  [Sui 위의 DATA](/ko/data-on-sui)를 참고하세요.
+</Info>
 
-## 시작하기
+DATA Network는 데이터 출처 증명(provenance)을 위한 Layer 1 블록체인으로, 완전한 EVM 호환성과 최적화된 실행 레이어를 갖추고 있습니다.
 
-<CardGroup cols={4}>
+## 시작하기 {#getting-started}
+
+<CardGroup cols={3}>
   <Card title="연결" 
-    href="/ko/network/connect" icon="network-wired">
+    href="/ko/network/connect/mainnet" icon="network-wired">
     네트워크에 연결하고 사용해 보세요.
   </Card>
   <Card title="학습" 
-    href="/ko/network/learn" icon="book">
+    href="/ko/network/learn/overview" icon="book">
     아키텍처에 대해 자세히 알아보세요.
   </Card>
   <Card title="참여" 
-    href="/ko/network/participate" icon="handshake">
+    href="/ko/network/participate/overview" icon="handshake">
     Validator가 되어보세요.
   </Card>
-  <Card title="빌드" 
-    href="/ko/developers" icon="wrench">
-    DATA Foundation 위에서 애플리케이션을 빌드하세요. 
+  <Card title="익스플로러"
+    href="https://www.datanetscan.io/" icon="magnifying-glass">
+    메인넷 블록과 트랜잭션을 둘러보세요.
+  </Card>
+  <Card title="네트워크 상태"
+    href="https://status.datafdn.org" icon="signal-bars">
+    네트워크 서비스 상태를 확인하세요.
+  </Card>
+  <Card title="클라이언트 릴리스"
+    href="/ko/developers/releases" icon="github">
+    합의 및 실행 클라이언트 릴리스.
   </Card>
 </CardGroup>
+
+<Warning>
+  의사 난수(pseudo-randomness)에 `RANDAO`를 사용하지 말고, 대신 온체인 VRF(Pyth
+  또는 Gelato)를 사용하세요. 현재 `RANDAO` 값은 부모 블록 해시로 설정되므로 X-1
+  블록에 대해서는 무작위가 아닙니다.
+</Warning>

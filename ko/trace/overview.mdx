@@ -5,12 +5,12 @@ icon: "fingerprint"
 ---
 
 <Note>
-  Trace는 현재 스테이징 환경에서 사용할 수 있습니다. 스테이징 API를 기준으로
-  통합을 구축하고 테스트하세요. 정식 릴리스 전까지 스키마와 엔드포인트는
-  안정적이지만 발전하는 상태로 간주해 주세요.
+  Trace는 스테이징과 프로덕션 환경 모두에서 운영 중입니다. 두 환경 모두 쓰기
+  권한을 얻으려면 온보딩이 필요합니다: [팀에 문의](https://discord.gg/databuilders)하여
+  provider 범위와 API 키를 발급받으세요. 읽기는 공개되어 있습니다.
 </Note>
 
-## Trace란 무엇인가요?
+## Trace란 무엇인가요? {#what-is-trace}
 
 **Trace**는 DATA Foundation의 데이터 출처 및 감사 계층입니다. 데이터 제공자는 자신이 다루는 콘텐츠에 대한
 정규화된 메타데이터(콘텐츠 해시, 지각 해시, 기여자 동의, KYC 신호, 캡처/업로드 동작 등)를
@@ -27,21 +27,17 @@ Provider client
   -> story-api read/search/stats         (public audit views)
 ```
 
-## Trace가 어디에 위치하는가
+## Sui 위의 Trace {#trace-on-sui}
 
-<CardGroup cols={2}>
-  <Card title="Trace: 출처(provenance)" icon="fingerprint">
-    제공자 표준화된 스키마와 공개 감사 뷰로 데이터의 출처, 동의, 계보를 증명합니다.
-  </Card>
-  <Card title="CDR: 기밀성(confidentiality)" icon="lock" href="/ko/developers/cdr-sdk/overview">
-    온체인 액세스 제어로 임계값 복호화를 게이팅하면서 기본 데이터를 암호화된 상태로 유지합니다.
-  </Card>
-</CardGroup>
+Trace는 출시 이후 **2억 5천만 건 이상의 기여**를 등록했으며, 이제 [Sui](/ko/data-on-sui) 스택에 합류합니다. Sui는 Trace가 AI를 위한 엔드 투 엔드 데이터 레이어로 성장하는 데 필요한 나머지 구성 요소를 제공합니다:
 
-이 둘이 결합되어 제공자는 **증명 가능하고**(Trace)
-**기밀인**(CDR) 데이터를 등록할 수 있습니다.
+- **[Walrus](https://walrus.xyz)**: 기본 데이터를 위한 스토리지. Walrus가 DATA Foundation 앱의 기본 스토리지 레이어가 됩니다.
+- **[Seal](https://docs.sui.io/sui-stack/seal)**: 누가 데이터를 사용할 수 있는지에 대한 동적 접근 제어.
+- **[Nautilus](https://docs.sui.io/sui-stack/nautilus)**: TEE에서의 추론과 같은 검증 가능한 오프체인 연산.
 
-## Trace 스키마
+소싱, 접근 제어, 처리, 추론이 같은 스택 위에 있으므로 Trace의 감사 계층이 모든 단계를 증명하고 검증할 수 있습니다. 이를 통해 Trace가 저장하는 메타데이터에 더 큰 깊이와 무게가 더해지고, Trace는 AI 데이터의 신뢰할 수 있는 원천이 됩니다.
+
+## Trace 스키마 {#the-trace-schema}
 
 모든 제공자는 자체 페이로드를 단일 공유 형태인 **Trace
 스키마**(`schema_version: trace-v1.0`)에 매핑하며, 제공자별 세부 정보가 손실되지 않도록 전체 원본
@@ -62,7 +58,7 @@ Provider client
   서명.
 - **`provider_payload`**: 제공자의 전체 원본 공개 페이로드.
 
-## 제공자 통합 방법
+## 제공자 통합 방법 {#how-providers-integrate}
 
 통합은 API 키와 제공자 스코프로 인증되는 REST 흐름이며, SDK가
 필요하지 않습니다.
@@ -73,7 +69,7 @@ Provider client
     그리고 제한/재시도 동작.
   </Card>
   <Card title="제공자 되기" icon="discord" href="https://discord.gg/databuilders">
-    제공자 스코프와 스테이징 API 키를 받으려면 문의하세요.
+    제공자 스코프와 API 키를 받으려면 문의하세요.
   </Card>
 </CardGroup>
 
